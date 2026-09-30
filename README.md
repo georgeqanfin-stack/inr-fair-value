@@ -180,6 +180,22 @@ net-foreign-assets term.
 backtests: panel anchor 12-month RMSE ratio 1.02, Clark-West p 0.22, α always
 negative; HP gap 1.05, p 1.00, α changes sign; India-only anchor 1.37.
 
+**India CPI (v0.4).** The official MOSPI CPI-Combined, replacing the OECD series:
+
+- 2025 onward: CPI 2024 = 100.
+- 2013–2024: CPI 2012 = 100 × MOSPI's linking factor 0.5267.
+- 2011–12: MOSPI's 2012-base back series.
+- Before 2011: CPI-IW month-on-month changes chained backwards, with the Labour
+  Bureau factor 4.63 across the 2006 base change.
+
+Because the 2012→2024 link is an annual average, a single level series cannot
+reproduce both the 2012-base inflation published during 2025 and the 2024-base
+inflation published from 2026. The models therefore use **inflation as published at
+the time**, which matches MOSPI to the hundredth (e.g. Oct 2024 6.21%, Oct 2025
+0.25%, Aug 2026 4.82%). The linked level is used only for the long-run PPP test.
+`[cpi_india] source = "oecd"` switches back; the report compares the two (inflation
+correlation 0.97, mean difference 0.41pp).
+
 **Composite and ECM.** ECT = 0.5 × REER component gap + 0.5 × FEER gap (log). The backtest
 regresses h-month INR changes on the ECT using only realised targets and compares
 against a random walk with drift.
@@ -192,7 +208,8 @@ against a random walk with drift.
 | RBI DBIE Excel downloads | Same series | Optional manual download to `data/raw/rbi_*.xlsx`; merged with the API |
 | FRED | US CPI, Fed funds, broad and major dollar indices, VIX, 10Y, Brent, Fed balance sheet, India call rate, OECD India CPI | Automatic, cached in `data/raw/fred/` |
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
-| MOSPI | CPI 2024 = 100 (from Jan 2025) | Manual: `data/raw/manual/mospi_cpi_2024base.csv` |
+| MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |
+| MOSPI | CPI-Combined, 2024 = 100 (from Jan 2025) | Manual, verified: `data/raw/manual/mospi_cpi_2024base.csv` |
 
 **RBI data.** DBIE itself has no public API. The pipeline reads DBIE's series from
 the [Reserve Bank Innovation Hub](https://github.com/Reserve-Bank-Innovation-Hub/dbie.rbihub.in)'s
@@ -223,8 +240,6 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
 - The BEER is not cointegrated; re-specify it with DOLS/FMOLS on permanent
   components of the fundamentals.
 - No data vintages: revisions to CPI, trade and BoP are not captured.
-- India CPI before 2025 is the OECD series; MOSPI publishes official CPI-Combined
-  inflation back to 2014, which should replace it.
 
 ## Repository layout
 

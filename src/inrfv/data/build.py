@@ -171,6 +171,67 @@ def splice_cpi_india(oecd: pd.Series, mospi: pd.Series) -> tuple[pd.Series, dict
                      "overlap": [d.strftime("%Y-%m") for d in both.index], "oecd_end": end.strftime("%Y-%m")}
 
 
+def official_cpi_india(extra: dict[str, pd.Series], mospi_2024: pd.Series,
+                       cfg: dict) -> tuple[pd.Series, pd.Series, pd.Series, dict]:
+    """Official India CPI: a linked level (base 2024 = 100), a per-month source label,
+    and year-on-year inflation as published at the time.
+
+    See [cpi_india] in the config for the segments. MOSPI's 2012 -> 2024 linking factor
+    is an annual average, so the linked level steps at Jan 2025 and level-based
+    inflation for 2025 differs from what MOSPI published. Models therefore use ``yoy``:
+    2024-base inflation once a year of the new series exists (Jan 2026 on), 2012-base
+    inflation before that (what was published during 2025), and CPI-IW inflation
+    before CPI-Combined starts. The level is used only for long-run PPP diagnostics.
+    """
+    c = cfg["cpi_india"]
+    lf = c["linking_factor_2024"]
+    c12, bs = extra["cpi.combined_2012"].dropna(), extra["cpi.combined_2012_bs"].dropna()
+    ov = pd.concat([c12, bs], axis=1, keys=["o", "b"]).dropna()
+    bs_ratio = float((ov["o"] / ov["b"]).mean()) if len(ov) else 1.0
+    old = pd.concat([bs[bs.index < c12.index.min()] * bs_ratio, c12]).sort_index()   # 2012 = 100
+
+    new_start = mospi_2024.dropna().index.min()
+    linked = pd.concat([old[old.index < new_start] * lf, mospi_2024.dropna()]).sort_index()
+    src = pd.Series(np.where(linked.index >= new_start, "MOSPI 2024",
+                             np.where(linked.index >= c12.index.min(), "MOSPI 2012 x LF", "MOSPI 2012 back series x LF")),
+                    index=linked.index, dtype=object)
+
+    # Before CPI-C: chain CPI-IW month-on-month changes backwards from the first CPI-C month.
+    iw = pd.concat([extra["cpi.iw_1982"].dropna() / c["cpiiw_factor_1982_2001"], extra["cpi.iw_2001"].dropna()])
+    iw = iw[~iw.index.duplicated(keep="last")].sort_index()
+    first = linked.index.min()
+    if first not in iw.index:
+        raise ValueError(f"CPI-IW must cover {first:%b %Y} to chain the pre-CPI-C history onto it")
+    back, level = {}, linked[first]
+    for d in reversed(iw.index[iw.index < first]):
+        nxt = d + MS(1)
+        if nxt not in iw.index:
+            break
+        level = level * iw[d] / iw[nxt]
+        back[d] = level
+    back = pd.Series(back).sort_index()
+    out = pd.concat([back, linked]).sort_index().rename("cpi_india")
+    src = pd.concat([pd.Series("CPI-IW chained", index=back.index, dtype=object), src]).sort_index()
+
+    # Inflation as published: new base where it has a year of history, else 2012 base, else CPI-IW.
+    pct = lambda s: s.pct_change(12, fill_method=None) * 100
+    yoy = pct(mospi_2024.dropna()).combine_first(pct(old)).combine_first(pct(iw)).rename("cpi_india_yoy")
+
+    # Diagnostics: how the official link behaves over the 2025 overlap.
+    both = pd.concat([mospi_2024, old], axis=1, keys=["new", "old"]).dropna()
+    meta = {
+        "method": "official",
+        "segments": {k: [v.index.min().strftime("%Y-%m"), v.index.max().strftime("%Y-%m")]
+                     for k, v in src.groupby(src)},
+        "linking_factor_2024": lf,
+        "overlap_2025_mean_ratio": float((both["new"] / both["old"]).mean()) if len(both) else None,
+        "seam_2025_mom_pct": float((out[new_start] / out[new_start - MS(1)] - 1) * 100),
+        "back_series_ratio": bs_ratio,
+        "cpiiw_factor_1982_2001": c["cpiiw_factor_1982_2001"],
+    }
+    return out, src, yoy, meta
+
+
 def flat_runs(s: pd.Series, min_len: int = 3) -> list[tuple[str, str, float]]:
     """Runs of >= min_len identical consecutive values (a sign of placeholder data)."""
     s = s.dropna()
@@ -250,7 +311,19 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
 
     # India CPI.
     mospi = pd.read_csv(manual / "mospi_cpi_2024base.csv", parse_dates=["date"]).set_index("date").iloc[:, 0]
-    cpi_india, splice_meta = splice_cpi_india(f["cpi_india_oecd"], mospi)
+    cpi_oecd, oecd_meta = splice_cpi_india(f["cpi_india_oecd"], mospi)
+    extra = src.get("extra", {})
+    if cfg.get("cpi_india", {}).get("source", "oecd") == "official" and "cpi.combined_2012" in extra:
+        cpi_india, cpi_src, cpi_yoy, splice_meta = official_cpi_india(extra, mospi, cfg)
+        oecd_yoy = cpi_oecd.pct_change(12, fill_method=None) * 100
+        cmp = pd.concat([cpi_yoy, oecd_yoy], axis=1, keys=["official", "oecd"]).dropna()
+        splice_meta["vs_oecd_yoy"] = {"overlap": [cmp.index.min().strftime("%Y-%m"), cmp.index.max().strftime("%Y-%m")],
+                                      "corr": round(float(cmp.corr().iloc[0, 1]), 3),
+                                      "mean_abs_diff_pp": round(float((cmp["official"] - cmp["oecd"]).abs().mean()), 2)}
+    else:
+        cpi_india, cpi_yoy, splice_meta = cpi_oecd, None, {"method": "oecd", **oecd_meta}
+        if cfg.get("cpi_india", {}).get("source") == "official":
+            warnings.append("Official India CPI needs [dbie] mode 'merge' or 'api'; using the OECD series.")
     meta["cpi_india_splice"] = splice_meta
     verified = set(cfg.get("data_checks", {}).get("verified_flat_runs", []))
     for a, b, v in flat_runs(mospi):
@@ -317,6 +390,8 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     for col in ["cpi_us", "fed_funds_rate", "vix", "us_10y_yield", "brent", "fed_balance_sheet", "india_stir"]:
         panel[col] = f[col]
     panel["cpi_india"] = cpi_india
+    if cpi_yoy is not None:
+        panel["cpi_india_yoy"] = cpi_yoy
     panel["india_policy_rate"] = policy
     if repo is not None:
         panel["india_repo_rate"] = repo
@@ -382,8 +457,10 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int 
     pit["india_policy_rate"] = lagged("india_policy_rate").ffill(limit=2)
     pit["cpi_us_yoy"] = (panel["cpi_us"].pct_change(12, fill_method=None) * 100) \
         .shift(lag["cpi_us"]).reindex(idx).ffill(limit=2)
-    pit["cpi_india_yoy"] = (panel["cpi_india"].pct_change(12, fill_method=None) * 100) \
-        .shift(lag["cpi_india"]).reindex(idx).ffill(limit=2)
+    # India: inflation as published when available (official CPI), else from the level.
+    india_yoy = (panel["cpi_india_yoy"] if "cpi_india_yoy" in panel
+                 else panel["cpi_india"].pct_change(12, fill_method=None) * 100)
+    pit["cpi_india_yoy"] = india_yoy.shift(lag["cpi_india"]).reindex(idx).ffill(limit=2)
     pit["exports_usd_mn"] = _carry(lagged("exports_usd_mn"), carry)
     pit["imports_usd_mn"] = _carry(lagged("imports_usd_mn"), carry)
     pit["fpi_usd_mn"] = lagged("fpi_usd_mn")

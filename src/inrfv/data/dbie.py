@@ -84,6 +84,13 @@ EXTRA: dict[str, Spec] = {
                                 {"io_bop_rn": "CURR_INVIS_SER", "tranc_typ_rn": "TRANC_DEB", **_GROSS}, _MN, True),
     "bopx.niip": Spec("external_sector/intr_inv_pos_ind_bpm6_rn",
                       {"inter_invs_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),
+    # Official India CPI (MOSPI CPI-Combined; Labour Bureau CPI-IW before 2011).
+    "cpi.combined_2012": Spec("real_sector/cpi_ruc_rn",
+                              {"base_per": "BY_2012", "comd_item": "C_GIAG", "coverage_geo_rn": "ALL_INDIA"}),
+    "cpi.combined_2012_bs": Spec("real_sector/cpi_ruc_rn",
+                                 {"base_per": "BY_2012_BS", "comd_item": "C_GIAG", "coverage_geo_rn": "ALL_INDIA"}),
+    "cpi.iw_1982": Spec("real_sector/cpi_iw_rn", {"base_per": "BY_1982", "comd_item": "CO_GIAG"}),
+    "cpi.iw_2001": Spec("real_sector/cpi_iw_rn", {"base_per": "BY_2001", "comd_item": "CO_GIAG"}),
     # Older BPM5-basis IIP (2006-2021), spliced onto the BPM6 series by the REER anchor.
     "bopx.niip_bpm5": Spec("external_sector/intr_inv_pos_ind_rn",
                            {"intl_inv_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),

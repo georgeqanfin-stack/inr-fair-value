@@ -177,7 +177,17 @@ def build_report(r: dict) -> str:
     m = ds.meta
     L.append(f"- DXY splice: ratio {m['dxy_splice_ratio']:.4f}; log change at seam {m['dxy_seam']['month']}: {m['dxy_seam']['log_change_pct']:+.2f}%.")
     s = m["cpi_india_splice"]
-    L.append(f"- India CPI splice: ratio {s['ratio']:.4f} (sd {s['ratio_std']:.5f}) over {', '.join(s['overlap'])}.")
+    if s.get("method") == "official":
+        seg = "; ".join(f"{k} {v[0]}–{v[1]}" for k, v in s["segments"].items())
+        v = s.get("vs_oecd_yoy", {})
+        L.append(f"- India CPI: official MOSPI CPI-Combined (inflation as published at the time). Segments: {seg}. "
+                 f"Linking factor 2012→2024 {s['linking_factor_2024']} (2025 overlap ratio "
+                 f"{s['overlap_2025_mean_ratio']:.4f}); CPI-IW 1982→2001 factor {s['cpiiw_factor_1982_2001']}. "
+                 f"Inflation vs the old OECD series: corr {v.get('corr', float('nan')):.3f}, "
+                 f"mean |diff| {v.get('mean_abs_diff_pp', float('nan')):.2f}pp.")
+    else:
+        L.append(f"- India CPI: OECD series ratio-spliced to MOSPI 2024, ratio {s['ratio']:.4f} "
+                 f"(sd {s['ratio_std']:.5f}) over {', '.join(s['overlap'])}.")
     L.append(f"- India policy rate source: {m['india_policy_rate_source']}.")
     if "call_vs_repo" in m:
         c = m["call_vs_repo"]

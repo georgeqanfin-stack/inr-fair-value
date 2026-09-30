@@ -18,9 +18,10 @@ https://www.mospi.gov.in/themes/product/9-consumer-price-index-cpi
 - Jan 2026 was 104.46 in the first (provisional) release and 104.45 once final.
 - Aug 2026 is provisional; update it when the September 2026 release comes out.
 
-MOSPI's official linking factor from CPI 2012=100 to CPI 2024=100 (Combined) is
-0.5267 (January 2026 release). The pipeline instead ratio-splices onto the OECD CPI
-for India (`INDCPIALLMINMEI`, a different base, ends Mar 2025) over Jan–Mar 2025.
+This file is the 2025+ segment of the official India CPI. Earlier segments (CPI 2012 =
+100 and CPI-IW) come from the RBIH Data API, and they are linked with MOSPI's official
+factor 0.5267 (January 2026 release; the pipeline measures 0.52673 over 2025).
+See `[cpi_india]` in the config and the README.
 
 ## `rbi_policy_repo_rate.csv`, `rbi_repo_rate_changes.csv`
 RBI policy repo rate. `rbi_repo_rate_changes.csv` lists every change with its

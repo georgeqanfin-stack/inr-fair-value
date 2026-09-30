@@ -63,6 +63,17 @@ gdp_pc_ppp_india = ["IND", "NY.GDP.PCAP.PP.KD", "wb_gdp_pc_ppp_india.csv"]
 gdp_pc_ppp_world = ["WLD", "NY.GDP.PCAP.PP.KD", "wb_gdp_pc_ppp_world.csv"]
 tot_india        = ["IND", "TT.PRI.MRCH.XD.WD", "wb_tot_india.csv"]
 
+[cpi_india]
+# "official": MOSPI CPI-Combined, expressed on base 2024 = 100:
+#   2025+      CPI 2024 = 100 (data/raw/manual/mospi_cpi_2024base.csv)
+#   2013-2024  CPI 2012 = 100 x MOSPI's official linking factor (Combined, general index)
+#   2011-2012  MOSPI's 2012-base back series, ratio-linked over the Jan-May 2013 overlap
+#   2000-2010  CPI-IW (Labour Bureau), month-on-month changes chained backwards
+# "oecd": the OECD MEI CPI for India (FRED INDCPIALLMINMEI, ends Mar 2025) ratio-spliced to MOSPI 2024.
+source                 = "official"
+linking_factor_2024    = 0.5267   # MOSPI, CPI 2024 series release (12 Feb 2026), Combined general index
+cpiiw_factor_1982_2001 = 4.63     # Labour Bureau linking factor, CPI-IW 1982 -> 2001 base
+
 [rates]
 # The legacy notebooks used INTDSRINM193N, which is the IMF *discount rate* (Bank Rate),
 # not the repo rate. Default: the overnight call rate for India, matching the overnight

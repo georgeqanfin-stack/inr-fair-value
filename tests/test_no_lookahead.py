@@ -40,12 +40,18 @@ def test_structural_one_sided_hp(pit, cfg):
     assert not np.allclose(a.loc[:t, "reer_trend_expost"], b.loc[:t, "reer_trend_expost"])
 
 
-def test_beer_expanding_window(pit, cfg):
-    t = pit.index[150]
-    cols = ["log_inr", "inr_usd", "log_dxy", "vix"]
-    a, _ = beer.run(pit, cfg)
-    b, _ = beer.run(_perturb_after(pit, t, cols), cfg)
-    pd.testing.assert_series_equal(a.loc[:t, "fair_inr"], b.loc[:t, "fair_inr"])
+def test_beer_expanding_window(cfg):
+    from test_beer import synthetic_ds
+    ds = synthetic_ds(np.random.default_rng(3))
+    t = ds.pit.index[180]
+    a, _ = beer.run(ds, cfg)
+    ds2 = synthetic_ds(np.random.default_rng(3))
+    for c in ["log_inr", "inr_usd", "log_dxy", "real_rate_diff"]:
+        ds2.pit.loc[ds2.pit.index > t, c] *= 1.2
+    ds2.panel.loc[ds2.panel.index >= t, "cpi_india"] *= 1.5          # published after t (lag 1)
+    b, _ = beer.run(ds2, cfg)
+    cols = ["fair_inr", "fair_inr_total", "gap_log"]
+    pd.testing.assert_frame_equal(a.loc[:t, cols], b.loc[:t, cols])
 
 
 def _bop(pit, rng):

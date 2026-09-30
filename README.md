@@ -48,7 +48,8 @@ Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED
 | REER fundamentals anchor (India only) | +10.1% | 86.64 | Not cointegrated (p = 0.85): reported only |
 | FEER, IMF norm −2.0% (central) | +6.7% | 89.46 | Latest BoP quarter Oct–Dec 2025; 10th–90th percentile +1.2% to +13.6% |
 | FEER, NIIP-stabilising norm (−0.4%) | −3.4% | | Alternative norm |
-| BEER (expanding window) | +13.8% | 83.83 | Not cointegrated (Engle-Granger p = 0.34): descriptive only |
+| BEER, current (real INR/USD, DOLS) | +25.8% | 75.89 | Not cointegrated (p = 0.98): descriptive only |
+| BEER, total (permanent fundamentals) | +21.5% | 78.55 | Fundamentals at their one-sided HP trends |
 | **Composite (panel anchor + FEER)** | **+12.4%** | **84.91** | Positive = INR weaker than fair |
 
 **Fair-value corridor: 79.5 – 90.1** (10th–90th percentile, combining the panel
@@ -143,8 +144,21 @@ Cross-check: for FY2024/25 the model gives a CA of −0.59% and an underlying CA
 conditional (financing-adjusted) norm is reported as experimental and kept out of
 the composite.
 
-**BEER.** log INR/USD on log DXY, real overnight-rate differential, FPI/GDP,
-log Brent and VIX, estimated on an expanding window.
+**BEER (v0.4).** Following Clark & MacDonald, the bilateral *real* INR/USD rate
+(PPP imposed: log INR/USD minus log CPI India plus log CPI US) is regressed by
+dynamic OLS with Newey-West errors on long-run fundamentals: the log broad dollar
+index, India-vs-US relative productivity (World Bank GDP per capita, PPP) and the
+real interest differential (log Brent in an alternative spec). It is estimated on an
+expanding window of published data and re-estimated quarterly. The *current* BEER
+uses today's fundamentals; the *total* BEER uses their one-sided HP trends. VIX and
+portfolio flows, which drive only the short run, are out of the long-run equation.
+Results: dollar +0.72 (t 8.5) and productivity −0.41 (t −8.6), both correctly signed
+and stable in sign across re-estimations; the real rate differential adds nothing.
+**No specification is cointegrated** (Engle-Granger p 0.78–0.99, Johansen rank 0),
+so the BEER gap says where fundamentals would put the rupee, not a level it returns
+to. As a predictor, its gap has the right error-correction sign in every
+out-of-sample window (12-month Clark-West p = 0.10) but a higher RMSE than drift. It
+is reported, not used in the composite.
 
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY
@@ -237,8 +251,9 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
   current reading by about 10pp, which is more than the whole Monte Carlo band.
 - The FEER has no output-gap adjustment (the IMF adjusts for the domestic and
   partner-country cycle) and no income-balance semi-elasticity.
-- The BEER is not cointegrated; re-specify it with DOLS/FMOLS on permanent
-  components of the fundamentals.
+- Neither the BEER nor the India-only REER anchor is cointegrated on 2001–26 data.
+  The rupee has not tracked India's productivity catch-up, and both models record
+  that gap rather than an equilibrium the rate returns to.
 - No data vintages: revisions to CPI, trade and BoP are not captured.
 
 ## Repository layout

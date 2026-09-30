@@ -28,10 +28,12 @@ def test_segments_and_linking(pieces, cfg):
     assert src["2010-12-01"] == "CPI-IW chained"
     assert src["2012-06-01"] == "MOSPI 2012 back series x LF"
     assert src["2020-06-01"] == "MOSPI 2012 x LF"
-    assert src["2025-06-01"] == "MOSPI 2024"
+    assert src["2025-06-01"] == "MOSPI 2012 x LF"          # 2012 base is published through Dec 2025
+    assert src["2026-03-01"] == "MOSPI 2024 (chained)"
     lf = cfg["cpi_india"]["linking_factor_2024"]
     assert level["2020-06-01"] == pytest.approx(pieces["cpi.combined_2012"]["2020-06-01"] * lf)
-    assert level["2025-06-01"] == pytest.approx(mospi["2025-06-01"])
+    # After the 2012 base ends, the level moves with the 2024 series month on month (no step).
+    assert level["2026-03-01"] / level["2025-12-01"] == pytest.approx(mospi["2026-03-01"] / mospi["2025-12-01"])
 
 
 def test_yoy_is_the_rate_published_at_the_time(pieces, cfg):

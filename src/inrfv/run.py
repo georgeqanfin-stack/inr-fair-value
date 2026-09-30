@@ -42,7 +42,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
 
     reer = structural.run(ds.pit, cfg)
     feer_q, feer_m = feer.run(ds.bop, ds.pit, cfg)
-    beer_out, beer_diag = beer.run(ds.pit, cfg)
+    beer_out, beer_diag = beer.run(ds, cfg)
     reg_out, reg_summary = regimes.run(ds.pit, cfg)
     anchor, anchor_diag = reer_anchor.run(ds, cfg)
     pdata = panel_data.load(cfg, refresh=refresh)

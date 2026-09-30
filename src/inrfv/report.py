@@ -50,8 +50,10 @@ def build_report(r: dict) -> str:
         ("FEER, NIIP-stabilising norm", fm.get("misalignment_pct_niip", pd.Series(dtype=float)), None, "alternative norm"),
         ("FEER, legacy −2.5% norm", fm.get("misalignment_pct_static", pd.Series(dtype=float)), None, "v0.2 assumption, for comparison"),
         ("FEER conditional (experimental)", fm["misalignment_pct_conditional"], None, "ad hoc norm, not in composite"),
-        ("BEER (expanding window)", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"],
+        ("BEER, current (real INR/USD, DOLS)", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"],
          "cointegrated" if r["beer_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: descriptive only"),
+        ("BEER, total (permanent fundamentals)", r["beer"]["misalignment_total_pct"], r["beer"]["fair_inr_total"],
+         "fundamentals at one-sided HP trend"),
         ("Composite (REER+FEER)", comp["misalignment_pct"], comp["fair_inr"], "drives the ECM"),
     ]
     for name, mis, fair, note in rows:
@@ -95,6 +97,33 @@ def build_report(r: dict) -> str:
              f"{pdg['first_estimate']}: " + ", ".join(f"{k} {v[0]:+.2f} to {v[1]:+.2f}" for k, v in pdg["coef_path"].items())
              + ". Twelve specifications were compared when this model was built; only productivity-only DOLS "
              "passed the panel check, so treat the cointegration result as suggestive.\n")
+
+    bd = r["beer_diag"]
+    L.append("### BEER (bilateral, real INR/USD)\n")
+    L.append("Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding "
+             f"window, first estimate {bd['first_estimate']}. Current BEER uses today's fundamentals; total BEER "
+             "uses their one-sided HP trends.\n")
+    L.append("| Spec | Sample | n | Coefficients (t, expected sign) | Engle-Granger p | Johansen rank |")
+    L.append("|---|---|---|---|---|---|")
+    for name, s in bd["specs"].items():
+        coefs = ", ".join(f"{k} {s['coef'][k]:+.3f} ({s['t_hac'][k]:+.1f}, {s['expected_sign'][k]})" for k in s["regressors"])
+        star = " (central)" if name == bd["central_spec"] else ""
+        L.append(f"| {name}{star} | {s['sample'][0]}–{s['sample'][1]} | {s['nobs']} | {coefs} | "
+                 f"{s['engle_granger']['pvalue']:.3f} | {s['johansen_rank']} |")
+    L.append("\nCoefficient range across re-estimations: "
+             + ", ".join(f"{k} {v[0]:+.2f} to {v[1]:+.2f}" for k, v in bd["coef_path"].items()) + ".\n")
+    L.append("Does the BEER gap predict INR/USD? (same out-of-sample test as the composite)\n")
+    L.append("| h | OOS window | n | RMSE ratio vs drift | Clark-West p | α range |")
+    L.append("|---|---|---|---|---|---|")
+    for h, o in bd["oos"].items():
+        if "rmse_ecm" in o:
+            L.append(f"| {h} | {o['oos_window'][0]}–{o['oos_window'][1]} | {o['n_oos']} | "
+                     f"{o['rmse_ratio_ecm_vs_drift']:.3f} | {o['clark_west']['pvalue_one_sided']:.3f} | "
+                     f"{o['alpha_min']:+.2f} to {o['alpha_max']:+.2f} |")
+    if not bd["engle_granger"]["cointegrated_5pct"]:
+        L.append("\nReading: the dollar and productivity coefficients are large, significant and correctly signed, "
+                 "but the real rate is not cointegrated with them, so the BEER gap describes where fundamentals would "
+                 "put the rupee, not a level it reliably returns to.\n")
 
     a = r["anchor_diag"]
     L.append("### REER fundamentals anchor (India only)\n")
@@ -257,7 +286,7 @@ def charts(r: dict, out_dir: Path) -> list[str]:
     if "fair_inr_strong" in comp:
         ax[0].fill_between(comp.index, comp["fair_inr_strong"], comp["fair_inr_weak"], alpha=0.2,
                            label="Fair-value corridor (FEER uncertainty)")
-    ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (expanding)", ls=":", alpha=0.8)
+    ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (current)", ls=":", alpha=0.8)
     ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title(
         f"INR/USD vs point-in-time fair values (REER component: {r['config']['composite'].get('reer_component', 'hp')})")
     ax[1].axhline(0, color="k", lw=0.8)

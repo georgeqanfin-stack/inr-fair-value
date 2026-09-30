@@ -190,9 +190,21 @@ def official_cpi_india(extra: dict[str, pd.Series], mospi_2024: pd.Series,
     bs_ratio = float((ov["o"] / ov["b"]).mean()) if len(ov) else 1.0
     old = pd.concat([bs[bs.index < c12.index.min()] * bs_ratio, c12]).sort_index()   # 2012 = 100
 
-    new_start = mospi_2024.dropna().index.min()
-    linked = pd.concat([old[old.index < new_start] * lf, mospi_2024.dropna()]).sort_index()
-    src = pd.Series(np.where(linked.index >= new_start, "MOSPI 2024",
+    # Continuous level: 2012 base x LF while it is published, then the 2024 series'
+    # month-on-month changes. (MOSPI's own linked back series switches in Jan 2025 and
+    # steps by about -1.2% there, because the factor is an annual average.)
+    new = mospi_2024.dropna()
+    new_start = new.index.min()
+    old_end = old.index.max()
+    linked = old * lf
+    after = new[new.index > old_end]
+    if len(after):
+        level = linked[old_end]
+        for d in after.index:
+            level = level * new[d] / new[d - MS(1)]
+            linked[d] = level
+    linked = linked.sort_index()
+    src = pd.Series(np.where(linked.index > old_end, "MOSPI 2024 (chained)",
                              np.where(linked.index >= c12.index.min(), "MOSPI 2012 x LF", "MOSPI 2012 back series x LF")),
                     index=linked.index, dtype=object)
 

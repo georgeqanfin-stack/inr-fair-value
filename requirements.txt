@@ -1,0 +1,11 @@
+# Exact versions the pipeline was last run and tested with (Python 3.12.4).
+pandas==2.3.3
+numpy==2.2.4
+scipy==1.17.0
+statsmodels==0.14.6
+openpyxl==3.1.5
+requests==2.34.2
+fredapi==0.5.2
+python-dotenv==1.2.2
+matplotlib==3.10.7
+pytest==9.1.1

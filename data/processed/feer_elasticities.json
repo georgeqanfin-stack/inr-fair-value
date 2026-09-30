@@ -1,0 +1,10 @@
+{
+  "reer_semi_per_1pct": -0.26697678398563474,
+  "reer_coef_per_log": -26.697678398563472,
+  "oil_coef_per_log": -2.453765407739016,
+  "brent_norm": 72.29,
+  "reer_pvalue": 0.00028862437040270365,
+  "oil_pvalue": 2.059302385204026e-06,
+  "oil_rsquared": 0.24128003401336262,
+  "imf_eba_validated": true
+}

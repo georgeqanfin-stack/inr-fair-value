@@ -1,0 +1,12 @@
+{
+  "const": -4.207284763479992,
+  "log_dxy": 1.7130939044337912,
+  "real_rate_diff": 0.013261920625827145,
+  "fpi_pct_gdp": 0.01378532480992636,
+  "log_brent": 0.0808269572040556,
+  "vix": -0.0008489957973441738,
+  "rsquared": 0.8760186973751954,
+  "dxy_alone_rsquared": 0.8277749701896522,
+  "india_residual_rsquared": 0.2797677262755378,
+  "resid_cointegrated": true
+}

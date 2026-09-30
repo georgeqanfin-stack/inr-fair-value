@@ -1,0 +1,114 @@
+# INR/USD fair value pipeline configuration.
+# Every modelling assumption lives here so a run is fully described by
+# (code version, this file, data/raw checksums). The run manifest records all three.
+
+[paths]
+raw        = "data/raw"
+fred_cache = "data/raw/fred"
+manual     = "data/raw/manual"
+runs       = "outputs/runs"
+
+[sample]
+start = "2000-01-01"
+
+# FRED series id -> panel column. Fetched from the API when FRED_API_KEY is set,
+# otherwise from the public fredgraph CSV endpoint; cached under paths.fred_cache.
+[fred.series]
+cpi_us            = "CPIAUCSL"
+fed_funds_rate    = "FEDFUNDS"
+dxy_broad         = "DTWEXBGS"         # Fed broad dollar index, starts 2006
+dxy_major         = "DTWEXM"           # Fed major-currency index, used only to backfill pre-2006 (ratio-spliced)
+vix               = "VIXCLS"
+us_10y_yield      = "GS10"
+brent             = "DCOILBRENTEU"
+fed_balance_sheet = "WALCL"
+india_stir        = "IRSTCI01INM156N"  # India immediate (call money) rate, OECD MEI
+cpi_india_oecd    = "INDCPIALLMINMEI"  # OECD CPI total for India, ends Mar 2025
+
+# How to collapse higher-frequency FRED data to months. Market series use monthly
+# averages to match the RBI monthly-average INR/USD rate.
+[fred.monthly_agg]
+dxy_broad         = "mean"
+dxy_major         = "mean"
+vix               = "mean"
+brent             = "mean"
+fed_balance_sheet = "last"
+
+[dxy_splice]
+overlap_months = 12   # ratio of broad/major over the first N overlapping months
+
+[worldbank]
+gdp_india_usd   = ["IN", "NY.GDP.MKTP.CD", "wb_gdp_india.csv"]
+remittances_usd = ["IN", "BX.TRF.PWKR.CD.DT", "wb_remittances.csv"]
+
+[rates]
+# The legacy notebooks used INTDSRINM193N, which is the IMF *discount rate* (Bank Rate),
+# not the repo rate. Default: the overnight call rate for India, matching the overnight
+# Fed funds rate on the US side, and available for the whole sample.
+# "repo" uses data/raw/manual/rbi_policy_repo_rate.csv (RBI Handbook Table 40), which
+# starts in Jun 2008; months before that fall back to the call rate and are reported.
+india_policy_source = "india_stir"   # "india_stir" or "repo"
+repo_file           = "rbi_policy_repo_rate.csv"
+
+[data_checks]
+# Flat runs in manual series that have been checked against the official source.
+# Format "series:first-month:last-month".
+verified_flat_runs = ["mospi_cpi:2025-08:2025-10"]   # MOSPI Aug 2026 release, Annexure IV
+
+# Publication lags in months: a value for reference month m is treated as known
+# at the end of month m + lag. Quarterly BoP data are stamped at the quarter's
+# first month, so lag 6 = quarter end + 3 months.
+[publication_lag]
+inr_usd            = 0
+reer               = 1
+neer               = 1
+fx_reserves_usd_mn = 0
+dxy                = 0
+vix                = 0
+brent              = 0
+fed_funds_rate     = 0
+us_10y_yield       = 0
+fed_balance_sheet  = 0
+india_policy_rate  = 0
+cpi_us             = 1
+cpi_india          = 1
+exports_usd_mn     = 1
+imports_usd_mn     = 1
+fpi_usd_mn         = 2
+fdi_usd_mn         = 2
+bop_quarterly      = 6
+annual_worldbank   = 7   # months after December of the reference year (July Y+1)
+
+[gdp]
+# Nominal INR GDP beyond the last published year is extrapolated at the average
+# growth of the last N published years, using only years public at each date.
+growth_lookback_years = 3
+
+[models.structural]
+hp_lambda = 129600
+min_obs   = 36          # months of REER history before the one-sided HP trend is used
+
+[models.feer]
+cad_norm             = -2.5     # % of GDP, static sustainable CAD norm (assumption)
+reer_semi_elasticity = -0.267   # pp of GDP per 1% REER appreciation (assumption; see README)
+semi_sensitivity     = [-0.10, -0.15, -0.267, -0.40]
+oil_elasticity       = "expanding"  # or a number, e.g. -2.45
+oil_min_quarters     = 20
+
+[models.beer]
+regressors = ["log_dxy", "real_rate_diff", "fpi_pct_gdp", "log_brent", "vix"]
+min_obs    = 60
+
+[models.regimes]
+min_obs     = 96
+refit_every = 12
+seed        = 42
+
+[composite]
+weight_reer = 0.5
+weight_feer = 0.5
+
+[backtest]
+horizons         = [1, 3, 6, 12]
+min_train        = 60      # realised target observations before the first OOS forecast
+headline_horizon = 12

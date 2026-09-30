@@ -34,10 +34,17 @@ def build_report(r: dict) -> str:
     L.append("## Current reading\n")
     L.append("| Model | As of | Misalignment | Fair INR/USD | Notes |")
     L.append("|---|---|---|---|---|")
+    fm, fq, fp = r["feer_m"], r["feer_q"], r["config"]["models"]["feer"]
+    lo_c, hi_c = f"misalignment_p{min(fp['band_percentiles'])}", f"misalignment_p{max(fp['band_percentiles'])}"
+    lastq = fm["quarter"].dropna().iloc[-1] if fm["quarter"].notna().any() else None
+    qlabel = f"BoP {lastq:%b}–{lastq + pd.offsets.MonthBegin(2):%b %Y}" if lastq is not None else ""
     rows = [
         ("REER gap (one-sided HP)", r["reer"]["misalignment_pct"], r["reer"]["fair_inr"], "cyclical gauge; mean-reverting by construction"),
-        ("FEER static", r["feer_m"]["misalignment_pct"], r["feer_m"]["fair_inr"], f"latest BoP quarter: {r['feer_m']['quarter'].dropna().iloc[-1]:%b}–{r['feer_m']['quarter'].dropna().iloc[-1] + pd.offsets.MonthBegin(2):%b %Y}" if r['feer_m']['quarter'].notna().any() else ""),
-        ("FEER conditional (experimental)", r["feer_m"]["misalignment_pct_conditional"], None, "ad hoc norm, not in composite"),
+        (f"FEER, {fp['central_norm'].upper()} norm (central)", fm["misalignment_pct"], fm["fair_inr"],
+         f"{qlabel}; {min(fp['band_percentiles'])}–{max(fp['band_percentiles'])}th pct {_f(_last(fm[lo_c])[0])}% to {_f(_last(fm[hi_c])[0])}%"),
+        ("FEER, NIIP-stabilising norm", fm.get("misalignment_pct_niip", pd.Series(dtype=float)), None, "alternative norm"),
+        ("FEER, legacy −2.5% norm", fm.get("misalignment_pct_static", pd.Series(dtype=float)), None, "v0.2 assumption, for comparison"),
+        ("FEER conditional (experimental)", fm["misalignment_pct_conditional"], None, "ad hoc norm, not in composite"),
         ("BEER (expanding window)", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"],
          "cointegrated" if r["beer_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: descriptive only"),
         ("Composite (REER+FEER)", comp["misalignment_pct"], comp["fair_inr"], "drives the ECM"),
@@ -47,11 +54,29 @@ def build_report(r: dict) -> str:
         fv = _f(_last(fair)[0], "{:.2f}") if fair is not None else "n/a"
         L.append(f"| {name} | {d} | {_f(v)}% | {fv} | {note} |")
     L.append("")
+    if "fair_inr_strong" in comp:
+        s_, w_ = _last(comp["fair_inr_strong"])[0], _last(comp["fair_inr_weak"])[0]
+        L.append(f"**Fair-value corridor ({min(fp['band_percentiles'])}th–{max(fp['band_percentiles'])}th percentile "
+                 f"of FEER norm and elasticity uncertainty): {_f(s_, '{:.2f}')} – {_f(w_, '{:.2f}')}** "
+                 f"(central {_f(_last(comp['fair_inr'])[0], '{:.2f}')}, spot {spot:.2f}).\n")
 
-    sens = r["feer_q"].iloc[-1]
-    cols = [c for c in r["feer_q"].columns if c.startswith("misalignment_pct_semi_")]
-    L.append("FEER sensitivity to the REER semi-elasticity (latest quarter): " + ", ".join(
-        f"{c.split('_')[-1]} → {_f(sens[c])}%" for c in cols) + "\n")
+    # FEER decomposition for the latest quarter, and a cross-check against the IMF.
+    x = fq.dropna(subset=["misalignment_pct"]).iloc[-1]
+    L.append("### FEER, latest quarter\n")
+    L.append(f"Quarter from {x.name:%b %Y}, public {x['available']:%b %Y}: 4-quarter CA {x['ca_pct_4q']:+.2f}% of GDP; "
+             f"oil adjustment {x['oil_adjustment']:+.2f}pp (net oil imports {_f(x['net_oil_pct_gdp'], '{:.2f}')}% of GDP, "
+             f"Brent paid ${x['brent_paid']:.0f} vs 5-year norm ${x['brent_norm']:.0f}); underlying CA "
+             f"{x['cad_underlying']:+.2f}%. Norms: IMF {x['norm_imf']:+.1f}%, NIIP-stabilising "
+             f"{_f(x['norm_niip'], '{:+.2f}')}%, legacy {x['norm_static']:+.1f}%. Semi-elasticity "
+             f"{x['semi_elasticity']:.3f} pp/1% ({x['semi_source']}; X {_f(x['exports_pct_gdp'], '{:.1f}')}%, "
+             f"M {_f(x['imports_pct_gdp'], '{:.1f}')}% of GDP).\n")
+    imf_q = pd.Timestamp("2025-01-01")          # quarter closing FY2024/25
+    if imf_q in fq.index:
+        y = fq.loc[imf_q]
+        L.append(f"Cross-check, FY2024/25: this model's CA {y['ca_pct_4q']:+.2f}% and underlying CA "
+                 f"{y['cad_underlying']:+.2f}% vs the IMF's {-0.6:+.1f}% actual and {-0.4:+.1f}% cyclically adjusted "
+                 f"(2025 Article IV); misalignment {y['misalignment_pct']:+.1f}% "
+                 f"(IMF: external position \"moderately stronger\" than fundamentals).\n")
 
     g = r["regime_summary"]
     L.append("## Regime\n")
@@ -177,11 +202,14 @@ def charts(r: dict, out_dir: Path) -> list[str]:
     fig, ax = plt.subplots(3, 1, figsize=(12, 11), sharex=True)
     ax[0].plot(comp.index, comp["inr_usd"], label="INR/USD", lw=1.8)
     ax[0].plot(comp.index, comp["fair_inr"], label="Composite fair (point-in-time)", ls="--")
+    if "fair_inr_strong" in comp:
+        ax[0].fill_between(comp.index, comp["fair_inr_strong"], comp["fair_inr_weak"], alpha=0.2,
+                           label="Fair-value corridor (FEER uncertainty)")
     ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (expanding)", ls=":", alpha=0.8)
     ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title("INR/USD vs point-in-time fair values")
     ax[1].axhline(0, color="k", lw=0.8)
     ax[1].plot(comp.index, r["reer"]["misalignment_pct"], label="REER gap")
-    ax[1].plot(comp.index, r["feer_m"]["misalignment_pct"], label="FEER static")
+    ax[1].plot(comp.index, r["feer_m"]["misalignment_pct"], label="FEER (IMF norm)")
     ax[1].plot(comp.index, comp["misalignment_pct"], label="Composite", lw=2)
     ax[1].set_ylabel("% (+ = INR undervalued)"); ax[1].legend()
     ax[2].fill_between(comp.index, r["regimes"]["p_stress_filtered"].fillna(0), color="tab:red", alpha=0.4,

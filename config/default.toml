@@ -107,11 +107,28 @@ hp_lambda = 129600
 min_obs   = 36          # months of REER history before the one-sided HP trend is used
 
 [models.feer]
-cad_norm             = -2.5     # % of GDP, static sustainable CAD norm (assumption)
-reer_semi_elasticity = -0.267   # pp of GDP per 1% REER appreciation (assumption; see README)
-semi_sensitivity     = [-0.10, -0.15, -0.267, -0.40]
-oil_elasticity       = "expanding"  # or a number, e.g. -2.45
-oil_min_quarters     = 20
+# Current-account norm (% of GDP) used for the central estimate:
+#   "imf"    IMF EBA CA norm for India, FY2024/25: -2.0, s.e. 0.7
+#            (IMF Country Report No. 25/314, 2025 Article IV, external sector assessment)
+#   "niip"   CA that keeps NIIP/GDP at its current level: n * g / (1 + g)
+#   "static" legacy v0.2 assumption
+central_norm      = "imf"
+imf_norm          = -2.0
+imf_norm_se       = 0.7
+static_norm       = -2.5
+niip_growth_years = 5
+# CA semi-elasticity to the REER = -(eta_exports * X/GDP + eta_imports * M/GDP) / 100,
+# goods + services, trailing 4 quarters. Volume elasticities from IMF EBA-Lite 3.0.
+eta_exports              = 0.46
+eta_imports              = 0.25
+eta_uncertainty          = 0.5     # +/-50% uniform in the Monte Carlo band
+fallback_semi_elasticity = -0.16   # only if gross trade flows are unavailable ([dbie] mode "xlsx")
+oil_norm_months  = 60              # Brent norm = trailing mean over this many months
+window_quarters  = 4
+carry_quarters   = 2               # carry trade shares and NIIP/GDP forward when the latest quarter is not out
+band_draws       = 2000
+band_percentiles = [10, 50, 90]
+seed             = 7
 
 [models.beer]
 regressors = ["log_dxy", "real_rate_diff", "fpi_pct_gdp", "log_brent", "vix"]

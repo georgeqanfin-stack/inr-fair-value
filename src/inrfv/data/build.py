@@ -77,7 +77,7 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     xl_monthly = {col: (xl[k] if c is None else xl[k][c]).rename(col) for col, (k, c) in MONTHLY_PAIRS.items()}
     if mode == "xlsx":
         meta["rbi_source"] = "DBIE Excel files only"
-        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None}
+        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None, "extra": {}}
 
     api = dbie.fetch_all(path(cfg, "dbie_cache"), refresh=refresh, base=dcfg.get("base_url", dbie.DEFAULT_BASE))
     fetch_meta = path(cfg, "dbie_cache") / "_fetch.json"
@@ -106,7 +106,8 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     meta["rbi_source"] = {"merge": "RBIH Data API merged with DBIE Excel (later vintage preferred)",
                           "api": "RBIH Data API only"}[mode]
     meta["rbi_reconciliation"] = recon
-    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr")}
+    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr"),
+            "extra": {k: api[k] for k in dbie.EXTRA}}
 
 
 def dbie_gaps(monthly: dict[str, pd.Series], start: pd.Timestamp) -> dict[str, list[str]]:
@@ -331,7 +332,7 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     nowcast = GdpNowcaster(gdp_inr, lag["annual_worldbank"], cfg["gdp"]["growth_lookback_years"])
 
     pit = build_pit(panel, lag, nowcast, cfg.get("pit", {}).get("carry_forward_months", 0))
-    bop = build_bop(src["bop"], panel, lag["bop_quarterly"], nowcast)
+    bop = build_bop(src["bop"], panel, lag["bop_quarterly"], nowcast, src.get("extra", {}))
     last_q = src["bop"]["current_account"].last_valid_index()
     due = last_q + MS(3 + lag["bop_quarterly"])
     if due <= pit.index[-1]:
@@ -402,8 +403,19 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int 
     return pit
 
 
-def build_bop(bop: pd.DataFrame, panel: pd.DataFrame, lag: int, nowcast: GdpNowcaster) -> pd.DataFrame:
-    """Quarterly BoP with the month-end at which each quarter became public."""
+def build_bop(bop: pd.DataFrame, panel: pd.DataFrame, lag: int, nowcast: GdpNowcaster,
+              extra: dict[str, pd.Series] | None = None) -> pd.DataFrame:
+    """Quarterly BoP with the month-end at which each quarter became public.
+
+    ``extra`` (API-only series) adds gross goods/services flows, the net IIP and
+    monthly oil trade, which the FEER uses for trade shares, the NIIP-stabilising
+    norm and the oil adjustment. All are published no later than the BoP itself.
+    """
+    extra = extra or {}
+    q_extra = {k.split(".", 1)[1]: v for k, v in extra.items() if k.startswith("bopx.")}
+    oil_net = None
+    if "oil_imports_usd_mn" in extra and "oil_exports_usd_mn" in extra:
+        oil_net = (extra["oil_imports_usd_mn"] - extra["oil_exports_usd_mn"]).dropna()
     rows = []
     for q, rec in bop.iterrows():
         months = pd.date_range(q, periods=3, freq="MS")
@@ -417,5 +429,12 @@ def build_bop(bop: pd.DataFrame, panel: pd.DataFrame, lag: int, nowcast: GdpNowc
                "gdp_usd_mn": gdp}
         for c in ["current_account", "fdi_bop", "loans", "portfolio_bop", "capital_account"]:
             row[f"{c}_pct_gdp"] = rec[c] * 4 / gdp * 100 if gdp else np.nan
+        for k, s in q_extra.items():
+            row[k] = s.get(q, np.nan)
+        if oil_net is not None:
+            vals = oil_net.reindex(months)
+            row["net_oil_imports"] = vals.sum() if vals.notna().all() else np.nan
         rows.append(row)
-    return pd.DataFrame(rows).set_index("quarter").sort_index()
+    out = pd.DataFrame(rows).set_index("quarter").sort_index()
+    out.index.name = "quarter"
+    return out

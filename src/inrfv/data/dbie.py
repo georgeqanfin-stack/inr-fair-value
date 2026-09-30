@@ -69,6 +69,24 @@ SERIES: dict[str, Spec] = {
     "bop.reserve_change": Spec("external_sector/ind_ovr_bop_rn", {"io_bop_rn": "MV_FER", **_BOP}, _MN, True),
 }
 
+# API-only inputs for the FEER (no Excel counterpart in data/raw).
+_GROSS = dict(unit_measure="USD")
+EXTRA: dict[str, Spec] = {
+    "oil_imports_usd_mn": Spec("external_sector/bcci_mer_trd_rn", {"typ_of_com_trd": "COMM_OIL", "unit_measure": "USD"}, _MN),
+    "oil_exports_usd_mn": Spec("external_sector/bcci_mer_trd_rn", {"typ_of_com_trd": "COMM_OIL1", "unit_measure": "USD"}, _MN),
+    "bopx.goods_credit": Spec("external_sector/ind_ovr_bop_rn",
+                              {"io_bop_rn": "CURR_MERCH", "tranc_typ_rn": "TRANC_CRD", **_GROSS}, _MN, True),
+    "bopx.goods_debit": Spec("external_sector/ind_ovr_bop_rn",
+                             {"io_bop_rn": "CURR_MERCH", "tranc_typ_rn": "TRANC_DEB", **_GROSS}, _MN, True),
+    "bopx.services_credit": Spec("external_sector/ind_ovr_bop_rn",
+                                 {"io_bop_rn": "CURR_INVIS_SER", "tranc_typ_rn": "TRANC_CRD", **_GROSS}, _MN, True),
+    "bopx.services_debit": Spec("external_sector/ind_ovr_bop_rn",
+                                {"io_bop_rn": "CURR_INVIS_SER", "tranc_typ_rn": "TRANC_DEB", **_GROSS}, _MN, True),
+    "bopx.niip": Spec("external_sector/intr_inv_pos_ind_bpm6_rn",
+                      {"inter_invs_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),
+}
+SERIES.update(EXTRA)
+
 
 class DbieError(RuntimeError):
     pass

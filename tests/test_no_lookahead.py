@@ -52,10 +52,14 @@ def _bop(pit, rng):
     q = pd.date_range(pit.index[0], pit.index[-1], freq="QS-JAN")
     bop = pd.DataFrame(index=q)
     bop["available"] = q + pd.offsets.MonthBegin(6)
-    bop["current_account_pct_gdp"] = rng.normal(-1.5, 1, len(q))
-    bop["brent_q"] = pit["brent"].reindex(q).to_numpy()
+    bop["gdp_usd_mn"] = 3e6
+    bop["current_account"] = rng.normal(-1.5, 1, len(q)) / 100 * 3e6 / 4
     bop["inr_q"] = pit["inr_usd"].reindex(q).to_numpy()
-    bop["fdi_bop"], bop["loans"], bop["gdp_usd_mn"] = 5000.0, 3000.0, 3e6
+    bop["fdi_bop"], bop["loans"] = 5000.0, 3000.0
+    for c, v in {"goods_credit": 1.2e5, "services_credit": 0.5e5, "goods_debit": 1.6e5, "services_debit": 0.3e5}.items():
+        bop[c] = v * (1 + rng.normal(0, 0.05, len(q)))
+    bop["net_oil_imports"] = 2.5e4 * (1 + rng.normal(0, 0.1, len(q)))
+    bop["niip"] = -3e5 * (1 + rng.normal(0, 0.05, len(q)))
     return bop
 
 
@@ -65,8 +69,8 @@ def test_feer_uses_released_quarters_only(pit, cfg, rng):
     _, m_a = feer.run(bop, pit, cfg)
     bop2 = bop.copy()
     late = bop2["available"] > t
-    bop2.loc[late, "current_account_pct_gdp"] += 5
-    bop2.loc[late, "brent_q"] *= 2
+    for c in ["current_account", "goods_credit", "net_oil_imports", "niip"]:
+        bop2.loc[late, c] *= 3
     _, m_b = feer.run(bop2, _perturb_after(pit, t, ["brent"], 2.0), cfg)
     pd.testing.assert_series_equal(m_a.loc[:t, "gap_log"], m_b.loc[:t, "gap_log"])
 

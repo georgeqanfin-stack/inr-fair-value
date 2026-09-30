@@ -62,7 +62,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     return {"dataset": ds, "reer": reer, "feer_q": feer_q, "feer_m": feer_m, "beer": beer_out,
             "beer_diag": beer_diag, "regimes": reg_out, "regime_summary": reg_summary,
             "composite": comp, "backtest": bt, "forecasts": fcs, "current_forecast": cur,
-            "johansen": johansen, "warnings": warnings, "headline_h": h,
+            "johansen": johansen, "warnings": warnings, "headline_h": h, "config": cfg,
             "run_id": run_dir.name if run_dir else "adhoc"}
 
 

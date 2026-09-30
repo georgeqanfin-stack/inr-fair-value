@@ -26,6 +26,27 @@ def fetch_annual(country: str, indicator: str, cache: Path, refresh: bool = Fals
     return s
 
 
+def fetch_panel(countries: list[str], indicator: str, cache: Path, refresh: bool = False) -> pd.DataFrame:
+    """Annual indicator for several countries: long table with columns country, year, value.
+
+    One request covers every country; the result is cached as a CSV so runs are reproducible.
+    """
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache)
+    r = requests.get(WB_URL.format(country=";".join(countries), indicator=indicator),
+                     params={"format": "json", "per_page": 20000}, timeout=120)
+    r.raise_for_status()
+    payload = r.json()
+    if len(payload) < 2 or payload[1] is None:
+        raise ValueError(f"World Bank returned no data for {indicator}")
+    df = pd.DataFrame([{"country": d["countryiso3code"], "year": int(d["date"]), "value": d["value"]}
+                       for d in payload[1] if d["value"] is not None])
+    df = df.sort_values(["country", "year"]).reset_index(drop=True)
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(cache, index=False)
+    return df
+
+
 def read_cached(cache: Path) -> pd.Series:
     df = pd.read_csv(cache, index_col=0)
     # Legacy caches were re-saved by Excel as dd-mm-yyyy; new ones are ISO.

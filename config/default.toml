@@ -145,6 +145,60 @@ band_draws            = 2000
 band_percentiles      = [10, 90]
 seed                  = 11
 
+[panel]
+# Panel REER anchor: India and peer emerging markets with floating or managed-floating
+# regimes. Excluded: hard pegs (SAU, ARE, HKG), Argentina (hyperinflation breaks),
+# Russia (2022 sanctions break), Taiwan (not in World Bank WDI).
+countries = ["IND", "CHN", "BRA", "MEX", "IDN", "TUR", "ZAF", "KOR", "THA", "MYS",
+             "PHL", "CHL", "COL", "PER", "POL", "HUN", "CZE", "ISR", "ROU"]
+[panel.iso2]
+IND = "IN"
+CHN = "CN"
+BRA = "BR"
+MEX = "MX"
+IDN = "ID"
+TUR = "TR"
+ZAF = "ZA"
+KOR = "KR"
+THA = "TH"
+MYS = "MY"
+PHL = "PH"
+CHL = "CL"
+COL = "CO"
+PER = "PE"
+POL = "PL"
+HUN = "HU"
+CZE = "CZ"
+ISR = "IL"
+ROU = "RO"
+
+[panel.indicators]
+gdp_pc_ppp = "NY.GDP.PCAP.PP.KD"   # relative productivity = log(country / world)
+tot        = "TT.PRI.MRCH.XD.WD"   # net barter terms of trade (WDI coverage starts 2005)
+gov_cons   = "NE.CON.GOVT.ZS"      # government consumption, % of GDP
+openness   = "NE.TRD.GNFS.ZS"      # exports + imports, % of GDP
+
+[models.panel_anchor]
+# Pooled dynamic OLS with country fixed effects, annual; standard errors clustered by country.
+# "prod": relative productivity only (Balassa-Samuelson), the one specification whose
+# residuals pass the panel cointegration check (Fisher p = 0.025 after trying 12 variants,
+# so treat it as suggestive); "long" adds government consumption and openness (1995+);
+# "short" adds terms of trade (2005+, WDI coverage). All three are reported every run.
+central_spec   = "prod"
+dols_k         = 1
+min_years      = 10         # minimum usable years before the first estimate
+release_lag    = 7          # months after December until WDI annual data are public
+tot_release_lag = 18
+reer_lag       = 1          # months until a month's BIS REER is public
+band_draws     = 2000
+band_percentiles = [10, 90]
+seed           = 13
+
+[models.panel_anchor.specs]
+prod  = ["rel_prod"]
+long  = ["rel_prod", "gov_cons", "openness"]
+short = ["rel_prod", "log_tot", "gov_cons", "openness"]
+
 [models.beer]
 regressors = ["log_dxy", "real_rate_diff", "fpi_pct_gdp", "log_brent", "vix"]
 min_obs    = 60
@@ -155,10 +209,12 @@ refit_every = 12
 seed        = 42
 
 [composite]
-# REER component: "hp" (one-sided HP gap) or "anchor" (fundamentals-based REER anchor).
-# The anchor is estimated and reported every run; it is not the default because its
-# long-run relation fails the Engle-Granger test on India's 2005-2026 data (see report).
-reer_component = "hp"
+# REER component: "hp" (one-sided HP gap), "anchor" (India-only fundamentals anchor) or
+# "panel" (panel anchor, pooled across emerging markets).
+# All three are estimated and reported every run. Default "panel": the only one whose
+# error-correction coefficient has the right sign in every out-of-sample window
+# (see README, "REER component choice"). The India-only anchor fails cointegration.
+reer_component = "panel"
 weight_reer = 0.5
 weight_feer = 0.5
 

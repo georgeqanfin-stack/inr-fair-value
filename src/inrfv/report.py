@@ -40,6 +40,8 @@ def build_report(r: dict) -> str:
     qlabel = f"BoP {lastq:%b}–{lastq + pd.offsets.MonthBegin(2):%b %Y}" if lastq is not None else ""
     rows = [
         ("REER gap (one-sided HP)", r["reer"]["misalignment_pct"], r["reer"]["fair_inr"], "cyclical gauge; mean-reverting by construction"),
+        ("REER panel anchor (EM panel)", r["panel"]["misalignment_pct"], r["panel"]["fair_inr"],
+         f"productivity-based; BIS REER; spec '{r['panel_diag']['central_spec']}'"),
         ("REER fundamentals anchor", r["anchor"]["misalignment_pct"], r["anchor"]["fair_inr"],
          ("cointegrated" if r["anchor_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: reported only")
          + ("; used in composite" if r["config"]["composite"].get("reer_component") == "anchor" else "")),
@@ -73,8 +75,29 @@ def build_report(r: dict) -> str:
              f"{_f(x['norm_niip'], '{:+.2f}')}%, legacy {x['norm_static']:+.1f}%. Semi-elasticity "
              f"{x['semi_elasticity']:.3f} pp/1% ({x['semi_source']}; X {_f(x['exports_pct_gdp'], '{:.1f}')}%, "
              f"M {_f(x['imports_pct_gdp'], '{:.1f}')}% of GDP).\n")
+    pdg = r["panel_diag"]
+    L.append("### REER panel anchor\n")
+    L.append(f"REER component used in the composite: **{r['config']['composite'].get('reer_component', 'hp')}**. "
+             "Panel dynamic OLS with country fixed effects, annual BIS broad REER, "
+             f"{len(r['config']['panel']['countries'])} emerging markets, standard errors clustered by country; "
+             "India's equilibrium = its country effect + pooled coefficients x its latest fundamentals.\n")
+    L.append("| Spec | Years | n | Coefficients (t) | Panel coint. p | Countries rejecting | India p | India gap (last full year) |")
+    L.append("|---|---|---|---|---|---|---|---|")
+    for name, s in pdg["specs"].items():
+        coefs = ", ".join(f"{k} {s['coef'][k]:+.3f} ({s['t_cluster'][k]:+.1f}, exp. {s['expected_sign'][k]})"
+                          for k in s["regressors"])
+        c = s["panel_cointegration"]
+        star = " (central)" if name == pdg["central_spec"] else ""
+        L.append(f"| {name}{star} | {s['years'][0]}–{s['years'][1]} | {s['nobs']} | {coefs} | {c['pvalue']:.3f} | "
+                 f"{c['share_rejecting_5pct']:.0%} | {_f(s['india_cointegration_p'], '{:.2f}')} | "
+                 f"{s['india_latest_annual_gap_pct']:+.1f}% ({s['india_latest_reer_year']}) |")
+    L.append(f"\nCoefficient range across {pdg['n_estimates']} point-in-time re-estimations since "
+             f"{pdg['first_estimate']}: " + ", ".join(f"{k} {v[0]:+.2f} to {v[1]:+.2f}" for k, v in pdg["coef_path"].items())
+             + ". Twelve specifications were compared when this model was built; only productivity-only DOLS "
+             "passed the panel check, so treat the cointegration result as suggestive.\n")
+
     a = r["anchor_diag"]
-    L.append("### REER fundamentals anchor\n")
+    L.append("### REER fundamentals anchor (India only)\n")
     sig = lambda k: f"{a['coef'][k]:+.3f} (t {a['t_hac'][k]:+.1f}, expected {a['expected_sign'][k]})"
     L.append(f"Dynamic OLS, {a['sample'][0]}–{a['sample'][1]}, n={a['nobs']}: log REER on relative productivity "
              f"{sig('rel_prod')}, log terms of trade {sig('log_tot')}, NFA/GDP {sig('nfa_gdp')}. "
@@ -225,10 +248,11 @@ def charts(r: dict, out_dir: Path) -> list[str]:
         ax[0].fill_between(comp.index, comp["fair_inr_strong"], comp["fair_inr_weak"], alpha=0.2,
                            label="Fair-value corridor (FEER uncertainty)")
     ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (expanding)", ls=":", alpha=0.8)
-    ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title("INR/USD vs point-in-time fair values")
+    ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title(
+        f"INR/USD vs point-in-time fair values (REER component: {r['config']['composite'].get('reer_component', 'hp')})")
     ax[1].axhline(0, color="k", lw=0.8)
     ax[1].plot(comp.index, r["reer"]["misalignment_pct"], label="REER gap (HP)")
-    ax[1].plot(comp.index, r["anchor"]["misalignment_pct"], label="REER anchor", ls=":")
+    ax[1].plot(comp.index, r["panel"]["misalignment_pct"], label="REER panel anchor", ls="-.")
     ax[1].plot(comp.index, r["feer_m"]["misalignment_pct"], label="FEER (IMF norm)")
     ax[1].plot(comp.index, comp["misalignment_pct"], label="Composite", lw=2)
     ax[1].set_ylabel("% (+ = INR undervalued)"); ax[1].legend()

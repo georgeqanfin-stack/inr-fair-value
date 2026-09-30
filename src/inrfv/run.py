@@ -19,7 +19,8 @@ from . import backtest, report
 from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
-from .models import beer, composite, feer, reer_anchor, regimes, structural
+from .data import panel as panel_data
+from .models import beer, composite, feer, panel_anchor, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -44,7 +45,9 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     beer_out, beer_diag = beer.run(ds.pit, cfg)
     reg_out, reg_summary = regimes.run(ds.pit, cfg)
     anchor, anchor_diag = reer_anchor.run(ds, cfg)
-    reer_component = anchor if cfg["composite"].get("reer_component", "hp") == "anchor" else reer
+    pdata = panel_data.load(cfg, refresh=refresh)
+    panel_out, panel_diag = panel_anchor.run(ds, pdata, cfg)
+    reer_component = {"hp": reer, "anchor": anchor, "panel": panel_out}[cfg["composite"].get("reer_component", "hp")]
     comp = composite.run(ds.pit, reer_component, feer_m, cfg)
     bt, fcs = backtest.run(comp, reg_out, cfg)
     h = cfg["backtest"]["headline_horizon"]
@@ -60,12 +63,16 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     if not anchor_diag["engle_granger"]["cointegrated_5pct"]:
         warnings.append(f"REER anchor fundamentals are not cointegrated with the REER (Engle-Granger p="
                         f"{anchor_diag['engle_granger']['pvalue']:.2f}); the anchor is reported, not relied on.")
+    pc = panel_diag["specs"][panel_diag["central_spec"]]["panel_cointegration"]
+    if not pc["cointegrated_5pct"]:
+        warnings.append(f"Panel anchor residuals fail the panel cointegration check (Fisher p={pc['pvalue']:.2f}).")
     if not beer_diag["engle_granger"]["cointegrated_5pct"]:
         warnings.append(f"BEER residuals are not cointegrated (Engle-Granger p="
                         f"{beer_diag['engle_granger']['pvalue']:.2f}); treat the BEER fair value as descriptive.")
 
     return {"dataset": ds, "reer": reer, "feer_q": feer_q, "feer_m": feer_m, "beer": beer_out,
-            "beer_diag": beer_diag, "anchor": anchor, "anchor_diag": anchor_diag, "regimes": reg_out, "regime_summary": reg_summary,
+            "beer_diag": beer_diag, "anchor": anchor, "anchor_diag": anchor_diag,
+            "panel": panel_out, "panel_diag": panel_diag, "regimes": reg_out, "regime_summary": reg_summary,
             "composite": comp, "backtest": bt, "forecasts": fcs, "current_forecast": cur,
             "johansen": johansen, "warnings": warnings, "headline_h": h, "config": cfg,
             "run_id": run_dir.name if run_dir else "adhoc"}
@@ -78,6 +85,7 @@ def save(r: dict, run_dir) -> None:
     ds.bop.to_csv(run_dir / "bop_quarterly.csv")
     r["reer"].to_csv(run_dir / "model_reer.csv")
     r["anchor"].to_csv(run_dir / "model_reer_anchor.csv")
+    r["panel"].to_csv(run_dir / "model_panel_anchor.csv")
     r["feer_q"].to_csv(run_dir / "model_feer_quarterly.csv")
     r["feer_m"].to_csv(run_dir / "model_feer_monthly.csv")
     r["beer"].to_csv(run_dir / "model_beer.csv")
@@ -86,7 +94,7 @@ def save(r: dict, run_dir) -> None:
     for h, fc in r["forecasts"].items():
         fc.to_csv(run_dir / f"oos_forecasts_{h}m.csv")
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
-               "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "johansen": r["johansen"],
+               "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "johansen": r["johansen"],
                "data_meta": ds.meta, "warnings": r["warnings"]}
     (run_dir / "results.json").write_text(json.dumps(results, indent=2, default=_json), encoding="utf-8")
     charts = report.charts(r, run_dir)

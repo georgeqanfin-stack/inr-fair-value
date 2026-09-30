@@ -43,22 +43,27 @@ Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED
 
 | Model | Misalignment | Fair INR/USD | Status |
 |---|---|---|---|
-| REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge only; the REER component of the composite |
-| REER fundamentals anchor | +10.1% | 86.64 | Not cointegrated (Engle-Granger p = 0.85): reported only |
+| REER panel anchor (19 EMs) | +18.4% | 80.60 | **REER component of the composite**; productivity-based, panel-cointegrated (p = 0.025) |
+| REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge |
+| REER fundamentals anchor (India only) | +10.1% | 86.64 | Not cointegrated (p = 0.85): reported only |
 | FEER, IMF norm −2.0% (central) | +6.7% | 89.46 | Latest BoP quarter Oct–Dec 2025; 10th–90th percentile +1.2% to +13.6% |
-| FEER, NIIP-stabilising norm (−0.4%) | −3.4% | | Alternative norm: the choice of norm matters more than anything else |
+| FEER, NIIP-stabilising norm (−0.4%) | −3.4% | | Alternative norm |
 | BEER (expanding window) | +13.8% | 83.83 | Not cointegrated (Engle-Granger p = 0.34): descriptive only |
-| **Composite (REER + FEER)** | **+6.0%** | **90.00** | Positive = INR weaker than fair |
+| **Composite (panel anchor + FEER)** | **+12.4%** | **84.91** | Positive = INR weaker than fair |
 
-**Fair-value corridor: 87.2 – 92.4** (10th–90th percentile over FEER norm and
-elasticity uncertainty), against a spot rate of 95.44.
+**Fair-value corridor: 79.5 – 90.1** (10th–90th percentile, combining the panel
+anchor's parameter band with the FEER norm and elasticity band), against a spot
+rate of 95.44. The panel anchor's gap for full-year 2025 was +8.8%; it widened
+because the REER fell about 13% during 2026 while the productivity-implied level kept rising.
 Filtered P(stress) = 0.14; 12-month-ahead P(stress) = 0.34 (steady state).
 
-**The ECM does not forecast.** Out of sample (2013–2025), the composite ECT does
-not beat a random walk with drift at any horizon from 1 to 12 months. At 12 months
-the RMSE ratio is 1.05 and the Clark-West p-value is 1.00. The 81% directional hit
-rate equals the naive "INR always depreciates" baseline. Treat the misalignment
-figures as valuation gauges, not as a timing signal.
+**The ECM still does not beat the benchmark.** Out of sample (2010–2025), the
+composite ECT does not significantly beat a random walk with drift at any horizon.
+At 12 months the RMSE ratio is 1.02 and the Clark-West p-value is 0.22. With the
+panel anchor, the error-correction coefficient has the right sign in every
+out-of-sample window (−0.82 to −0.26 at 12 months), which the HP-based composite did
+not (−0.22 to +0.15, Clark-West p = 1.00). Treat the misalignment figures as
+valuation gauges, not as a timing signal.
 
 ## What changed in 0.3
 
@@ -145,7 +150,37 @@ log Brent and VIX, estimated on an expanding window.
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY
 quadrants use expanding medians.
 
-**Composite and ECM.** ECT = 0.5 × REER gap + 0.5 × FEER gap (log). The backtest
+**REER panel anchor (v0.4, default REER component).** India's coefficients cannot
+be pinned down from its own 20 years, so, as in the IMF EBA REER model, they are
+estimated on a panel of 19 emerging markets: India, China, Brazil, Mexico,
+Indonesia, Turkey, South Africa, Korea, Thailand, Malaysia, the Philippines, Chile,
+Colombia, Peru, Poland, Hungary, Czechia, Israel and Romania. Hard pegs, Argentina,
+Russia and Taiwan are excluded. The data are the annual BIS broad REER (FRED
+`RB<ISO2>BIS`) and World Bank WDI fundamentals. The model is panel dynamic OLS with
+country fixed effects and standard errors clustered by country, re-estimated
+whenever a new year is published. India's equilibrium = its country effect + pooled
+coefficients × its latest fundamentals, with a band from coefficient and
+country-effect uncertainty. Three specifications are reported:
+
+| Spec | Regressors | Years | Productivity coef. (t) | Panel cointegration p |
+|---|---|---|---|---|
+| **prod** (central) | relative productivity | 1996–2024 | +0.31 (4.4) | 0.025 |
+| long | + government consumption, openness | 1996–2024 | +0.29 (4.0) | 0.98 |
+| short | + terms of trade | 2007–2023 | +0.15 (0.7) | 1.00 |
+
+Panel cointegration combines per-country ADF tests on the pooled residuals
+(Engle-Granger p-values, Fisher / Maddala-Wu). This approximates formal panel tests.
+Twelve variants were compared, and only productivity-only DOLS passed, so the result
+is suggestive, not conclusive. Because India's country effect is its mean residual,
+the anchor measures deviation from India's own fundamentals-adjusted norm. It has no
+net-foreign-assets term.
+
+**REER component choice.** All three REER measures run every time;
+`[composite] reer_component` picks one (`panel`, `hp` or `anchor`). Composite
+backtests: panel anchor 12-month RMSE ratio 1.02, Clark-West p 0.22, α always
+negative; HP gap 1.05, p 1.00, α changes sign; India-only anchor 1.37.
+
+**Composite and ECM.** ECT = 0.5 × REER component gap + 0.5 × FEER gap (log). The backtest
 regresses h-month INR changes on the ECT using only realised targets and compares
 against a random walk with drift.
 
@@ -174,10 +209,11 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
 
 ## Known limitations (Phase 2 roadmap)
 
-- The REER component is still a filter, not an equilibrium model. The fundamentals
-  anchor built to replace it fails cointegration on 2005–26 data (see above). Next
-  options: a panel estimate (India plus peers, as in the IMF EBA REER model), or
-  importing EBA panel coefficients, since one country's 20-year sample is too short.
+- The panel anchor has no net-foreign-assets term (no cross-country IIP source yet;
+  the IMF's External Wealth of Nations data would add it), and its cointegration
+  evidence comes from one specification out of twelve tried.
+- The panel's World Bank fundamentals lag by one to two years, so the equilibrium
+  moves in annual steps and the recent gap is driven mostly by the REER itself.
 - The FEER applies today's IMF norm (−2.0%) to every year back to 2001; norms
   change over time (India ran surpluses in 2001–04, which show up as a 30–40%
   "undervaluation"). The choice between the IMF and NIIP-stabilising norms moves the

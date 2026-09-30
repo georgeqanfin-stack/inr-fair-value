@@ -84,6 +84,9 @@ EXTRA: dict[str, Spec] = {
                                 {"io_bop_rn": "CURR_INVIS_SER", "tranc_typ_rn": "TRANC_DEB", **_GROSS}, _MN, True),
     "bopx.niip": Spec("external_sector/intr_inv_pos_ind_bpm6_rn",
                       {"inter_invs_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),
+    # Older BPM5-basis IIP (2006-2021), spliced onto the BPM6 series by the REER anchor.
+    "bopx.niip_bpm5": Spec("external_sector/intr_inv_pos_ind_rn",
+                           {"intl_inv_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),
 }
 SERIES.update(EXTRA)
 

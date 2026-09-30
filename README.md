@@ -43,7 +43,8 @@ Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED
 
 | Model | Misalignment | Fair INR/USD | Status |
 |---|---|---|---|
-| REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge only |
+| REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge only; the REER component of the composite |
+| REER fundamentals anchor | +10.1% | 86.64 | Not cointegrated (Engle-Granger p = 0.85): reported only |
 | FEER, IMF norm −2.0% (central) | +6.7% | 89.46 | Latest BoP quarter Oct–Dec 2025; 10th–90th percentile +1.2% to +13.6% |
 | FEER, NIIP-stabilising norm (−0.4%) | −3.4% | | Alternative norm: the choice of norm matters more than anything else |
 | BEER (expanding window) | +13.8% | 83.83 | Not cointegrated (Engle-Granger p = 0.34): descriptive only |
@@ -98,6 +99,24 @@ start; annual World Bank data 7 months after year end. Revisions are not modelle
 **REER gap.** A one-sided HP trend (λ = 129,600) of RBI's 40-currency REER. An HP
 gap mean-reverts by construction, so it measures cyclical deviation, not structural
 misalignment.
+
+**REER fundamentals anchor (v0.4).** Dynamic OLS, quarterly, of log REER on
+relative productivity (India/world real GDP per capita at PPP, World Bank), log
+terms of trade (World Bank) and NFA/GDP. NFA is RBI's net IIP: the BPM6 series from
+2018, BPM5 for 2006–17 (the two agree over 2018–21), and the cumulated current
+account before that. It is re-estimated each quarter on data public at the time.
+Annual data enter only from their publication date: World Bank GDP 7 months after
+year end, terms of trade 18 months after. The band comes from the coefficients'
+HAC covariance. **Result:** no specification cointegrates. Twelve variants were
+tested (world, high-income and US productivity benchmarks, with and without terms
+of trade and NFA), with Engle-Granger p between 0.60 and 0.87. Coefficients swing
+widely across re-estimations, and NFA has the wrong sign. The productivity
+coefficient is consistently positive, at about 0.2. India's productivity relative to
+the world has more than doubled since 2005 while the REER stayed between 86 and 108,
+so the fundamentals do not pin down the REER level over this sample. The anchor is
+reported every run but not used in the composite: a composite built on it forecasts
+worse (12-month RMSE ratio 1.37 vs drift). `[composite] reer_component = "anchor"`
+switches it in.
 
 **FEER (v0.4).** For each quarter, with data public at its BoP release:
 
@@ -155,8 +174,10 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
 
 ## Known limitations (Phase 2 roadmap)
 
-- The REER gauge is a filter, not an equilibrium model. It will be replaced by a
-  fundamentals-based anchor (productivity and terms of trade in constant prices).
+- The REER component is still a filter, not an equilibrium model. The fundamentals
+  anchor built to replace it fails cointegration on 2005–26 data (see above). Next
+  options: a panel estimate (India plus peers, as in the IMF EBA REER model), or
+  importing EBA panel coefficients, since one country's 20-year sample is too short.
 - The FEER applies today's IMF norm (−2.0%) to every year back to 2001; norms
   change over time (India ran surpluses in 2001–04, which show up as a 30–40%
   "undervaluation"). The choice between the IMF and NIIP-stabilising norms moves the

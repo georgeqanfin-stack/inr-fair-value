@@ -40,6 +40,9 @@ def build_report(r: dict) -> str:
     qlabel = f"BoP {lastq:%b}–{lastq + pd.offsets.MonthBegin(2):%b %Y}" if lastq is not None else ""
     rows = [
         ("REER gap (one-sided HP)", r["reer"]["misalignment_pct"], r["reer"]["fair_inr"], "cyclical gauge; mean-reverting by construction"),
+        ("REER fundamentals anchor", r["anchor"]["misalignment_pct"], r["anchor"]["fair_inr"],
+         ("cointegrated" if r["anchor_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: reported only")
+         + ("; used in composite" if r["config"]["composite"].get("reer_component") == "anchor" else "")),
         (f"FEER, {fp['central_norm'].upper()} norm (central)", fm["misalignment_pct"], fm["fair_inr"],
          f"{qlabel}; {min(fp['band_percentiles'])}–{max(fp['band_percentiles'])}th pct {_f(_last(fm[lo_c])[0])}% to {_f(_last(fm[hi_c])[0])}%"),
         ("FEER, NIIP-stabilising norm", fm.get("misalignment_pct_niip", pd.Series(dtype=float)), None, "alternative norm"),
@@ -70,6 +73,22 @@ def build_report(r: dict) -> str:
              f"{_f(x['norm_niip'], '{:+.2f}')}%, legacy {x['norm_static']:+.1f}%. Semi-elasticity "
              f"{x['semi_elasticity']:.3f} pp/1% ({x['semi_source']}; X {_f(x['exports_pct_gdp'], '{:.1f}')}%, "
              f"M {_f(x['imports_pct_gdp'], '{:.1f}')}% of GDP).\n")
+    a = r["anchor_diag"]
+    L.append("### REER fundamentals anchor\n")
+    sig = lambda k: f"{a['coef'][k]:+.3f} (t {a['t_hac'][k]:+.1f}, expected {a['expected_sign'][k]})"
+    L.append(f"Dynamic OLS, {a['sample'][0]}–{a['sample'][1]}, n={a['nobs']}: log REER on relative productivity "
+             f"{sig('rel_prod')}, log terms of trade {sig('log_tot')}, NFA/GDP {sig('nfa_gdp')}. "
+             f"Engle-Granger p = {a['engle_granger']['pvalue']:.2f} (5% critical {a['engle_granger']['crit_5pct']:.2f}). "
+             "Range of each coefficient across the quarterly re-estimations since "
+             f"{a.get('first_estimate', 'n/a')}: " + ", ".join(
+                 f"{k} {v[0]:+.2f} to {v[1]:+.2f}" for k, v in a.get("coef_path", {}).items())
+             + f". NFA source quarters: {a['nfa_sources']}.\n")
+    if not a["engle_granger"]["cointegrated_5pct"]:
+        L.append("Reading: India's productivity relative to the world has more than doubled since 2005 while the "
+                 "REER stayed within a narrow range, so the fundamentals do not pin down the REER level over this "
+                 "sample (consistent with a managed exchange rate). The anchor's misalignment is therefore not "
+                 "used in the composite unless `[composite] reer_component = \"anchor\"`.\n")
+
     imf_q = pd.Timestamp("2025-01-01")          # quarter closing FY2024/25
     if imf_q in fq.index:
         y = fq.loc[imf_q]
@@ -208,7 +227,8 @@ def charts(r: dict, out_dir: Path) -> list[str]:
     ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (expanding)", ls=":", alpha=0.8)
     ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title("INR/USD vs point-in-time fair values")
     ax[1].axhline(0, color="k", lw=0.8)
-    ax[1].plot(comp.index, r["reer"]["misalignment_pct"], label="REER gap")
+    ax[1].plot(comp.index, r["reer"]["misalignment_pct"], label="REER gap (HP)")
+    ax[1].plot(comp.index, r["anchor"]["misalignment_pct"], label="REER anchor", ls=":")
     ax[1].plot(comp.index, r["feer_m"]["misalignment_pct"], label="FEER (IMF norm)")
     ax[1].plot(comp.index, comp["misalignment_pct"], label="Composite", lw=2)
     ax[1].set_ylabel("% (+ = INR undervalued)"); ax[1].legend()

@@ -58,6 +58,10 @@ overlap_months = 12   # ratio of broad/major over the first N overlapping months
 [worldbank]
 gdp_india_usd   = ["IN", "NY.GDP.MKTP.CD", "wb_gdp_india.csv"]
 remittances_usd = ["IN", "BX.TRF.PWKR.CD.DT", "wb_remittances.csv"]
+# REER anchor fundamentals (annual).
+gdp_pc_ppp_india = ["IND", "NY.GDP.PCAP.PP.KD", "wb_gdp_pc_ppp_india.csv"]
+gdp_pc_ppp_world = ["WLD", "NY.GDP.PCAP.PP.KD", "wb_gdp_pc_ppp_world.csv"]
+tot_india        = ["IND", "TT.PRI.MRCH.XD.WD", "wb_tot_india.csv"]
 
 [rates]
 # The legacy notebooks used INTDSRINM193N, which is the IMF *discount rate* (Bank Rate),
@@ -130,6 +134,17 @@ band_draws       = 2000
 band_percentiles = [10, 50, 90]
 seed             = 7
 
+[models.reer_anchor]
+# log REER = c + b1*relative productivity + b2*log terms of trade + b3*NFA/GDP, dynamic OLS.
+min_quarters          = 32     # 8 years of quarters before the first estimate
+dols_k                = 1      # leads and lags of the differenced regressors
+hac_lags              = 4
+worldbank_release_lag = 7      # months after December until World Bank GDP per capita is public
+tot_release_lag       = 18     # the WDI terms-of-trade series is published with a longer delay
+band_draws            = 2000
+band_percentiles      = [10, 90]
+seed                  = 11
+
 [models.beer]
 regressors = ["log_dxy", "real_rate_diff", "fpi_pct_gdp", "log_brent", "vix"]
 min_obs    = 60
@@ -140,6 +155,10 @@ refit_every = 12
 seed        = 42
 
 [composite]
+# REER component: "hp" (one-sided HP gap) or "anchor" (fundamentals-based REER anchor).
+# The anchor is estimated and reported every run; it is not the default because its
+# long-run relation fails the Engle-Granger test on India's 2005-2026 data (see report).
+reer_component = "hp"
 weight_reer = 0.5
 weight_feer = 0.5
 

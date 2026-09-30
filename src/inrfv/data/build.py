@@ -32,6 +32,7 @@ class Dataset:
     pit: pd.DataFrame
     bop: pd.DataFrame
     gdp_inr_annual: pd.Series
+    annual: dict = field(default_factory=dict)       # other World Bank annual series, by config key
     warnings: list[str] = field(default_factory=list)
     meta: dict = field(default_factory=dict)
 
@@ -328,6 +329,8 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     gdp_usd = worldbank.fetch_annual(wb["gdp_india_usd"][0], wb["gdp_india_usd"][1],
                                      raw / wb["gdp_india_usd"][2], refresh=refresh)
     gdp_inr = annual_gdp_inr(gdp_usd, inr)
+    annual = {k: worldbank.fetch_annual(v[0], v[1], raw / v[2], refresh=refresh)
+              for k, v in wb.items() if k not in ("gdp_india_usd", "remittances_usd")}
     lag = cfg["publication_lag"]
     nowcast = GdpNowcaster(gdp_inr, lag["annual_worldbank"], cfg["gdp"]["growth_lookback_years"])
 
@@ -343,7 +346,8 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
             if panel[c].last_valid_index() is not None}
     meta["series_end"] = ends
     meta["asof"] = pit["inr_usd"].last_valid_index().strftime("%Y-%m")
-    return Dataset(panel=panel, pit=pit, bop=bop, gdp_inr_annual=gdp_inr, warnings=warnings, meta=meta)
+    return Dataset(panel=panel, pit=pit, bop=bop, gdp_inr_annual=gdp_inr, annual=annual,
+                   warnings=warnings, meta=meta)
 
 
 CARRY_FORWARD = ["reer", "neer", "fx_reserves_usd_mn", "exports_usd_mn", "imports_usd_mn"]

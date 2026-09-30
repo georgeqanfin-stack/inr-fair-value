@@ -37,20 +37,22 @@ Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
 
 `outputs/latest.txt` names the most recent run. Runs are never overwritten.
 
-## Current reading (run of 1 Oct 2026, data as of Apr 2026)
+## Current reading (run of 1 Oct 2026, data as of Aug 2026)
+
+Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED EXINUS).
 
 | Model | Misalignment | Fair INR/USD | Status |
 |---|---|---|---|
-| REER gap (one-sided HP) | +7.6% | 86.91 | Cyclical gauge only |
-| FEER static (−2.5% CAD norm) | +4.4% | 89.60 | Latest quarter Oct–Dec 2025; very sensitive to the elasticity (+2.9% to +11.8%) |
-| BEER (expanding window) | +2.4% | 91.37 | Not cointegrated (Engle-Granger p = 0.32): descriptive only |
-| **Composite (REER + FEER)** | **+6.0%** | **88.25** | Positive = INR weaker than fair |
+| REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge only |
+| FEER static (−2.5% CAD norm) | +4.4% | 91.40 | Latest BoP quarter Oct–Dec 2025; very sensitive to the elasticity (+2.9% to +11.8%) |
+| BEER (expanding window) | +13.8% | 83.85 | Not cointegrated (Engle-Granger p = 0.34): descriptive only |
+| **Composite (REER + FEER)** | **+4.9%** | **90.97** | Positive = INR weaker than fair |
 
-Filtered P(stress) = 0.41; 12-month-ahead P(stress) = 0.34 (steady state).
+Filtered P(stress) = 0.14; 12-month-ahead P(stress) = 0.34 (steady state).
 
 **The ECM does not forecast.** Out of sample (2013–2025), the composite ECT does
 not beat a random walk with drift at any horizon from 1 to 12 months. At 12 months
-the RMSE ratio is 1.02 and the Clark-West p-value is 0.96. The 81% directional hit
+the RMSE ratio is 1.02 and the Clark-West p-value is 0.97. The 81% directional hit
 rate equals the naive "INR always depreciates" baseline. Treat the misalignment
 figures as valuation gauges, not as a timing signal.
 
@@ -115,14 +117,24 @@ against a random walk with drift.
 
 | Source | Series | How |
 |---|---|---|
-| RBI DBIE | INR/USD, REER/NEER (40-currency), reserves, trade, quarterly BoP, monthly FDI/portfolio flows | Manual download to `data/raw/rbi_*.xlsx` |
+| RBI DBIE via the RBIH Data API | INR/USD, REER/NEER (40-currency), reserves, trade, quarterly BoP, monthly FDI/portfolio flows, weighted average call rate | Automatic, cached in `data/raw/dbie/` |
+| RBI DBIE Excel downloads | Same series | Optional manual download to `data/raw/rbi_*.xlsx`; merged with the API |
 | FRED | US CPI, Fed funds, broad and major dollar indices, VIX, 10Y, Brent, Fed balance sheet, India call rate, OECD India CPI | Automatic, cached in `data/raw/fred/` |
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
 | MOSPI | CPI 2024 = 100 (from Jan 2025) | Manual: `data/raw/manual/mospi_cpi_2024base.csv` |
 
-See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs and
-their open issues. The RBI files currently end in April 2026; download fresh
-copies to move the as-of date forward.
+**RBI data.** DBIE itself has no public API. The pipeline reads DBIE's series from
+the [Reserve Bank Innovation Hub](https://github.com/Reserve-Bank-Innovation-Hub/dbie.rbihub.in)'s
+public, read-only Data API (`https://data-api.dbie.rbihub.in`), a daily mirror of
+DBIE's SDMX series run by an RBI subsidiary. It merges these with any DBIE Excel
+files in `data/raw`. Where both sources have a value, the later release wins (RBI
+revises recent months). Every run reports each series' coverage, which source was
+newer, and any disagreement outside the normal revision window. Missing INR/USD
+months, and months after RBI's latest, are filled with FRED's EXINUS rescaled to
+RBI's level, and the report says so. `[dbie] mode` in the config switches between
+`merge`, `api` and `xlsx`.
+
+See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
 
 ## Known limitations (Phase 2 roadmap)
 

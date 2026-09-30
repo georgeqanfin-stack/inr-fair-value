@@ -36,7 +36,7 @@ def build_report(r: dict) -> str:
     L.append("|---|---|---|---|---|")
     rows = [
         ("REER gap (one-sided HP)", r["reer"]["misalignment_pct"], r["reer"]["fair_inr"], "cyclical gauge; mean-reverting by construction"),
-        ("FEER static", r["feer_m"]["misalignment_pct"], r["feer_m"]["fair_inr"], f"quarter released {r['feer_m']['quarter'].dropna().iloc[-1]:%b %Y}" if r['feer_m']['quarter'].notna().any() else ""),
+        ("FEER static", r["feer_m"]["misalignment_pct"], r["feer_m"]["fair_inr"], f"latest BoP quarter: {r['feer_m']['quarter'].dropna().iloc[-1]:%b}–{r['feer_m']['quarter'].dropna().iloc[-1] + pd.offsets.MonthBegin(2):%b %Y}" if r['feer_m']['quarter'].notna().any() else ""),
         ("FEER conditional (experimental)", r["feer_m"]["misalignment_pct_conditional"], None, "ad hoc norm, not in composite"),
         ("BEER (expanding window)", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"],
          "cointegrated" if r["beer_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: descriptive only"),
@@ -117,6 +117,23 @@ def build_report(r: dict) -> str:
         L.append(f"- Call rate vs RBI repo rate ({c['overlap'][0]}–{c['overlap'][1]}): mean gap "
                  f"{c['mean_call_minus_repo_pp']:+.2f}pp, mean |gap| {c['mean_abs_gap_pp']:.2f}pp, corr {c['corr']:.3f}.")
     L.append(f"- FPI series: legacy FII before {m['fpi_seam']}, BoP net portfolio after.\n")
+
+    if isinstance(m.get("rbi_reconciliation"), dict):
+        L.append("## RBI data sources\n")
+        f = m.get("dbie_fetch", {})
+        L.append(f"{m['rbi_source']}. API fetched {f.get('fetched_at', 'from cache')}"
+                 + (f", mirror loaded {f['api_health'].get('registry_loaded_at', '?')[:19]}" if 'api_health' in f else "") + ".\n")
+        L.append("| Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |")
+        L.append("|---|---|---|---|---|---|---|")
+        for k, v in m["rbi_reconciliation"].items():
+            rng = lambda x: f"{x[0]}–{x[1]}" if x else "—"
+            L.append(f"| {k} | {rng(v['api_range'])} | {rng(v['xlsx_range'])} | {v['newer_source']} | "
+                     f"{v['overlap']} | {v.get('n_revised', 0)} | {v.get('n_unexpected', 0)} |")
+        p = m.get("inr_usd_patch", {})
+        if p.get("filled") or p.get("extended"):
+            L.append(f"\nINR/USD patched with rescaled FRED EXINUS: filled {p['filled'] or 'none'}, "
+                     f"extended {p['extended'] or 'none'} (mean RBI–FRED gap {p['mean_abs_rel_diff']:.2%}).")
+        L.append("")
 
     L.append("## Data warnings\n")
     for w in r["warnings"] or ["none"]:

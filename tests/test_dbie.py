@@ -1,0 +1,119 @@
+import numpy as np
+import pandas as pd
+import pytest
+
+from inrfv.data import dbie
+from inrfv.data.build import patch_inr_with_fred
+
+
+def _rows(dates, values, **dims):
+    return pd.DataFrame({"time_period": dates, "obs_value": values, **dims})
+
+
+def test_monthly_dates_normalised_to_month_start():
+    spec = dbie.Spec("x/y")
+    s = dbie.to_series(_rows(["2026-05-30", "2026-06-30", "2026-07-31"], [1.0, 2.0, 3.0]), spec, "s")
+    assert list(s.index.strftime("%Y-%m-%d")) == ["2026-05-01", "2026-06-01", "2026-07-01"]
+
+
+def test_quarterly_stamped_at_indian_fiscal_quarter_start():
+    spec = dbie.Spec("x/y", quarterly=True, scale=1e-6)
+    s = dbie.to_series(_rows(["2025-09-30", "2025-12-31"], [-12_310e6, -13_198e6]), spec, "ca")
+    # Q2 FY26 = Jul-Sep 2025, Q3 FY26 = Oct-Dec 2025: same convention as rbi.parse_bop_quarterly.
+    assert list(s.index.strftime("%Y-%m-%d")) == ["2025-07-01", "2025-10-01"]
+    assert s.iloc[0] == pytest.approx(-12_310)
+
+
+def test_exact_duplicates_collapse_conflicting_raise():
+    spec = dbie.Spec("x/y")
+    s = dbie.to_series(_rows(["2026-01-31", "2026-01-31"], [5.3, 5.3]), spec, "s")
+    assert len(s) == 1
+    with pytest.raises(dbie.DbieError):
+        dbie.to_series(_rows(["2026-01-31", "2026-01-31"], [5.3, 9.9]), spec, "s")
+
+
+def test_empty_selection_raises():
+    with pytest.raises(dbie.DbieError):
+        dbie.to_series(pd.DataFrame(columns=["time_period", "obs_value"]), dbie.Spec("x/y"), "s")
+
+
+class _FakeResponse:
+    def __init__(self, payload, status=200):
+        self._p, self.status_code, self.text = payload, status, str(payload)
+
+    def json(self):
+        return self._p
+
+
+class _FakeSession:
+    def __init__(self, pages):
+        self.pages, self.calls = pages, []
+
+    def get(self, url, params=None, timeout=None):
+        self.calls.append(params)
+        return _FakeResponse(self.pages[len(self.calls) - 1])
+
+
+def test_fetch_paginates_filters_and_caches(tmp_path, monkeypatch):
+    monkeypatch.setattr(dbie, "PAGE", 2)
+    cols = ["time_period", "obs_value", "currency"]
+    pages = [{"columns": cols, "rows": [["2026-01-31", 90.8, "USD"], ["2026-02-28", 90.7, "USD"]]},
+             {"columns": cols, "rows": [["2026-03-31", 92.8, "USD"]]}]
+    sess = _FakeSession(pages)
+    s = dbie.fetch("inr_usd", tmp_path, refresh=True, session=sess)
+    assert len(s) == 3 and s.iloc[-1] == pytest.approx(92.8)
+    assert sess.calls[0]["currency"] == "USD" and sess.calls[1]["offset"] == 2
+    # Second call reads the cache and makes no request.
+    again = dbie.fetch("inr_usd", tmp_path, refresh=False, session=_FakeSession([]))
+    pd.testing.assert_series_equal(s, again, check_freq=False, check_names=False)
+
+
+def test_http_error_raises(tmp_path):
+    with pytest.raises(dbie.DbieError):
+        dbie.fetch("inr_usd", tmp_path, refresh=True, session=_FakeSession([{"error": "x"}]))
+
+
+def _m(values, start="2025-01-01"):
+    return pd.Series(values, index=pd.date_range(start, periods=len(values), freq="MS"), dtype=float)
+
+
+def test_merge_prefers_later_vintage():
+    api = _m([1, 2, 3, 4])                   # ends Apr
+    xlsx = _m([1, 2, 30, 40, 50])            # ends May: the later release, with revisions
+    merged = dbie.merge(api, xlsx)
+    assert merged.tolist() == [1, 2, 30, 40, 50]
+    api2 = _m([1, 2, 3, 4, 5, 6])            # now the API reaches further
+    assert dbie.merge(api2, xlsx).tolist() == [1, 2, 3, 4, 5, 6]
+
+
+def test_reconcile_separates_revisions_from_unexpected():
+    old = _m(np.ones(36))
+    new = old.copy()
+    new.iloc[-2] = 1.5                        # recent revision
+    new.iloc[3] = 2.0                         # old discrepancy: suspicious
+    new = pd.concat([new, _m([1.0], "2028-01-01")])   # newer source reaches further
+    r = dbie.reconcile(new, old, rel_tol=0.005, revision_window=12)
+    assert r["newer_source"] == "api"
+    assert r["n_revised"] == 1 and r["n_unexpected"] == 1
+
+
+def test_monthly_gaps():
+    s = _m([1, 2, 3, 4]).drop(pd.Timestamp("2025-02-01"))
+    assert dbie.monthly_gaps(s) == ["2025-02"]
+
+
+def test_inr_patch_fills_gap_and_extends_with_rescaled_fred():
+    fred = _m(np.full(18, 100.0))
+    rbi = _m(np.full(15, 101.0)).drop(pd.Timestamp("2026-02-01"))   # gap in Feb 2026, ends Mar 2026
+    out, info = patch_inr_with_fred(rbi, fred, extend=True)
+    assert info["filled"] == ["2026-02"]
+    assert info["extended"] == ["2026-04", "2026-05", "2026-06"]
+    assert out["2026-02-01"] == pytest.approx(101.0)                  # rescaled to RBI's level
+    assert out["2026-06-01"] == pytest.approx(101.0)
+    out2, info2 = patch_inr_with_fred(rbi, fred, extend=False)
+    assert info2["extended"] == [] and out2.index.max() == rbi.index.max()
+
+
+def test_series_specs_cover_every_bop_item():
+    from inrfv.data.rbi import BOP_ITEMS
+    assert {f"bop.{v}" for v in BOP_ITEMS.values()} <= set(dbie.SERIES)

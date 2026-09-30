@@ -13,6 +13,7 @@ Revisions are not modelled (no vintage data); publication delays are.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -20,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from ..config import path
-from . import fred, rbi, worldbank
+from . import dbie, fred, rbi, worldbank
 
 MS = pd.offsets.MonthBegin
 
@@ -50,6 +51,98 @@ def load_rbi(raw: Path) -> dict:
         "bop": rbi.parse_bop_quarterly(raw / "rbi_cab.xlsx"),
         "fi": rbi.parse_foreign_investment_monthly(raw / "rbi_fpi_flows.xlsx"),
     }
+
+
+MONTHLY_PAIRS = {  # panel column -> (key in load_rbi output, column or None)
+    "inr_usd": ("inr_usd", None),
+    "reer": ("reer", "reer"),
+    "neer": ("reer", "neer"),
+    "fx_reserves_usd_mn": ("reserves", None),
+    "exports_usd_mn": ("trade", "exports_usd_mn"),
+    "imports_usd_mn": ("trade", "imports_usd_mn"),
+    "fdi_usd_mn": ("fi", "fdi_usd_mn"),
+    "fpi_usd_mn": ("fi", "fpi_usd_mn"),
+}
+
+
+def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) -> dict:
+    """RBI series from the DBIE Excel files, the RBIH Data API, or both merged.
+
+    Returns ``{"monthly": {column: Series}, "bop": DataFrame, "wacr": Series | None}``.
+    """
+    raw = path(cfg, "raw")
+    dcfg = cfg.get("dbie", {"mode": "xlsx"})
+    mode = dcfg["mode"]
+    xl = load_rbi(raw)
+    xl_monthly = {col: (xl[k] if c is None else xl[k][c]).rename(col) for col, (k, c) in MONTHLY_PAIRS.items()}
+    if mode == "xlsx":
+        meta["rbi_source"] = "DBIE Excel files only"
+        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None}
+
+    api = dbie.fetch_all(path(cfg, "dbie_cache"), refresh=refresh, base=dcfg.get("base_url", dbie.DEFAULT_BASE))
+    fetch_meta = path(cfg, "dbie_cache") / "_fetch.json"
+    if fetch_meta.exists():
+        meta["dbie_fetch"] = json.loads(fetch_meta.read_text(encoding="utf-8"))
+    tol = dcfg.get("reconcile_rel_tol", 0.005)
+    window = dcfg.get("revision_window", 24)
+    recon, monthly = {}, {}
+    for col, xs in xl_monthly.items():
+        a = api[col]
+        recon[col] = dbie.reconcile(a, xs, tol, window)
+        monthly[col] = dbie.merge(a, xs) if mode == "merge" else a.rename(col)
+    bop_cols = {}
+    for name in rbi.BOP_ITEMS.values():
+        a, xs = api[f"bop.{name}"], xl["bop"][name]
+        recon[f"bop.{name}"] = dbie.reconcile(a, xs, tol, window)
+        bop_cols[name] = dbie.merge(a, xs) if mode == "merge" else a
+    bop = pd.DataFrame(bop_cols).sort_index()
+    bop.index.name = "date"
+
+    for k, v in recon.items():
+        if v.get("n_unexpected", 0):
+            warnings.append(f"RBI sources disagree on {k} outside the recent-revision window: "
+                            f"{v['n_unexpected']} of {v['overlap']} periods differ by more than {tol:.1%} "
+                            f"(worst {v['worst'][:1]}). Check for a definition change or a parsing error.")
+    meta["rbi_source"] = {"merge": "RBIH Data API merged with DBIE Excel (later vintage preferred)",
+                          "api": "RBIH Data API only"}[mode]
+    meta["rbi_reconciliation"] = recon
+    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr")}
+
+
+def dbie_gaps(monthly: dict[str, pd.Series], start: pd.Timestamp) -> dict[str, list[str]]:
+    """Missing months inside each RBI monthly series from ``start`` (INR/USD is patched separately)."""
+    return {k: g for k, s in monthly.items()
+            if k != "inr_usd" and (g := dbie.monthly_gaps(s[s.index >= start]))}
+
+
+def _carry(s: pd.Series, months: int) -> pd.Series:
+    return s.ffill(limit=months) if months else s
+
+
+def patch_inr_with_fred(inr: pd.Series, fred_inr: pd.Series, extend: bool, lookback: int = 12) -> tuple[pd.Series, dict]:
+    """Fill interior gaps (and optionally extend) RBI INR/USD with FRED's monthly rate, rescaled.
+
+    FRED's EXINUS (noon buying rates in New York) differs slightly from RBI's reference
+    rate, so each patched month is scaled by the mean RBI/FRED ratio over the preceding
+    ``lookback`` months where both exist.
+    """
+    both = pd.concat([inr, fred_inr], axis=1, keys=["rbi", "fred"]).dropna()
+    rel = (both["rbi"] / both["fred"] - 1).abs()
+    info = {"overlap": len(both), "mean_abs_rel_diff": float(rel.mean()) if len(rel) else None,
+            "filled": [], "extended": []}
+    out = inr.copy()
+    targets = list(pd.date_range(inr.index.min(), inr.index.max(), freq="MS").difference(inr.dropna().index))
+    if extend:
+        targets += [d for d in fred_inr.index if d > inr.index.max()]
+    for d in targets:
+        if d not in fred_inr.index or np.isnan(fred_inr[d]):
+            continue
+        prior = both[both.index < d].tail(lookback)
+        if prior.empty:
+            continue
+        out[d] = fred_inr[d] * float((prior["rbi"] / prior["fred"]).mean())
+        info["extended" if d > inr.index.max() else "filled"].append(d.strftime("%Y-%m"))
+    return out.sort_index().rename("inr_usd"), info
 
 
 def load_fred(cfg: dict, refresh: bool) -> dict[str, pd.Series]:
@@ -130,8 +223,20 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     warnings: list[str] = []
     meta: dict = {}
 
-    r = load_rbi(raw)
+    src = load_rbi_sources(cfg, refresh, warnings, meta)
+    rm = src["monthly"]
     f = load_fred(cfg, refresh)
+
+    # INR/USD: patch interior gaps (and optionally the edge) with rescaled FRED EXINUS.
+    inr = rm["inr_usd"]
+    if "inr_usd_fred" in f:
+        inr, inr_patch = patch_inr_with_fred(inr, f["inr_usd_fred"], cfg.get("dbie", {}).get("extend_inr_with_fred", False))
+        meta["inr_usd_patch"] = inr_patch
+        if inr_patch["filled"] or inr_patch["extended"]:
+            warnings.append(f"INR/USD uses rescaled FRED EXINUS for {', '.join(inr_patch['filled'] + inr_patch['extended'])} "
+                            f"(RBI data missing; typical RBI-FRED gap {inr_patch['mean_abs_rel_diff']:.2%}).")
+    for k, v in dbie_gaps(rm, pd.Timestamp(cfg["sample"]["start"])).items():
+        warnings.append(f"{k} has missing months inside its range: {', '.join(v[:6])}{' …' if len(v) > 6 else ''}.")
 
     # Dollar index: broad index, backfilled with the ratio-rescaled major-currency index.
     dxy, dxy_ratio = fred.ratio_splice(f["dxy_broad"], f["dxy_major"],
@@ -164,8 +269,22 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
             "mean_abs_gap_pp": round(float((both["call"] - both["repo"]).abs().mean()), 3),
             "corr": round(float(both["call"].corr(both["repo"])), 3),
         }
+    wacr = src.get("wacr")
+    if wacr is not None and repo is not None:
+        both = pd.concat([wacr, repo], axis=1, keys=["wacr", "repo"]).dropna()
+        meta["wacr_vs_repo"] = {
+            "overlap": [both.index[0].strftime("%Y-%m"), both.index[-1].strftime("%Y-%m")],
+            "mean_abs_gap_pp": round(float((both["wacr"] - both["repo"]).abs().mean()), 3),
+            "corr": round(float(both["wacr"].corr(both["repo"])), 3),
+        }
     source = cfg["rates"]["india_policy_source"]
-    if source == "repo":
+    if source == "wacr":
+        if wacr is None:
+            raise ValueError("india_policy_source='wacr' needs [dbie] mode 'merge' or 'api'")
+        policy = wacr.combine_first(call[call.index > wacr.index.max()])
+        meta["india_policy_rate_source"] = (f"RBI weighted average call rate (DBIE) to {wacr.index.max():%Y-%m}, "
+                                            "OECD call rate after")
+    elif source == "repo":
         if repo is None:
             raise FileNotFoundError(f"india_policy_source='repo' but {repo_file} is missing")
         policy = repo.combine_first(call[call.index < repo.index.min()])
@@ -176,12 +295,10 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
         meta["india_policy_rate_source"] = f"FRED {cfg['fred']['series']['india_stir']} (overnight call rate)"
 
     # Portfolio flows: legacy FII series (INR crore) before Mar 2011, BoP net portfolio after.
-    inr = r["inr_usd"]
     legacy = pd.read_csv(raw / "parsed_fpi_inr.csv", index_col=0, parse_dates=True).iloc[:, 0]
     legacy_usd = (legacy * 10 / inr.reindex(legacy.index)).dropna()
-    fi = r["fi"]
-    seam_fpi = fi["fpi_usd_mn"].dropna().index.min()
-    fpi = pd.concat([legacy_usd[legacy_usd.index < seam_fpi], fi["fpi_usd_mn"]]).sort_index()
+    seam_fpi = rm["fpi_usd_mn"].dropna().index.min()
+    fpi = pd.concat([legacy_usd[legacy_usd.index < seam_fpi], rm["fpi_usd_mn"]]).sort_index()
     meta["fpi_seam"] = seam_fpi.strftime("%Y-%m")
 
     start = pd.Timestamp(cfg["sample"]["start"])
@@ -191,13 +308,9 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     panel = pd.DataFrame(index=idx)
     panel.index.name = "date"
     panel["inr_usd"] = inr
-    panel["reer"] = r["reer"]["reer"]
-    panel["neer"] = r["reer"]["neer"]
-    panel["fx_reserves_usd_mn"] = r["reserves"]
-    panel["exports_usd_mn"] = r["trade"]["exports_usd_mn"]
-    panel["imports_usd_mn"] = r["trade"]["imports_usd_mn"]
+    for col in ["reer", "neer", "fx_reserves_usd_mn", "exports_usd_mn", "imports_usd_mn", "fdi_usd_mn"]:
+        panel[col] = rm[col]
     panel["fpi_usd_mn"] = fpi
-    panel["fdi_usd_mn"] = fi["fdi_usd_mn"]
     panel["dxy"] = dxy
     for col in ["cpi_us", "fed_funds_rate", "vix", "us_10y_yield", "brent", "fed_balance_sheet", "india_stir"]:
         panel[col] = f[col]
@@ -205,6 +318,8 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     panel["india_policy_rate"] = policy
     if repo is not None:
         panel["india_repo_rate"] = repo
+    if wacr is not None:
+        panel["india_wacr"] = wacr
     panel = panel.reindex(idx)
 
     # Annual GDP.
@@ -215,8 +330,13 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     lag = cfg["publication_lag"]
     nowcast = GdpNowcaster(gdp_inr, lag["annual_worldbank"], cfg["gdp"]["growth_lookback_years"])
 
-    pit = build_pit(panel, lag, nowcast)
-    bop = build_bop(r["bop"], panel, lag["bop_quarterly"], nowcast)
+    pit = build_pit(panel, lag, nowcast, cfg.get("pit", {}).get("carry_forward_months", 0))
+    bop = build_bop(src["bop"], panel, lag["bop_quarterly"], nowcast)
+    last_q = src["bop"]["current_account"].last_valid_index()
+    due = last_q + MS(3 + lag["bop_quarterly"])
+    if due <= pit.index[-1]:
+        warnings.append(f"Latest BoP quarter is {last_q:%b %Y} (quarter start); the next one was due by {due:%b %Y}. "
+                        "Download a fresh BoP file from DBIE or wait for the RBIH API to update.")
 
     ends = {c: panel[c].last_valid_index().strftime("%Y-%m") for c in panel.columns
             if panel[c].last_valid_index() is not None}
@@ -225,8 +345,15 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     return Dataset(panel=panel, pit=pit, bop=bop, gdp_inr_annual=gdp_inr, warnings=warnings, meta=meta)
 
 
-def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster) -> pd.DataFrame:
-    """Information set at the end of each month."""
+CARRY_FORWARD = ["reer", "neer", "fx_reserves_usd_mn", "exports_usd_mn", "imports_usd_mn"]
+
+
+def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int = 0) -> pd.DataFrame:
+    """Information set at the end of each month.
+
+    Slow-moving levels in CARRY_FORWARD keep their latest published value for up to
+    ``carry`` months when a release is late, so the ragged edge does not blank the models.
+    """
     last = panel["inr_usd"].last_valid_index()
     idx = panel.index[panel.index <= last]
     pit = pd.DataFrame(index=idx)
@@ -236,9 +363,9 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster) -> pd.DataF
         return panel[col].shift(lag[key or col]).reindex(idx)
 
     pit["inr_usd"] = lagged("inr_usd")
-    pit["reer"] = lagged("reer")
-    pit["neer"] = lagged("neer")
-    pit["fx_reserves_usd_mn"] = lagged("fx_reserves_usd_mn")
+    pit["reer"] = _carry(lagged("reer"), carry)
+    pit["neer"] = _carry(lagged("neer"), carry)
+    pit["fx_reserves_usd_mn"] = _carry(lagged("fx_reserves_usd_mn"), carry)
     pit["dxy"] = lagged("dxy")
     pit["vix"] = lagged("vix")
     pit["brent"] = lagged("brent")
@@ -252,8 +379,8 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster) -> pd.DataF
         .shift(lag["cpi_us"]).reindex(idx).ffill(limit=2)
     pit["cpi_india_yoy"] = (panel["cpi_india"].pct_change(12, fill_method=None) * 100) \
         .shift(lag["cpi_india"]).reindex(idx).ffill(limit=2)
-    pit["exports_usd_mn"] = lagged("exports_usd_mn")
-    pit["imports_usd_mn"] = lagged("imports_usd_mn")
+    pit["exports_usd_mn"] = _carry(lagged("exports_usd_mn"), carry)
+    pit["imports_usd_mn"] = _carry(lagged("imports_usd_mn"), carry)
     pit["fpi_usd_mn"] = lagged("fpi_usd_mn")
 
     pit["inflation_diff"] = pit["cpi_india_yoy"] - pit["cpi_us_yoy"]

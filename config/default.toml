@@ -5,6 +5,7 @@
 [paths]
 raw        = "data/raw"
 fred_cache = "data/raw/fred"
+dbie_cache = "data/raw/dbie"
 manual     = "data/raw/manual"
 runs       = "outputs/runs"
 
@@ -24,6 +25,7 @@ brent             = "DCOILBRENTEU"
 fed_balance_sheet = "WALCL"
 india_stir        = "IRSTCI01INM156N"  # India immediate (call money) rate, OECD MEI
 cpi_india_oecd    = "INDCPIALLMINMEI"  # OECD CPI total for India, ends Mar 2025
+inr_usd_fred      = "EXINUS"           # INR per USD, Fed H.10 monthly average; patches gaps in the RBI rate
 
 # How to collapse higher-frequency FRED data to months. Market series use monthly
 # averages to match the RBI monthly-average INR/USD rate.
@@ -33,6 +35,22 @@ dxy_major         = "mean"
 vix               = "mean"
 brent             = "mean"
 fed_balance_sheet = "last"
+
+# RBI DBIE series. "merge": RBIH Data API (https://data-api.dbie.rbihub.in, a read-only
+# mirror of DBIE's SDMX series run by the Reserve Bank Innovation Hub) combined with the
+# DBIE Excel files in data/raw, API preferred where both exist; "api": API only;
+# "xlsx": Excel files only. API responses are cached in paths.dbie_cache; --refresh re-fetches.
+[dbie]
+mode                 = "merge"
+base_url             = "https://data-api.dbie.rbihub.in"
+reconcile_rel_tol    = 0.005   # sources "agree" within 0.5%
+revision_window      = 24      # months at the end of the older source where RBI revisions are expected
+extend_inr_with_fred = true    # extend INR/USD past RBI's last month with rescaled FRED EXINUS
+
+# Slow-moving monthly levels (REER, NEER, reserves, exports, imports) keep their latest
+# published value for up to this many months when a release is late.
+[pit]
+carry_forward_months = 2
 
 [dxy_splice]
 overlap_months = 12   # ratio of broad/major over the first N overlapping months
@@ -47,7 +65,7 @@ remittances_usd = ["IN", "BX.TRF.PWKR.CD.DT", "wb_remittances.csv"]
 # Fed funds rate on the US side, and available for the whole sample.
 # "repo" uses data/raw/manual/rbi_policy_repo_rate.csv (RBI Handbook Table 40), which
 # starts in Jun 2008; months before that fall back to the call rate and are reported.
-india_policy_source = "india_stir"   # "india_stir" or "repo"
+india_policy_source = "india_stir"   # "india_stir", "repo" or "wacr" (RBI weighted average call rate, DBIE)
 repo_file           = "rbi_policy_repo_rate.csv"
 
 [data_checks]

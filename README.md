@@ -44,9 +44,9 @@ Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED
 | Model | Misalignment | Fair INR/USD | Status |
 |---|---|---|---|
 | REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge only |
-| FEER static (−2.5% CAD norm) | +4.4% | 91.40 | Latest BoP quarter Oct–Dec 2025; very sensitive to the elasticity (+2.9% to +11.8%) |
-| BEER (expanding window) | +13.8% | 83.85 | Not cointegrated (Engle-Granger p = 0.34): descriptive only |
-| **Composite (REER + FEER)** | **+4.9%** | **90.97** | Positive = INR weaker than fair |
+| FEER static (−2.5% CAD norm) | +4.1% | 91.63 | Latest BoP quarter Oct–Dec 2025; very sensitive to the elasticity (+2.8% to +11.1%) |
+| BEER (expanding window) | +13.8% | 83.83 | Not cointegrated (Engle-Granger p = 0.34): descriptive only |
+| **Composite (REER + FEER)** | **+4.8%** | **91.09** | Positive = INR weaker than fair |
 
 Filtered P(stress) = 0.14; 12-month-ahead P(stress) = 0.34 (steady state).
 

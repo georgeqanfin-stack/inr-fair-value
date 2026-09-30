@@ -127,8 +127,9 @@ def fetch(name: str, cache_dir: Path, refresh: bool = False, base: str = DEFAULT
 def fetch_all(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE) -> dict[str, pd.Series]:
     session = requests.Session()
     session.headers["User-Agent"] = "inrfv (https://github.com/georgeqanfin-stack/inr-fair-value)"
+    downloaded = refresh or any(not (cache_dir / f"{n}.csv").exists() for n in SERIES)
     out = {name: fetch(name, cache_dir, refresh, base, session) for name in SERIES}
-    if refresh:
+    if downloaded:
         meta = {"fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "base": base}
         try:
             meta["api_health"] = session.get(f"{base}/health", timeout=30).json()

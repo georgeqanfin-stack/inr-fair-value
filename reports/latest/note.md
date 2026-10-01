@@ -1,6 +1,6 @@
 # INR/USD fair value note, September 2026
 
-Data to September 2026 · run `20261001-152928` · written 01 Oct 2026
+Data to September 2026 · run `20261001-154339` · written 01 Oct 2026
 
 ## The reading
 
@@ -31,6 +31,8 @@ Over the same months the RBI sold a net US$14.7 bn, counting forwards. Valued at
 Out of sample (Jun 2010 to Sep 2025), the misalignment signal has a slightly lower forecast error than a random walk with drift at a 12-month horizon (forecast error ratio 0.977, Clark-West p = 0.13), but the difference is not statistically significant. Read the misalignment as a valuation gauge, not a timing signal.
 
 Also: the market-based BEER (+25.1%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test.
+
+The equal weighting of the two components was tested against weights learned from each one's track record and from their uncertainty bands; none did clearly better, so the weights stay equal. On their own, neither component beats a random walk at 12 months (ratios 1.23 and 1.05); combined they do (0.977). The headline ranges from +12.9% to +14.4% across weighting schemes.
 
 Among 19 emerging-market currencies on the same model, the rupee is the 3rd most undervalued (Sep 2026). Across countries the model ranks currencies much as the IMF's REER assessments do (average rank correlation 0.83).
 

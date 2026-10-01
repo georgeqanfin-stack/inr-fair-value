@@ -1715,6 +1715,160 @@
       ]
     }
   },
+  "weights": {
+    "schemes": {
+      "equal": {
+        "label": "Equal (1/2 each)",
+        "weight_reer_last": 0.5,
+        "weight_reer_mean": 0.5,
+        "misalignment_last": 14.140514627874555,
+        "by_horizon": {
+          "1": {
+            "rmse_ratio": 0.9984338389108828,
+            "cw_p": 0.14499009379448768,
+            "n": 206
+          },
+          "3": {
+            "rmse_ratio": 1.0055902695035985,
+            "cw_p": 0.2804791899079544,
+            "n": 202
+          },
+          "6": {
+            "rmse_ratio": 1.0149024138814664,
+            "cw_p": 0.2109542802155776,
+            "n": 196
+          },
+          "12": {
+            "rmse_ratio": 0.9771650971811869,
+            "cw_p": 0.1299885474436152,
+            "n": 184
+          }
+        }
+      },
+      "reer_only": {
+        "label": "REER component only",
+        "weight_reer_last": 1.0,
+        "weight_reer_mean": 1.0,
+        "misalignment_last": 18.409870609539027,
+        "by_horizon": {
+          "1": {
+            "rmse_ratio": 1.0041900569450721,
+            "cw_p": 0.2840229974861376,
+            "n": 206
+          },
+          "3": {
+            "rmse_ratio": 1.01736243832991,
+            "cw_p": 0.4656865206799593,
+            "n": 202
+          },
+          "6": {
+            "rmse_ratio": 1.0697150337457484,
+            "cw_p": 0.6928891177392237,
+            "n": 196
+          },
+          "12": {
+            "rmse_ratio": 1.2307257110286116,
+            "cw_p": 0.5015072561482337,
+            "n": 184
+          }
+        }
+      },
+      "feer_only": {
+        "label": "FEER only",
+        "weight_reer_last": 0.0,
+        "weight_reer_mean": 0.0,
+        "misalignment_last": 10.025093452526024,
+        "by_horizon": {
+          "1": {
+            "rmse_ratio": 1.0053291816666106,
+            "cw_p": 0.5612004670424826,
+            "n": 206
+          },
+          "3": {
+            "rmse_ratio": 1.0152433211234138,
+            "cw_p": 0.607874156599345,
+            "n": 202
+          },
+          "6": {
+            "rmse_ratio": 1.0134880182695019,
+            "cw_p": 0.3954352374177684,
+            "n": 196
+          },
+          "12": {
+            "rmse_ratio": 1.0457241920320086,
+            "cw_p": 0.5913997575217275,
+            "n": 184
+          }
+        }
+      },
+      "inverse_variance": {
+        "label": "Inverse variance (bands)",
+        "weight_reer_last": 0.3498271601327779,
+        "weight_reer_mean": 0.14270333901729731,
+        "misalignment_last": 12.888548588326,
+        "by_horizon": {
+          "1": {
+            "rmse_ratio": 1.005247237625147,
+            "cw_p": 0.5772268709923969,
+            "n": 206
+          },
+          "3": {
+            "rmse_ratio": 1.015193283016743,
+            "cw_p": 0.6261029806546574,
+            "n": 202
+          },
+          "6": {
+            "rmse_ratio": 1.0119603651632003,
+            "cw_p": 0.3922160738295273,
+            "n": 196
+          },
+          "12": {
+            "rmse_ratio": 1.0366987625534194,
+            "cw_p": 0.5305070498566703,
+            "n": 184
+          }
+        }
+      },
+      "performance": {
+        "label": "Performance (Bates-Granger)",
+        "weight_reer_last": 0.534940043973061,
+        "weight_reer_mean": 0.5023819369825572,
+        "misalignment_last": 14.433789406158315,
+        "by_horizon": {
+          "1": {
+            "rmse_ratio": 0.9998316263808031,
+            "cw_p": 0.18897497857997658,
+            "n": 206
+          },
+          "3": {
+            "rmse_ratio": 1.0070569001587277,
+            "cw_p": 0.3153400885579354,
+            "n": 202
+          },
+          "6": {
+            "rmse_ratio": 1.0160471624163416,
+            "cw_p": 0.2229400763849705,
+            "n": 196
+          },
+          "12": {
+            "rmse_ratio": 0.9757906240845813,
+            "cw_p": 0.12940645251500338,
+            "n": 184
+          }
+        }
+      }
+    },
+    "horizon": 12,
+    "rule": {
+      "min_rmse_gain": 0.01
+    },
+    "rule_choice": "equal",
+    "configured": "equal",
+    "headline_range": [
+      12.888548588326,
+      14.433789406158315
+    ]
+  },
   "revisions": {
     "months": [
       "2004-07",
@@ -1777,11 +1931,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T09:58:34+00:00",
+      "fetched_at": "2026-10-01T10:12:35+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T09:58:30.262160701Z",
+        "registry_loaded_at": "2026-10-01T10:08:30.368042982Z",
         "status": "ok",
         "tables": 1049
       }

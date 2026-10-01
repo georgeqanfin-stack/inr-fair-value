@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.11.0 · run `20261001-152928` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.12.0 · run `20261001-154339` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -134,6 +134,18 @@ Outstanding net forward position, Jul 2026: US$-136.8 bn (-20% of FX reserves). 
 
 RMSE ratio < 1 and Clark-West p < 0.05 would mean the ECT beats the drift benchmark. 'hit vs drift' asks whether the model gets the direction of the surprise relative to drift right.
 
+### Composite weights
+
+Weighting schemes for the REER component and the FEER, all point in time, through the same backtest. Rule set beforehand: keep equal weights unless a scheme lowers the 12-month RMSE ratio by at least 0.01 and has a lower Clark-West p. The rule chooses: **equal** (configured: equal). Headline misalignment across the combination schemes: +12.9% to +14.4%.
+
+| Scheme | REER weight (latest, mean) | Misalignment now | 1m RMSE ratio (CW p) | 3m RMSE ratio (CW p) | 6m RMSE ratio (CW p) | 12m RMSE ratio (CW p) |
+|---|---|---|---|---|---|---|
+| Equal (1/2 each) | 0.50, 0.50 | +14.1% | 0.998 (0.14) | 1.006 (0.28) | 1.015 (0.21) | 0.977 (0.13) |
+| REER component only | 1.00, 1.00 | +18.4% | 1.004 (0.28) | 1.017 (0.47) | 1.070 (0.69) | 1.231 (0.50) |
+| FEER only | 0.00, 0.00 | +10.0% | 1.005 (0.56) | 1.015 (0.61) | 1.013 (0.40) | 1.046 (0.59) |
+| Inverse variance (bands) | 0.35, 0.14 | +12.9% | 1.005 (0.58) | 1.015 (0.63) | 1.012 (0.39) | 1.037 (0.53) |
+| Performance (Bates-Granger) | 0.53, 0.50 | +14.4% | 1.000 (0.19) | 1.007 (0.32) | 1.016 (0.22) | 0.976 (0.13) |
+
 ### Full-sample predictive regressions
 
 | h | β (Hodrick) | t (Hodrick 1B) | p | non-overlapping β median [min, max] | t median |
@@ -246,7 +258,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T09:58:34+00:00, mirror loaded 2026-10-01T09:58:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T10:12:35+00:00, mirror loaded 2026-10-01T10:08:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

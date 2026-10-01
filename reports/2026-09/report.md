@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.12.0 · run `20261001-154339` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.13.0 · run `20261001-160530` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -20,7 +20,7 @@ All figures are point-in-time: each value uses only data published by that month
 | BEER, total (permanent fundamentals) | Sep 2026 | +21.4% | 78.56 | fundamentals at one-sided HP trend |
 | Composite (REER+FEER) | Sep 2026 | +14.1% | 83.59 | drives the ECM |
 
-**Fair-value corridor (10th–90th percentile of FEER norm and elasticity uncertainty): 78.27 – 88.53** (central 83.59, spot 95.41).
+**Fair-value corridor (10th–90th percentile; joint bootstrap of panel parameters, FEER norm, elasticities, CA measurement and model weights): 79.93 – 86.40** (central 83.59, spot 95.41).
 
 ### FEER, latest quarter
 
@@ -146,6 +146,19 @@ Weighting schemes for the REER component and the FEER, all point in time, throug
 | Inverse variance (bands) | 0.35, 0.14 | +12.9% | 1.005 (0.58) | 1.015 (0.63) | 1.012 (0.39) | 1.037 (0.53) |
 | Performance (Bates-Granger) | 0.53, 0.50 | +14.4% | 1.000 (0.19) | 1.007 (0.32) | 1.016 (0.22) | 0.976 (0.13) |
 
+### Joint uncertainty (bootstrap corridor)
+
+2000 joint draws a month of: the panel slope and India's effect (country-block bootstrap, 300 draws per re-estimation), the IMF norm (its standard error), the trade elasticities (±50%), current-account measurement error (sd 0.2 pp of GDP) and the weighting scheme (equal, performance or inverse variance). Sep 2026: fair value 79.93–86.40 (misalignment +10.4% to +19.4%); 100% of draws say undervalued. End-to-end band: 78.27–88.53. Headline corridor: **bootstrap**.
+
+Coverage against the fair value as later re-estimated (Jan 2017–Dec 2025: final panel coefficients; the IMF's own norm for each year), nominal 80%:
+
+| Corridor | Months | Coverage | Ex-post below band | Ex-post above band | Median width |
+|---|---|---|---|---|---|
+| bootstrap | 108 | 75% | 25% | 0% | 10.7 pp |
+| end to end | 108 | 100% | 0% | 0% | 19.4 pp |
+
+Months overlap heavily (about one independent observation a year), so coverage is measured roughly. Misses below the band mean the real-time reading overstated undervaluation relative to the later estimate. The bootstrap corridor was made the headline after this test, as the one closer to nominal coverage.
+
 ### Full-sample predictive regressions
 
 | h | β (Hodrick) | t (Hodrick 1B) | p | non-overlapping β median [min, max] | t median |
@@ -258,7 +271,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T10:12:35+00:00, mirror loaded 2026-10-01T10:08:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T10:34:35+00:00, mirror loaded 2026-10-01T10:28:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

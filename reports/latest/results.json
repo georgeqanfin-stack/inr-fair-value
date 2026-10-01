@@ -1715,6 +1715,42 @@
       ]
     }
   },
+  "uncertainty": {
+    "latest": {
+      "month": "2026-09",
+      "fair_strong": 79.92535937662146,
+      "fair_mid": 83.45192723799178,
+      "fair_weak": 86.397254294523,
+      "mis_lo": 10.428174257806177,
+      "mis_hi": 19.37001130860445,
+      "p_undervalued": 1.0,
+      "old_strong": 78.26521784253283,
+      "old_weak": 88.5252905947889
+    },
+    "headline": "bootstrap",
+    "coverage": {
+      "bootstrap": {
+        "n": 108,
+        "coverage": 0.75,
+        "below": 0.25,
+        "above": 0.0,
+        "median_width_pct": 10.661803896452327
+      },
+      "end_to_end": {
+        "n": 108,
+        "coverage": 1.0,
+        "below": 0.0,
+        "above": 0.0,
+        "median_width_pct": 19.447148669250225
+      }
+    },
+    "draws": 2000,
+    "panel_boot_draws": 300,
+    "expost_window": [
+      "2017-01",
+      "2025-12"
+    ]
+  },
   "weights": {
     "schemes": {
       "equal": {
@@ -1931,11 +1967,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T10:12:35+00:00",
+      "fetched_at": "2026-10-01T10:34:35+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T10:08:30.368042982Z",
+        "registry_loaded_at": "2026-10-01T10:28:30.265735367Z",
         "status": "ok",
         "tables": 1049
       }

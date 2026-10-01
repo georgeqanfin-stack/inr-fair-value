@@ -1,10 +1,10 @@
 # INR/USD fair value note, September 2026
 
-Data to September 2026 · run `20261001-154339` · written 01 Oct 2026
+Data to September 2026 · run `20261001-160530` · written 01 Oct 2026
 
 ## The reading
 
-At 95.41 per dollar, the rupee is substantially undervalued: 14.1% weaker than its composite fair value of 83.59. Allowing for model uncertainty, fair value lies between 78.27 and 88.53, and the spot rate is above the whole range.
+At 95.41 per dollar, the rupee is substantially undervalued: 14.1% weaker than its composite fair value of 83.59. Allowing for model uncertainty, fair value lies between 79.93 and 86.40, and the spot rate is above the whole range.
 
 The two components agree: the productivity-based REER anchor puts the rupee +18.4% from fair value, and the external-balance model (FEER) +10.0%. Positive means weaker than fair.
 
@@ -31,6 +31,8 @@ Over the same months the RBI sold a net US$14.7 bn, counting forwards. Valued at
 Out of sample (Jun 2010 to Sep 2025), the misalignment signal has a slightly lower forecast error than a random walk with drift at a 12-month horizon (forecast error ratio 0.977, Clark-West p = 0.13), but the difference is not statistically significant. Read the misalignment as a valuation gauge, not a timing signal.
 
 Also: the market-based BEER (+25.1%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test.
+
+Drawing all the uncertainties together (model parameters, the IMF norm, elasticities, data errors and model weights), 100% of 2,000 draws say the rupee is undervalued. Looking back, this 80% range contained the later re-estimated fair value in 75% of months; when it missed, the real-time reading had overstated the undervaluation.
 
 The equal weighting of the two components was tested against weights learned from each one's track record and from their uncertainty bands; none did clearly better, so the weights stay equal. On their own, neither component beats a random walk at 12 months (ratios 1.23 and 1.05); combined they do (0.977). The headline ranges from +12.9% to +14.4% across weighting schemes.
 

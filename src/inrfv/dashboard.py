@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from . import __version__
 from .models.flows import LABELS as FLOW_LABELS
 
 
@@ -103,7 +104,7 @@ def collect(r: dict) -> dict:
     spot, asof = _last(comp["inr_usd"])
     v, _ = _last(comp["misalignment_pct"])
     return {
-        "run_id": r["run_id"], "generated": date.today().isoformat(), "asof": ds.asof.strftime("%Y-%m"),
+        "run_id": r["run_id"], "version": __version__, "generated": date.today().isoformat(), "asof": ds.asof.strftime("%Y-%m"),
         "spot": _num(spot), "fair": _num(_last(comp["fair_inr"])[0]), "misalignment": _num(v, 1),
         "corridor": [_num(_last(comp.get("fair_inr_strong", pd.Series(dtype=float)))[0]),
                      _num(_last(comp.get("fair_inr_weak", pd.Series(dtype=float)))[0])],
@@ -349,7 +350,7 @@ const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS,
 
 // ---------- header, verdict, facts
 const under = D.misalignment > 0;
-$("meta").textContent = `Data to ${monthName(D.asof)} · run ${D.run_id} · built ${D.generated}`;
+$("meta").textContent = `Data to ${monthName(D.asof)} · inrfv ${D.version} · run ${D.run_id} · built ${D.generated}`;
 $("bigMis").innerHTML = `${sgn(D.misalignment)}<span class="unit">%</span>`;
 $("lede").innerHTML = `At <strong>${fmt(D.spot)}</strong> per dollar, the rupee is <strong>${Math.abs(D.misalignment).toFixed(1)}% ${under ? "weaker" : "stronger"}</strong> than its composite fair value of <strong>${fmt(D.fair)}</strong>. `
   + `The fair-value range from model uncertainty is <strong>${fmt(D.corridor[0])}–${fmt(D.corridor[1])}</strong>; the spot rate is ${D.spot > D.corridor[1] ? "above the whole range" : D.spot < D.corridor[0] ? "below the whole range" : "inside it"}.`;

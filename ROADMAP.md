@@ -11,8 +11,8 @@ until the backtest looks better.
 | # | Item | Status |
 |---|---|---|
 | 1 | RBI FX intervention and forward book | **Done (v0.6)** |
-| 14 | Version number consistent everywhere | Next |
-| 3 | Market inputs: forward premium, implied rate differential | Planned |
+| 14 | Version number consistent everywhere | **Done (v0.6)** |
+| 3 | Market inputs: forward premium, implied rate differential | Next |
 | 2 | Real-time data vintages | Planned |
 | 4 | Automate manual and stale inputs | Planned |
 | 12 | External benchmark: IMF External Sector Report track record | Planned |

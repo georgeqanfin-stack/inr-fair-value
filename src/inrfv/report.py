@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from . import __version__
 from .models.flows import LABELS as FLOW_LABELS
 
 
@@ -32,7 +33,7 @@ def build_report(r: dict) -> str:
     asof = ds.asof
     spot = ds.pit.loc[asof, "inr_usd"]
     L.append("# INR/USD fair value: run report\n")
-    L.append(f"Run `{r['run_id']}` · as of **{asof:%b %Y}** (latest month with RBI INR/USD) · "
+    L.append(f"inrfv {__version__} · run `{r['run_id']}` · as of **{asof:%b %Y}** (latest month with RBI INR/USD) · "
              f"spot **{spot:.2f}**\n")
     L.append("All figures are point-in-time: each value uses only data published by that month-end. "
              "Positive misalignment = INR undervalued (weaker than fair).\n")

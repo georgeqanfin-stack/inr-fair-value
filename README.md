@@ -5,10 +5,16 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.3** replaces the exploratory notebooks with a tested, reproducible
-pipeline in which every number uses only data published at that date. Fixing
-the look-ahead reversed the headline result of v0.2; see
-[What changed in 0.3](#what-changed-in-03).
+**Version 0.6.** Version 0.3 replaced the exploratory notebooks with a tested,
+reproducible pipeline in which every number uses only data published at that date.
+Fixing the look-ahead reversed the headline result of v0.2; see
+[What changed in 0.3](#what-changed-in-03). Since then:
+
+| Version | Added |
+|---|---|
+| 0.4 | RBIH Data API, IMF-style FEER with the IMF norm path, panel REER anchor (19 EMs), official MOSPI CPI, BEER rework |
+| 0.5 | Monthly refresh with quality gates, dashboard, monthly note, NFA test, flow attribution |
+| 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 
 ## Quick start
 

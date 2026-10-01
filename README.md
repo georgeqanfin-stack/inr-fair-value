@@ -16,14 +16,46 @@ the look-ahead reversed the headline result of v0.2; see
 pip install -r requirements.txt
 pip install -e .
 python -m inrfv.run            # uses cached data in data/raw, writes outputs/runs/<run-id>/
-python -m pytest               # 29 tests, ~10 s
+python -m inrfv.refresh        # monthly: re-download everything, check, run, summarise
+python -m pytest               # 70 tests, ~90 s
 ```
 
 Optional: copy `.env.example` to `.env` and set `FRED_API_KEY`. Without a key the
-pipeline uses FRED's public CSV endpoint. `python -m inrfv.run --refresh`
-re-downloads FRED and World Bank data. RBI files must be downloaded by hand from
-DBIE (see [Data](#data)). After changing anything in `data/raw`, run
-`python -m inrfv.run --write-raw-manifest` to record the new checksums.
+pipeline uses FRED's public CSV endpoint. After editing anything in `data/raw` by
+hand, run `python -m inrfv.run --write-raw-manifest` to record the new checksums.
+
+## Monthly refresh
+
+`python -m inrfv.refresh` (add `--commit` to commit the result):
+
+1. Backs up `data/raw` and re-downloads every automatic source: FRED, World Bank,
+   RBI and MOSPI series via the RBIH Data API, and the BIS panel REERs.
+2. Runs quality gates. **Hard failures** restore the backup and exit with code 1:
+   cached history that disappeared, or an implausible monthly move in INR/USD, the
+   REER or the dollar index. **Warnings** do not stop the run: manual inputs that
+   look out of date, RBI source disagreements outside the revision window, and
+   stale series.
+3. Re-pins `data/raw/MANIFEST.sha256` and runs the pipeline.
+4. Writes `refresh_summary.md`: new observations and revisions per file, gate
+   results, and how the headline moved since the last published report, split into
+   REER and FEER contributions. Copies the report to `reports/latest/` and
+   `reports/<as-of month>/`.
+
+Any error restores `data/raw` and exits with code 2.
+
+**Scheduling.** `.github/workflows/monthly-refresh.yml` runs the refresh on the
+15th of each month, a few days after MOSPI's CPI release, and can also be started
+by hand from the Actions tab. It runs the tests first, commits and pushes only if
+every gate passes, and attaches the outputs as an artifact either way. An optional
+repository secret `FRED_API_KEY` is used if set.
+
+**Manual inputs** (the refresh warns when they look out of date):
+
+| File | When | Source |
+|---|---|---|
+| `data/raw/manual/mospi_cpi_2024base.csv` | monthly, after MOSPI's release (~12th) | MOSPI CPI press release, Annexure IV |
+| `data/raw/manual/imf_ca_norm_india.csv` | yearly, after the IMF External Sector Report (July) | IMF EBA estimates, Table 1 |
+| `data/raw/rbi_*.xlsx` | optional | RBI DBIE downloads; merged with the API data |
 
 Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
 
@@ -278,4 +310,5 @@ tests/                     unit, parser and no-look-ahead tests
 data/raw/                  inputs + MANIFEST.sha256
 data/processed/, outputs/*.png, notebooks/   legacy v0.1–0.2 artefacts (see notebooks/README.md)
 outputs/runs/              pipeline runs (git-ignored)
+reports/latest/, reports/<YYYY-MM>/   published report and refresh summary (committed)
 ```

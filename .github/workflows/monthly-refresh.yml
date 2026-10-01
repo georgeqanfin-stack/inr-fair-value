@@ -1,0 +1,51 @@
+name: monthly-refresh
+
+# Re-downloads all automatic sources, runs the quality gates and the pipeline, and
+# commits data/raw and reports/ when everything passes. Runs on the 15th, a few days
+# after MOSPI's CPI release (~12th) and RBI's monthly data. Can also be run by hand
+# from the Actions tab. If a gate fails, nothing is committed and the summary is
+# attached to the run as an artifact.
+
+on:
+  schedule:
+    - cron: "0 6 15 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monthly-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -r requirements.txt && pip install -e .
+      - name: Tests
+        run: python -m pytest -q
+      - name: Refresh, gate, run, commit
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional; public CSV endpoint is used without it
+        run: |
+          git config user.name "inrfv-refresh[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python -m inrfv.refresh --commit
+      - name: Push
+        run: git push
+      - name: Upload outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refresh-outputs
+          path: |
+            outputs/
+            reports/latest/
+          if-no-files-found: ignore

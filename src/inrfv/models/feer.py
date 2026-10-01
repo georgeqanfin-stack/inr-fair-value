@@ -80,7 +80,15 @@ def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict, norm_path: pd.
     measured = q["exports_pct_gdp"].notna()
     for c in ["exports_pct_gdp", "imports_pct_gdp"]:
         q[c] = q[c].ffill(limit=p["carry_quarters"])
-    q["semi_elasticity"] = -(p["eta_exports"] * q["exports_pct_gdp"] + p["eta_imports"] * q["imports_pct_gdp"]) / 100
+    # Net primary income, % of GDP (carried like the trade shares when the latest quarter is out).
+    if "primary_income" in q.columns:
+        q["income_pct_gdp"] = (_roll(q["primary_income"], w) / gdp4 * 100).ffill(limit=p["carry_quarters"])
+    else:
+        q["income_pct_gdp"] = np.nan
+    share = p.get("income_fc_share", 0.0) if p.get("income_term", False) else 0.0
+    q["semi_elasticity_trade"] = -(p["eta_exports"] * q["exports_pct_gdp"] + p["eta_imports"] * q["imports_pct_gdp"]) / 100
+    q["semi_elasticity"] = semi(q["exports_pct_gdp"], q["imports_pct_gdp"], q["income_pct_gdp"],
+                                p["eta_exports"], p["eta_imports"], share)
     q["semi_source"] = np.where(measured, "EBA shares",
                                 np.where(q["semi_elasticity"].notna(), "EBA shares, carried", "fallback"))
     q["semi_elasticity"] = q["semi_elasticity"].fillna(p["fallback_semi_elasticity"])
@@ -102,6 +110,19 @@ def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict, norm_path: pd.
         q["net_oil_pct_gdp"] = np.nan
         q["oil_adjustment"] = 0.0
     q["cad_underlying"] = q["ca_pct_4q"] + q["oil_adjustment"].fillna(0)
+
+    # IMF EBA cyclical adjustment: remove the CA effect of India's output gap relative to its
+    # partners' (coefficient -0.3564 in the EBA CA regression). Oil is adjusted above, so the
+    # EBA terms-of-trade term is not added again.
+    if {"output_gap_india", "output_gap_partners"} <= set(q.columns):
+        rel = (q["output_gap_india"] - q["output_gap_partners"]).ffill(limit=p["carry_quarters"])
+        q["output_gap_relative"] = rel
+        q["cyclical_contribution"] = p["cyclical_coefficient"] * rel
+    else:
+        q["output_gap_relative"] = q["cyclical_contribution"] = np.nan
+    q["cad_underlying_precyc"] = q["cad_underlying"]
+    if p.get("cyclical_adjustment", False):
+        q["cad_underlying"] = q["cad_underlying"] - q["cyclical_contribution"].fillna(0)
 
     # Norms.
     q["norm_imf"] = p["imf_norm"]
@@ -140,6 +161,19 @@ def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict, norm_path: pd.
     return q
 
 
+def semi(ex, im, inc, eta_x: float, eta_m: float, share):
+    """CA/GDP change (pp) per 1% real appreciation.
+
+    Trade: -(eta_x X/Y + eta_m M/Y)/100 (IMF EBA-Lite). Income: if a share of net primary
+    income is fixed in foreign currency, a 1% real appreciation raises dollar GDP by about
+    1% and shrinks that part of the income balance relative to GDP: -share x (income/Y)/100.
+    With a deficit (income/Y < 0) this makes the semi-elasticity smaller in absolute value.
+    """
+    trade = -(eta_x * ex + eta_m * im) / 100
+    inc = np.nan_to_num(np.asarray(inc, dtype=float), nan=0.0) if not np.isscalar(inc) else (0.0 if np.isnan(inc) else inc)
+    return trade - share * inc / 100
+
+
 def band(q: pd.DataFrame, p: dict) -> pd.DataFrame:
     """Monte Carlo percentiles of the misalignment over norm and elasticity uncertainty."""
     rng = np.random.default_rng(p["seed"])
@@ -149,10 +183,12 @@ def band(q: pd.DataFrame, p: dict) -> pd.DataFrame:
     ex, im = q["exports_pct_gdp"].to_numpy()[:, None], q["imports_pct_gdp"].to_numpy()[:, None]
     ex_d = p["eta_exports"] * rng.uniform(1 - u, 1 + u, d)[None, :]
     im_d = p["eta_imports"] * rng.uniform(1 - u, 1 + u, d)[None, :]
-    semi = -(ex_d * ex + im_d * im) / 100
+    inc = np.nan_to_num(q["income_pct_gdp"].to_numpy(dtype=float), nan=0.0)[:, None]
+    share = rng.uniform(0, 1, d)[None, :] if p.get("income_term", False) else 0.0
+    semi_ = -(ex_d * ex + im_d * im) / 100 - share * inc / 100
     fallback = q["semi_elasticity"].to_numpy()[:, None] * rng.uniform(1 - u, 1 + u, d)[None, :]
-    semi = np.where(np.isnan(semi), fallback, semi)
-    mis = -(q["cad_underlying"].to_numpy()[:, None] - norm) / semi
+    semi_ = np.where(np.isnan(semi_), fallback, semi_)
+    mis = -(q["cad_underlying"].to_numpy()[:, None] - norm) / semi_
     out = pd.DataFrame(index=q.index)
     ok = ~np.isnan(q["cad_underlying"].to_numpy())
     for pc in p["band_percentiles"]:

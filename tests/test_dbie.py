@@ -152,7 +152,7 @@ def test_parse_intervention_fails_on_layout_change():
 def _bpm6_rows():
     head = ["Item", "Jan-Mar 2026 (P)", None, None, "Oct-Dec 2025 (P)", None, None]
     sub = [None, "Credit", "Debit", "Net", "Credit", "Debit", "Net"]
-    items = {"1 Current Account": (280, 274, 6), "1.A.a Goods": (113, 197, -84), "1.A.b Services": (111, 51, 60),
+    items = {"1 Current Account": (280, 274, 6), "1.A.a Goods": (113, 197, -84), "1.A.b Services": (111, 51, 60), "1.B Primary Income": (12, 24, -12),
              "1.C.1 Financial corporations": (44, 3, 41), "2 Capital Account": (0, 0, 0.07),
              "3 Financial Account": (250, 257, -7), "3.1 Direct Investment": (23, 19, 4),
              "3.2 Portfolio Investment": (125, 138, -13), "3.5 Reserve assets": ("-", 7, -7)}
@@ -200,3 +200,16 @@ def test_monthly_from_daily_drops_the_unfinished_month():
     d = pd.Series(1.0, index=pd.date_range("2026-08-03", "2026-10-02", freq="B"))
     out = dbie.monthly_from_daily(d, today=pd.Timestamp("2026-10-02"))
     assert list(out.index.strftime("%Y-%m")) == ["2026-08", "2026-09"]
+
+
+def test_parse_gdp_new_base_fiscal_quarters():
+    rows = pd.DataFrame([
+        {"tab": "NAS : 2022-23", "row_no": "1", "c1": "Item/ Year", "c2": "Quarter", "c3": "1. PFCE", "c4": "9. Gross Domestic Product"},
+        {"tab": "NAS : 2022-23", "row_no": "2", "c1": "2025-26", "c2": "Q1", "c3": "1", "c4": "75,46,230.00"},
+        {"tab": "NAS : 2022-23", "row_no": "3", "c1": None, "c2": "Q2", "c3": "1", "c4": "75,41,258.00"},
+        {"tab": "NAS : 2022-23", "row_no": "4", "c1": None, "c2": "Q4", "c3": "1", "c4": "88,80,334.00"},
+        {"tab": "NAS : 2011-12", "row_no": "5", "c1": "2025-26", "c2": "Q1", "c3": "1", "c4": "1"},
+    ])
+    s = dbie.parse_gdp_new_base(rows)
+    assert list(s.index.strftime("%Y-%m")) == ["2025-04", "2025-07", "2026-01"]
+    assert s.iloc[0] == 7546230.0

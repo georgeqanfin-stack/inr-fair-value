@@ -111,8 +111,8 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     merge = MERGERS.get(mode, dbie.merge)
     for name in bpm6.columns:
         key = name if name in bop_cols else f"bopx.{name}"
-        cur = bop_cols[name] if name in bop_cols else extra[key]
-        start = cur.last_valid_index() - pd.DateOffset(months=window) if cur.notna().any() else None
+        cur = bop_cols[name] if name in bop_cols else extra.get(key, pd.Series(dtype=float))
+        start = cur.last_valid_index() - pd.DateOffset(months=window) if len(cur) and cur.notna().any() else None
         recent = bpm6[name] if start is None else bpm6[name][bpm6.index > start]
         meta.setdefault("bpm6_vs_overall_bop", {})[name] = dbie.reconcile(bpm6[name], cur, tol, window)
         merged = merge(recent, cur)
@@ -149,7 +149,8 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     wk = dbie.fetch_reserves_weekly(path(cfg, "dbie_cache"), refresh=refresh, base=base).resample("MS").last()
     monthly["fx_reserves_usd_mn"], filled = fill_inside(monthly["fx_reserves_usd_mn"], wk)
     meta["fx_reserves_from_weekly"] = filled
-    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr"), "extra": extra,
+    gdp_real = dbie.fetch_real_gdp(path(cfg, "dbie_cache"), refresh=refresh, base=base)
+    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr"), "extra": extra, "gdp_real": gdp_real,
             "intervention": intervention, "cpi_2024": cpi_2024}
 
 
@@ -510,6 +511,13 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     us_yoy = us_cpi_vintages(cfg, panel, refresh, meta)
     pit = build_pit(panel, lag, nowcast, cfg.get("pit", {}).get("carry_forward_months", 0), us_yoy)
     bop = build_bop(src["bop"], panel, lag["bop_quarterly"], nowcast, src.get("extra", {}))
+    if src.get("gdp_real") is not None:
+        gaps = output_gaps(src["gdp_real"], cfg, refresh, bop.index)
+        bop = bop.join(gaps)
+        meta["output_gaps"] = {"india_gdp_range": [src["gdp_real"].index.min().strftime("%Y-%m"),
+                                                   src["gdp_real"].index.max().strftime("%Y-%m")],
+                               "method": "one-sided HP (lambda 1600) on log 4-quarter real GDP (India), "
+                                         "CBO potential (US) and one-sided HP (euro area); partners = US/EA average"}
     last_q = src["bop"]["current_account"].last_valid_index()
     due = last_q + MS(3 + lag["bop_quarterly"])
     if due <= pit.index[-1]:
@@ -615,6 +623,35 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int 
     pit["gdp_usd_mn_for_fpi"] = gdp
     pit["fpi_pct_gdp"] = pit["fpi_usd_mn"] * 12 / pit["gdp_usd_mn_for_fpi"] * 100
     return pit
+
+
+def _one_sided_hp_gap(log_level: pd.Series, lamb: float = 1600, min_obs: int = 20) -> pd.Series:
+    from statsmodels.tsa.filters.hp_filter import hpfilter
+    s = log_level.dropna()
+    out = {}
+    for i in range(min_obs - 1, len(s)):
+        cyc, _ = hpfilter(s.iloc[: i + 1], lamb=lamb)
+        out[s.index[i]] = float(cyc.iloc[-1]) * 100
+    return pd.Series(out, dtype=float)
+
+
+def output_gaps(gdp_real: pd.Series, cfg: dict, refresh: bool, quarters: pd.Index) -> pd.DataFrame:
+    """Quarterly output gaps (%), each using only data up to that quarter (one-sided).
+
+    India: log of the 4-quarter sum of real GDP (not seasonally adjusted, so the rolling sum
+    removes seasonality and matches the FEER's 4-quarter current account). Partners: the US
+    gap against CBO potential and the euro-area one-sided HP gap, averaged, then averaged over
+    4 quarters to match the window. GDP for a quarter is published before its BoP quarter,
+    so both are public when the FEER uses them.
+    """
+    ind = _one_sided_hp_gap(np.log(gdp_real.rolling(4).sum()))
+    fc = path(cfg, "fred_cache")
+    q = lambda s: s.resample("QS").mean()
+    us = (np.log(q(fred.fetch_series("GDPC1", fc, refresh=refresh)))
+          - np.log(q(fred.fetch_series("GDPPOT", fc, refresh=refresh)))) * 100
+    ea = _one_sided_hp_gap(np.log(q(fred.fetch_series("CLVMNACSCAB1GQEA19", fc, refresh=refresh))))
+    partners = pd.concat([us, ea], axis=1).mean(axis=1).rolling(4).mean()
+    return pd.DataFrame({"output_gap_india": ind, "output_gap_partners": partners}).reindex(quarters)
 
 
 def build_bop(bop: pd.DataFrame, panel: pd.DataFrame, lag: int, nowcast: GdpNowcaster,

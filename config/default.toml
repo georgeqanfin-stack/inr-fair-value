@@ -153,6 +153,13 @@ eta_exports              = 0.46
 eta_imports              = 0.25
 eta_uncertainty          = 0.5     # +/-50% uniform in the Monte Carlo band
 fallback_semi_elasticity = -0.16   # only if gross trade flows are unavailable ([dbie] mode "xlsx")
+# Income-balance term in the semi-elasticity (feer.semi): the share of net primary income
+# fixed in foreign currency is unknown; central 0.5, drawn uniformly on [0, 1] in the bands.
+income_term      = true
+income_fc_share  = 0.5
+# IMF EBA cyclical adjustment: CA effect of India's output gap relative to partners'.
+cyclical_adjustment  = true
+cyclical_coefficient = -0.3564      # EBA CA regression, relative output gap (EBA estimates tables)
 oil_norm_months  = 60              # Brent norm = trailing mean over this many months
 window_quarters  = 4
 carry_quarters   = 2               # carry trade shares and NIIP/GDP forward when the latest quarter is not out

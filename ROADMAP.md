@@ -22,8 +22,8 @@ until the backtest looks better.
 | 7 | Nonlinear and time-varying adjustment, structural breaks | **Done (v0.14)** |
 | 9 | Formal panel cointegration tests, multiple-testing adjustment | **Done (v0.15)** |
 | 8 | Regime model with time-varying transition probabilities | **Done (v0.16)** |
-| 10 | FEER: cyclical adjustment and income balance | Next |
-| 11 | Flow identification beyond contemporaneous OLS | Planned |
+| 10 | FEER: cyclical adjustment and income balance | **Done (v0.17)** |
+| 11 | Flow identification beyond contemporaneous OLS | Next |
 | 15 | Engineering: lint, types, coverage, data schemas, Docker | Planned |
 
 ## Data
@@ -131,7 +131,10 @@ constant kept. Original plan: Markov switching with transition probabilities dri
 FPI and RBI intervention (TVTP). Compare with the constant model by likelihood and
 out-of-sample regime classification.
 
-**10. FEER.** Cyclical adjustment of the current account for India's and partners'
+**10. FEER (done).** EBA-coefficient cyclical adjustment with point-in-time output gaps
+(India gap corr 0.96 with the IMF's; contribution 0.84) and an income-balance term with
+an uncertain foreign-currency share. FEER +10.0% -> +13.0%; composite +15.7%; backtest
+0.977 -> 0.964. Original plan: cyclical adjustment of the current account for India's and partners'
 output gaps (IMF style), and an income-balance term in the semi-elasticity.
 
 **11. Flow identification.** Local projections of the rupee on FPI shocks, with

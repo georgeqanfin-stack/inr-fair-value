@@ -96,6 +96,8 @@ EXTRA: dict[str, Spec] = {
     # Older BPM5-basis IIP (2006-2021), spliced onto the BPM6 series by the REER anchor.
     "bopx.niip_bpm5": Spec("external_sector/intr_inv_pos_ind_rn",
                            {"intl_inv_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),
+    # Net primary (investment and employee) income, overall-BoP presentation (to 2014; BPM6 table after).
+    "bopx.primary_income": Spec("external_sector/ind_ovr_bop_rn", {"io_bop_rn": "CURR_INVIS_TRA_INC", **_BOP}, _MN, True),
     # Inter-bank forward premia, monthly average, % a year (the market's INR-USD rate differential).
     "fwd_premium_1m": Spec("financial_markets/fw_pre_rn", {"avg_month_rn": "1_MON"}),
     "fwd_premium_3m": Spec("financial_markets/fw_pre_rn", {"avg_month_rn": "3_MON"}),
@@ -303,6 +305,7 @@ BPM6_MAP = {
     "fdi_bop": (["3.1"], "net"),
     "portfolio_bop": (["3.2"], "net"),
     "reserve_change": (["3.5"], "net"),
+    "primary_income": (["1.B"], "net"),
     "goods_credit": (["1.A.a"], "credit"),
     "goods_debit": (["1.A.a"], "debit"),
     "services_credit": (["1.A.b"], "credit"),
@@ -445,3 +448,60 @@ def fetch_reserves_weekly(cache_dir: Path, refresh: bool = False, base: str = DE
     cache_dir.mkdir(parents=True, exist_ok=True)
     s.to_frame().to_csv(cache, date_format="%Y-%m-%d")
     return s
+
+
+# --------------------------------------------------------------------------- real GDP, quarterly
+
+GDP_TYPED = "real_sector/qtr_gdp_mrkt_prc_rn"
+GDP_NEW_TABLE = "real_sector/r161_quarterly_estimates_of_gross_domestic_product_at_constant"
+GDP_NEW_TAB = "NAS : 2022-23"
+
+
+def parse_gdp_new_base(rows: pd.DataFrame) -> pd.Series:
+    """Handbook sheet, GDP at constant prices, base 2022-23 -> quarterly series (quarter start).
+
+    Rows are fiscal years (label in c1 on the Q1 row only) and quarters Q1-Q4 (Apr-Jun = Q1);
+    GDP is the last column, headed "Gross Domestic Product"."""
+    t = rows[rows["tab"].astype("string").str.strip() == GDP_NEW_TAB].copy()
+    t["row_no"] = t["row_no"].astype(int)
+    t = t.sort_values("row_no")
+    head = t[t["c1"].astype("string").str.contains("Item", na=False)]
+    if head.empty:
+        raise DbieError("GDP 2022-23 sheet: header not found")
+    gcol = next((c for c in head.columns if c[:1] == "c" and "Gross Domestic Product" in str(head.iloc[0][c])), None)
+    if gcol is None:
+        raise DbieError("GDP 2022-23 sheet: GDP column not found")
+    fy = t["c1"].astype("string").str.extract(r"^(\d{4})-\d{2}")[0].ffill()
+    q = t["c2"].astype("string").str.strip().str.extract(r"^Q([1-4])$")[0]
+    ok = fy.notna() & q.notna()
+    start_month = {"1": 4, "2": 7, "3": 10, "4": 1}
+    dates = [pd.Timestamp(int(y) + (1 if qq == "4" else 0), start_month[qq], 1) for y, qq in zip(fy[ok], q[ok])]
+    return pd.Series(_num(t.loc[ok, gcol]).to_numpy(), index=pd.DatetimeIndex(dates, name="date"),
+                     name="gdp_real").sort_index()
+
+
+def fetch_real_gdp(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE,
+                   session: requests.Session | None = None) -> pd.Series:
+    """Quarterly real GDP (not seasonally adjusted), all bases linked by growth rates onto the
+    newest base; cached as data/raw/dbie/gdp_real_quarterly.csv."""
+    cache = cache_dir / "gdp_real_quarterly.csv"
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, parse_dates=["date"]).set_index("date")["gdp_real"]
+    s = session or requests.Session()
+    typed = _get_rows(base, Spec(GDP_TYPED, {"class_exp_rn": "CEXP_GDP_MARK_CST", "prc_typ_rn": "CNST_PRC"}), s)
+    typed["date"] = pd.to_datetime(typed["time_period"]).dt.to_period("Q").dt.start_time
+    wide = typed.assign(v=pd.to_numeric(typed["obs_value"], errors="coerce")).pivot_table(
+        index="date", columns="base_per", values="v")
+    series = [parse_gdp_new_base(_get_rows(base, Spec(GDP_NEW_TABLE, order="row_no"), s))]
+    series += [wide[b].dropna() for b in ("BY_2011_12", "BY_2004_05", "BY_1999_2000") if b in wide]
+    out = series[0]
+    for older in series[1:]:
+        first = out.index.min()
+        overlap = older.index.intersection(out.index)
+        if len(overlap):
+            scale = float(out.loc[overlap[0]] / older.loc[overlap[0]])
+            out = pd.concat([older[older.index < first] * scale, out]).sort_index()
+    out.name = "gdp_real"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out.to_frame().to_csv(cache, date_format="%Y-%m-%d")
+    return out

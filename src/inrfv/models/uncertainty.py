@@ -37,8 +37,10 @@ def feer_draws(q: pd.DataFrame, p: dict, u: dict, n: int, rng) -> np.ndarray:
     norm = q["norm_central"].to_numpy()[:, None] + q["norm_central_se"].to_numpy(dtype=float)[:, None] * rng.normal(0, 1, n)
     unc = p["eta_uncertainty"]
     ex, im = q["exports_pct_gdp"].to_numpy()[:, None], q["imports_pct_gdp"].to_numpy()[:, None]
+    inc = np.nan_to_num(q["income_pct_gdp"].to_numpy(dtype=float), nan=0.0)[:, None] if "income_pct_gdp" in q else 0.0
+    share = rng.uniform(0, 1, n) if p.get("income_term", False) else 0.0
     semi = -(p["eta_exports"] * rng.uniform(1 - unc, 1 + unc, n) * ex
-             + p["eta_imports"] * rng.uniform(1 - unc, 1 + unc, n) * im) / 100
+             + p["eta_imports"] * rng.uniform(1 - unc, 1 + unc, n) * im) / 100 - share * inc / 100
     fallback = q["semi_elasticity"].to_numpy()[:, None] * rng.uniform(1 - unc, 1 + unc, n)
     semi = np.where(np.isnan(semi), fallback, semi)
     cad = q["cad_underlying"].to_numpy()[:, None] + u["ca_measurement_sd"] * rng.normal(0, 1, n)

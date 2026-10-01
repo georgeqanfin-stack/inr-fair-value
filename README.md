@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.16.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.17.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.17 | FEER: IMF-style cyclical adjustment (output gaps) and income term; quarterly real GDP to Apr–Jun 2026 |
 | 0.16 | Regime model with time-varying transition probabilities tested; constant kept |
 | 0.15 | Formal panel cointegration (Pedroni-type, Westerlund) with bootstrap p; 16-spec family, Holm/BH |
 | 0.14 | Nonlinear/time-varying ECM variants and break tests; linear ECM kept (rolling not robust) |
@@ -139,29 +140,32 @@ Spot INR/USD 95.41 (Sep 2026 average of RBI's daily reference rates).
 
 | Model | Misalignment | Fair INR/USD | Status |
 |---|---|---|---|
-| REER panel anchor (19 EMs) | +18.4% | 80.57 | **REER component of the composite**; productivity-based, panel-cointegrated (p = 0.025) |
+| REER panel anchor (19 EMs) | +18.4% | 80.57 | **REER component of the composite**; productivity-based; formal panel test p = 0.023 (Holm 0.25 after the search) |
 | REER gap (one-sided HP) | +4.8% | 91.06 | Cyclical gauge |
 | REER fundamentals anchor (India only) | +10.1% | 86.62 | Not cointegrated (p = 0.85): reported only |
-| FEER, IMF norm path (central; latest −2.3%) | +10.0% | 86.71 | Latest BoP quarter Jan–Mar 2026; 10th–90th percentile +5.2% to +16.8% |
-| FEER, NIIP-stabilising norm | −1.6% | | Alternative norm |
-| BEER, current (real INR/USD, DOLS) | +25.2% | 76.23 | Not cointegrated (p = 0.98): descriptive only |
-| BEER, total (permanent fundamentals) | +21.5% | 78.54 | Fundamentals at their one-sided HP trends |
-| **Composite (panel anchor + FEER)** | **+14.1%** | **83.59** | Positive = INR weaker than fair |
+| FEER, IMF norm path (central; latest −2.3%) | +13.0% | 84.46 | Latest BoP quarter Jan–Mar 2026, cyclically adjusted, income term; 10th–90th percentile +7.7% to +20.8% |
+| FEER, NIIP-stabilising norm | +0.9% | | Alternative norm |
+| BEER, current (real INR/USD, DOLS) | +25.1% | 76.27 | Not cointegrated (p = 0.98): descriptive only |
+| BEER, total (permanent fundamentals) | +21.4% | 78.56 | Fundamentals at their one-sided HP trends |
+| **Composite (panel anchor + FEER)** | **+15.7%** | **82.50** | Positive = INR weaker than fair |
 
-**Fair-value corridor: 79.9 – 86.4** (10th–90th percentile of a joint bootstrap
+**Fair-value corridor: 78.7 – 85.1** (10th–90th percentile of a joint bootstrap
 of the panel parameters, the FEER norm and elasticities, current-account
 measurement error and the model weights), against a spot rate of 95.41. All 2,000
-draws say the rupee is undervalued. The reading rose from +12.4% (August, previous data) mainly through
-the FEER: the Jan–Mar 2026 quarter (a US$6.5 bn current-account surplus) and the
-IMF's 2026 norm (−2.3% of GDP, from −2.0%) both enter from July 2026.
+draws say the rupee is undervalued. Since the August reading (+12.4%), the FEER has
+risen for three reasons:
+- the Jan–Mar 2026 quarter, a US$6.5 bn current-account surplus;
+- the IMF's 2026 norm (−2.3% of GDP, from −2.0%), from July 2026;
+- the cyclical adjustment (v0.17): India's economy runs about 1.1 points hotter than
+  its partners', which has cut about 0.4 pp off the current account.
 
 **The ECM is close to the benchmark but not significantly better.** Out of sample
-(2010–2025), at 12 months the composite's RMSE is 2.3% below a random walk with
-drift (ratio 0.977). That is the first configuration to beat drift on RMSE, but
-the Clark-West p-value is 0.13, so the improvement is not statistically significant. With the
-panel anchor, the error-correction coefficient has the right sign in every
-out-of-sample window (−0.82 to −0.26 at 12 months), which the HP-based composite did
-not (−0.22 to +0.15, Clark-West p = 1.00). Treat the misalignment figures as
+(Jun 2010 – Sep 2025), at 12 months the composite's RMSE is 3.6% below a random walk
+with drift (ratio 0.964; 0.977 before the v0.17 FEER refinements). The Clark-West
+p-value is 0.12, so the improvement is not statistically significant. With the panel
+anchor, the error-correction coefficient has the right sign in every out-of-sample
+window (−0.70 to −0.25 at 12 months). The HP-based composite did not (−0.22 to +0.15,
+Clark-West p = 1.00). Treat the misalignment figures as
 valuation gauges, not as a timing signal.
 
 ## What changed in 0.3
@@ -533,6 +537,34 @@ predictive log score of each month's return, with parameters re-estimated yearly
 No driver improves the next month's forecast over the regimes' own persistence, and
 all four together overfit. The constant model stays. A simulation in the tests checks
 that the same machinery does detect a driver that really moves the odds.
+
+**FEER: cyclical adjustment and income term (v0.17).**
+
+- *Cyclical adjustment.* As in the IMF's EBA, the current account is adjusted for
+  India's output gap relative to its partners'. The EBA coefficient is −0.3564; the
+  EBA terms-of-trade term is not added because the oil adjustment already covers it.
+  India's gap uses a one-sided HP filter on log 4-quarter real GDP. All quarterly
+  bases are linked onto the 2022-23 series, which runs to Apr–Jun 2026; the data are
+  not seasonally adjusted, so the 4-quarter sum also matches the CA window. The
+  partners' gap averages the US (against CBO potential) and the euro area (one-sided
+  HP). Checked against the IMF: India's gap correlates 0.96 with the EBA's
+  (2017–2023), and the cyclical contribution 0.84 (2017–2025).
+- *Income term.* A real appreciation raises dollar GDP and shrinks the
+  foreign-currency part of the net primary income deficit (−1.3% of GDP) relative to
+  GDP. The term is −share × income/GDP / 100. The foreign-currency share is unknown:
+  0.5 centrally, drawn uniformly on [0, 1] in the bands.
+
+| Jan–Mar 2026 quarter | FEER misalignment |
+|---|---|
+| Before | +10.0% |
+| + cyclical adjustment | +12.5% |
+| + income term | +10.4% |
+| Both (now) | +13.0% |
+
+The composite backtest improves slightly (12-month ratio 0.977 to 0.964), and the
+headline moves from +14.1% to +15.7%. The bootstrap corridor's ex-post coverage falls
+from 75% to 66%. It is still closer to nominal than the end-to-end band (100%), and
+its misses are still on the side of overstated undervaluation.
 
 **India CPI (v0.4).** The official MOSPI CPI-Combined, replacing the OECD series:
 

@@ -171,3 +171,11 @@ def test_tvtp_regimes_compared(run):
     assert set(tv["oos"]) >= {"constant", "vix", "brent", "fpi", "all"}
     assert tv["choice"] in tv["oos"]
     assert "### Time-varying transition probabilities" in (out / "report.md").read_text(encoding="utf-8")
+
+
+def test_feer_cyclical_and_income_adjustments(run):
+    r, out = run
+    x = r["feer_q"].dropna(subset=["misalignment_pct"]).iloc[-1]
+    assert pd.notna(x["cyclical_contribution"]) and pd.notna(x["income_pct_gdp"])
+    assert x["cad_underlying"] == pytest.approx(x["cad_underlying_precyc"] - x["cyclical_contribution"])
+    assert "Cyclical adjustment (applied)" in (out / "report.md").read_text(encoding="utf-8")

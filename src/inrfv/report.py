@@ -89,6 +89,16 @@ def build_report(r: dict) -> str:
              f"{_f(x['norm_niip'], '{:+.2f}')}%, legacy {x['norm_static']:+.1f}%. Semi-elasticity "
              f"{x['semi_elasticity']:.3f} pp/1% ({x['semi_source']}; X {_f(x['exports_pct_gdp'], '{:.1f}')}%, "
              f"M {_f(x['imports_pct_gdp'], '{:.1f}')}% of GDP).\n")
+    fpar = r["config"]["models"]["feer"]
+    if "cyclical_contribution" in x and pd.notna(x.get("cyclical_contribution")):
+        L.append(f"Cyclical adjustment ({'applied' if fpar.get('cyclical_adjustment') else 'reported only'}): India's "
+                 f"output gap {_f(x.get('output_gap_india'), '{:+.2f}')}% vs partners' {_f(x.get('output_gap_partners'), '{:+.2f}')}% "
+                 f"(relative {x['output_gap_relative']:+.2f}pp) x EBA coefficient {fpar['cyclical_coefficient']} = "
+                 f"{x['cyclical_contribution']:+.2f}pp of GDP from the cycle; underlying CA before it "
+                 f"{x['cad_underlying_precyc']:+.2f}%. Income term ({'applied' if fpar.get('income_term') else 'off'}): net "
+                 f"primary income {_f(x.get('income_pct_gdp'), '{:+.2f}')}% of GDP, foreign-currency share "
+                 f"{fpar.get('income_fc_share')} (uniform 0-1 in the bands); trade-only semi-elasticity "
+                 f"{x['semi_elasticity_trade']:.3f}.\n")
     pdg = r["panel_diag"]
     L.append("### REER panel anchor\n")
     L.append(f"REER component used in the composite: **{r['config']['composite'].get('reer_component', 'hp')}**. "

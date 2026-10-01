@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-Run `20261001-103739` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
+Run `20261001-113018` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -77,6 +77,25 @@ Calm: mean +0.10%/mo, sd 0.76%, duration 7.8m. Stress: mean +0.49%/mo, sd 2.40%,
 
 Oil × DXY quadrant (expanding medians): OilHi_DXYHi (Aug 2026).
 
+## Flow attribution (what moved the spot rate)
+
+Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent % changes, 2011-03 to 2026-06 (n = 184, R² 0.34, Newey-West t). Ex post, by reference month; it explains spot moves and does not enter the fair value. Positive = rupee weaker.
+
+| Term | Coefficient | t | Meaning |
+|---|---|---|---|
+| const | +0.529 | +3.7 | average monthly depreciation (drift) |
+| fpi | -0.130 | -4.3 | % per US$1bn of net FPI inflow |
+| fdi | -0.043 | -1.1 | % per US$1bn of net FDI inflow |
+| dxy | +0.457 | +4.5 | % per 1% dollar-index rise |
+| brent | -0.003 | -0.4 | % per 1% Brent rise |
+
+| Window | Actual | Portfolio flows (FPI) | Direct investment (FDI) | Dollar index | Oil (Brent) | Drift | Residual | FPI, fitted without the window |
+|---|---|---|---|---|---|---|---|---|
+| Apr 2026–Jun 2026 | +2.4% | +1.2 | -0.3 | +0.1 | +0.1 | +1.6 | -0.3 | +1.2 |
+| Jul 2025–Jun 2026 | +10.0% | +3.8 | -0.3 | -0.2 | -0.1 | +6.3 | +0.5 | +3.7 |
+
+Direction: FPI this month → INR next month t -2.6 (p 0.009); INR last month → FPI this month t -2.0 (p 0.050). Reading: two-way: flows and the rupee feed each other, so contributions are associations. Flow data end Jun 2026.
+
 ## Out-of-sample backtest (ECM vs random walk with drift)
 
 | h | OOS window | n | RMSE ratio | OOS R² | Clark-West p | DM p | hit ECM | hit naive 'depreciate' | hit vs drift | α range |
@@ -115,7 +134,7 @@ h=12m from 2026-08: ECT +0.117, α -0.435, const +0.071 → predicted Δlog INR 
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T05:06:47+00:00, mirror loaded 2026-10-01T04:58:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T05:59:23+00:00, mirror loaded 2026-10-01T05:58:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

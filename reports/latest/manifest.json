@@ -1,10 +1,10 @@
 {
-  "run_id": "20261001-103739",
-  "created": "2026-10-01T10:38:32",
+  "run_id": "20261001-113018",
+  "created": "2026-10-01T11:31:09",
   "inrfv_version": "0.3.0",
-  "git_revision": "f8817ab-dirty",
+  "git_revision": "24acad4-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
-  "config_hash": "0bea9ede473e",
+  "config_hash": "9342b12df6b7",
   "config": {
     "paths": {
       "raw": "data/raw",
@@ -227,6 +227,20 @@
           ]
         }
       },
+      "flows": {
+        "regressors": [
+          "fpi",
+          "fdi",
+          "dxy",
+          "brent"
+        ],
+        "start": "2011-01",
+        "hac_lags": 3,
+        "windows": [
+          3,
+          12
+        ]
+      },
       "regimes": {
         "min_obs": 96,
         "refit_every": 12,
@@ -305,7 +319,7 @@
   "python": "3.12.4",
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
-    "dbie/_fetch.json": "440b9b5f594713d524bbe962e68e732fa6da1956d44816597a73c38c44c19b9b",
+    "dbie/_fetch.json": "c5962bc2479508573d77b68c9522c0f1210fe19d933e0a2a523ffccb2546a39a",
     "dbie/bop.banking_capital.csv": "a1931a588f9a6765c2bceeceb75479ec1dc98cad57313f65b8920c5eafa4c0ca",
     "dbie/bop.capital_account.csv": "52d9518620aaaef9182600ede61437dee674db4968089c668d39cc10c04a82c2",
     "dbie/bop.current_account.csv": "5333f7fac1a64a5e447f33d34c90572346e4e23bd301194aa9f516e8bda6d74b",

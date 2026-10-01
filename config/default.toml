@@ -297,6 +297,10 @@ seed        = 42
 reer_component = "panel"
 weight_reer = 0.5
 weight_feer = 0.5
+# Decision rule for the weights (models/weights.py), set before testing alternatives: keep
+# equal weights unless a scheme lowers the headline-horizon RMSE ratio vs drift by at
+# least min_rmse_gain AND has a lower Clark-West p-value.
+weight_rule = {min_rmse_gain = 0.01}
 
 [backtest]
 horizons         = [1, 3, 6, 12]

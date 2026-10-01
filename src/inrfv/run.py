@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, peers, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, peers, weights, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -84,6 +84,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     r["benchmark"] = benchmark.run(r, cfg)
     r["peer_gaps"] = peer_gaps
     r["peers"] = peers.run(peer_gaps, cfg)
+    r["weights"] = weights.run(comp, reer_component, feer_m, cfg)
     return r
 
 
@@ -103,6 +104,8 @@ def save(r: dict, run_dir) -> None:
     r["beer"].to_csv(run_dir / "model_beer.csv")
     r["regimes"].to_csv(run_dir / "model_regimes.csv")
     r["flows"].to_csv(run_dir / "model_flows.csv")
+    if r.get("weights"):
+        r["weights"]["weights"].to_csv(run_dir / "composite_weight_schemes.csv")
     if r.get("peer_gaps") is not None:
         r["peer_gaps"].to_csv(run_dir / "model_peers.csv")
     rev = r.get("revisions")
@@ -114,6 +117,7 @@ def save(r: dict, run_dir) -> None:
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
                "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"],
                "benchmark": r.get("benchmark"), "peers": r.get("peers"),
+               "weights": {k: v for k, v in (r.get("weights") or {}).items() if k != "weights"} or None,
                "revisions": {k: v for k, v in (r.get("revisions") or {}).items() if k != "series"} or None,
                "johansen": r["johansen"],
                "data_meta": ds.meta, "warnings": r["warnings"]}

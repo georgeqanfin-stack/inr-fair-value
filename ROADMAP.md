@@ -17,8 +17,8 @@ until the backtest looks better.
 | 4 | Automate manual and stale inputs | **Done (v0.9)** |
 | 12 | External benchmark: IMF External Sector Report track record | **Done (v0.10)** |
 | 13 | Peer currencies: panel anchor for all 19 | **Done (v0.11)** |
-| 5 | Composite weights tested, not assumed | Next |
-| 6 | Joint uncertainty: whole-pipeline bootstrap | Planned |
+| 5 | Composite weights tested, not assumed | **Done (v0.12)** |
+| 6 | Joint uncertainty: whole-pipeline bootstrap | Next |
 | 7 | Nonlinear and time-varying adjustment, structural breaks | Planned |
 | 9 | Formal panel cointegration tests, multiple-testing adjustment | Planned |
 | 8 | Regime model with time-varying transition probabilities | Planned |
@@ -95,7 +95,10 @@ cross-section of gaps and check India's rank, as well as whether known episodes
 
 ## Method
 
-**5. Composite weights.** Compare equal weights with inverse-variance (from each
+**5. Composite weights (done).** Performance weights settle at 0.50 and match equal
+weights (12-month RMSE ratio 0.976 vs 0.977); inverse-variance weights do worse
+(1.037); each component alone does worse than the blend. The pre-set rule keeps equal
+weights; headline range +12.9% to +14.4%. Original plan: compare equal weights with inverse-variance (from each
 component's band) and out-of-sample-performance weights, using the same backtest.
 Keep equal weights unless another scheme is better out of sample; report the
 headline's sensitivity either way.

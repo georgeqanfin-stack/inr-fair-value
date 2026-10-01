@@ -260,6 +260,26 @@ def build_report(r: dict) -> str:
     L.append("\nRMSE ratio < 1 and Clark-West p < 0.05 would mean the ECT beats the drift benchmark. "
              "'hit vs drift' asks whether the model gets the direction of the surprise relative to drift right.\n")
 
+    wt = r.get("weights")
+    if wt:
+        hh = wt["horizon"]
+        L.append("### Composite weights\n")
+        L.append(f"Weighting schemes for the REER component and the FEER, all point in time, through the same backtest. "
+                 f"Rule set beforehand: keep equal weights unless a scheme lowers the {hh}-month RMSE ratio by at least "
+                 f"{wt['rule']['min_rmse_gain']} and has a lower Clark-West p. The rule chooses: **{wt['rule_choice']}** "
+                 f"(configured: {wt['configured']}). Headline misalignment across the combination schemes: "
+                 f"{wt['headline_range'][0]:+.1f}% to {wt['headline_range'][1]:+.1f}%.\n")
+        hs = list(next(iter(wt["schemes"].values()))["by_horizon"])
+        L.append("| Scheme | REER weight (latest, mean) | Misalignment now | "
+                 + " | ".join(f"{k}m RMSE ratio (CW p)" for k in hs) + " |")
+        L.append("|---|---|---|" + "---|" * len(hs))
+        for v in wt["schemes"].values():
+            cells = " | ".join(f"{x['rmse_ratio']:.3f} ({x['cw_p']:.2f})" if x["rmse_ratio"] is not None else "n/a"
+                               for x in v["by_horizon"].values())
+            L.append(f"| {v['label']} | {v['weight_reer_last']:.2f}, {v['weight_reer_mean']:.2f} | "
+                     f"{v['misalignment_last']:+.1f}% | {cells} |")
+        L.append("")
+
     L.append("### Full-sample predictive regressions\n")
     L.append("| h | β (Hodrick) | t (Hodrick 1B) | p | non-overlapping β median [min, max] | t median |")
     L.append("|---|---|---|---|---|---|")

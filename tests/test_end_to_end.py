@@ -123,3 +123,11 @@ def test_peers_are_reported(run):
     assert "## Peer currencies" in (out / "report.md").read_text(encoding="utf-8")
     assert 'id="peerBars"' in (out / "dashboard.html").read_text(encoding="utf-8")
     assert (out / "model_peers.csv").exists()
+
+
+def test_composite_weights_are_tested_and_reported(run):
+    r, out = run
+    wt = r["weights"]
+    assert wt["rule_choice"] == "equal" and wt["configured"] == "equal"     # data support the configured weights
+    assert "### Composite weights" in (out / "report.md").read_text(encoding="utf-8")
+    assert (out / "composite_weight_schemes.csv").exists()

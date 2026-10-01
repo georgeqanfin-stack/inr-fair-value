@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.11.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.12.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.12 | Composite weights tested: equal vs performance vs inverse-variance; equal kept by a pre-set rule |
 | 0.11 | Peer currencies: gaps for all 19, India's rank, crisis episodes, cross-section vs the IMF |
 | 0.10 | IMF track record: EBA assessments 2017–2025 vs this model; ALFRED US CPI live |
 | 0.9 | Automatic inputs: CPI 2024=100 and BPM6 BoP from RBI Bulletin tables, INR/USD from RBI daily rates, reserves gaps from weekly data; 2026 IMF norm; smarter gates |
@@ -414,6 +415,23 @@ from the config drops NFA entirely.
 `[composite] reer_component` picks one (`panel`, `hp` or `anchor`). Composite
 backtests: panel anchor 12-month RMSE ratio 1.02, Clark-West p 0.22, α always
 negative; HP gap 1.05, p 1.00, α changes sign; India-only anchor 1.37.
+
+**Composite weights (v0.12).** The 50/50 weighting of the REER component and the FEER
+is tested every run against point-in-time alternatives, through the same backtest. The
+rule, set before testing: keep equal weights unless a scheme lowers the 12-month RMSE
+ratio by at least 0.01 and has a lower Clark-West p.
+
+| Scheme | REER weight (mean) | 12-month RMSE ratio | Clark-West p | Headline (Sep 2026) |
+|---|---|---|---|---|
+| Equal (configured) | 0.50 | 0.977 | 0.13 | +14.1% |
+| Performance (Bates-Granger, past forecast errors) | 0.50 | 0.976 | 0.13 | +14.4% |
+| Inverse variance (uncertainty bands) | 0.14 | 1.037 | 0.53 | +12.9% |
+| REER component only | 1 | 1.231 | 0.50 | +18.4% |
+| FEER only | 0 | 1.046 | 0.59 | +10.0% |
+
+Weights learned from each component's track record settle at 50/50, so equal weights
+stay. Neither component beats the random walk alone, but the combination does. The
+headline ranges from +12.9% to +14.4% across the combination schemes.
 
 **India CPI (v0.4).** The official MOSPI CPI-Combined, replacing the OECD series:
 

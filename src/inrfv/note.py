@@ -230,6 +230,22 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append("the India-only REER model fails its long-run test")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
+    wt = r.get("weights")
+    if wt:
+        sc = wt["schemes"]
+        h = wt["horizon"]
+        L.append(f"The equal weighting of the two components was tested against weights learned from each one's track "
+                 f"record and from their uncertainty bands; "
+                 + ("none did clearly better, so the weights stay equal" if wt["rule_choice"] == "equal"
+                    else f"the rule picks '{sc[wt['rule_choice']]['label']}'")
+                 + (f". On their own, neither component beats a random walk at {h} months "
+                    f"(ratios {sc['reer_only']['by_horizon'][h]['rmse_ratio']:.2f} and "
+                    f"{sc['feer_only']['by_horizon'][h]['rmse_ratio']:.2f}); combined they do "
+                    f"({sc['equal']['by_horizon'][h]['rmse_ratio']:.3f})"
+                    if sc["reer_only"]["by_horizon"][h]["rmse_ratio"] > 1 and sc["feer_only"]["by_horizon"][h]["rmse_ratio"] > 1
+                    and sc["equal"]["by_horizon"][h]["rmse_ratio"] < 1 else "")
+                 + ". The headline ranges from "
+                 f"{wt['headline_range'][0]:+.1f}% to {wt['headline_range'][1]:+.1f}% across weighting schemes.\n")
     pe = r.get("peers")
     if pe and pe.get("focus_rank"):
         im = (pe.get("imf") or {}).get("stats", {}).get("imf_reer_index")

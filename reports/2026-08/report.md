@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.6.0 · run `20261001-120315` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
+inrfv 0.7.0 · run `20261001-121531` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -48,6 +48,7 @@ Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals
 | core (central) | 2001-02–2026-08 | 300 | log_dxy +0.720 (+8.5, +), rel_prod -0.413 (-8.6, -), real_rate_diff -0.002 (-0.4, -) | 0.980 | 0 |
 | dxy | 2000-02–2026-08 | 313 | log_dxy +0.436 (+2.3, +) | 0.775 | 0 |
 | oil | 2001-02–2026-08 | 300 | log_dxy +1.051 (+7.4, +), rel_prod -0.553 (-9.9, -), real_rate_diff -0.001 (-0.3, -), log_brent +0.117 (+3.5, +) | 0.993 | 0 |
+| fwd | 2001-02–2026-08 | 300 | log_dxy +0.733 (+8.7, +), rel_prod -0.412 (-8.4, -), real_fwd_diff -0.002 (-0.5, -) | 0.982 | 1 |
 
 Coefficient range across re-estimations: log_dxy +0.28 to +0.72, rel_prod -0.83 to -0.42, real_rate_diff -0.00 to +0.01.
 
@@ -76,6 +77,19 @@ Filtered P(stress) = **0.14** (2026-08), steady state 0.34. Forward: 1m 0.21, 3m
 Calm: mean +0.10%/mo, sd 0.76%, duration 7.8m. Stress: mean +0.49%/mo, sd 2.40%, duration 4.1m.
 
 Oil × DXY quadrant (expanding medians): OilHi_DXYHi (Aug 2026).
+
+## Market pricing (forward premia)
+
+RBI inter-bank forward premia, monthly average (% a year), Jun 2026: 3-month 3.10%, 6-month 2.98%. Implied forwards on the Aug 2026 spot 95.44: 3-month 96.18, 6-month 96.86.
+
+Premium over the policy-rate gap (3-month premium − (India policy rate − Fed funds)): +1.23 pp in Jun 2026, above 86% of months since 2000 (mean -0.37, sd 1.64). A high spread means dollars for future delivery cost more than the rate gap justifies: hedging demand and expected depreciation beyond carry.
+
+Does the spread predict next month's rupee move? Coefficient -0.048% per pp (t -0.6); controlling for next month's dollar move -0.073 (t -1.2).
+
+| UIP test | Sample | n | Slope (UIP = 1) | t vs 0 | t vs 1 | R² |
+|---|---|---|---|---|---|---|
+| 3m premium → 3-month depreciation | 2000-01–2026-05 | 317 | 0.60 (se 0.44) | +1.3 | -0.9 | 0.012 |
+| 6m premium → 6-month depreciation | 2000-01–2026-02 | 314 | 0.59 (se 0.46) | +1.3 | -0.9 | 0.019 |
 
 ## Flow attribution (what moved the spot rate)
 
@@ -147,7 +161,7 @@ h=12m from 2026-08: ECT +0.117, α -0.435, const +0.071 → predicted Δlog INR 
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T06:32:25+00:00, mirror loaded 2026-10-01T06:28:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T06:44:43+00:00, mirror loaded 2026-10-01T06:38:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|
@@ -181,7 +195,7 @@ INR/USD patched with rescaled FRED EXINUS: filled ['2026-05'], extended ['2026-0
 
 ## Series end dates (reference month)
 
-inr_usd 2026-08, reer 2026-07, neer 2026-07, fx_reserves_usd_mn 2026-08, exports_usd_mn 2026-06, imports_usd_mn 2026-06, fdi_usd_mn 2026-06, fpi_usd_mn 2026-06, dxy 2026-09, cpi_us 2026-08, fed_funds_rate 2026-08, vix 2026-09, us_10y_yield 2026-08, brent 2026-09, fed_balance_sheet 2026-09, india_stir 2026-07, cpi_india 2026-08, cpi_india_yoy 2026-08, india_policy_rate 2026-07, india_repo_rate 2026-09, india_wacr 2026-03, rbi_net_purchase_usd_mn 2026-07, rbi_fwd_book_usd_mn 2026-07, rbi_intervention_usd_mn 2026-07
+inr_usd 2026-08, reer 2026-07, neer 2026-07, fx_reserves_usd_mn 2026-08, exports_usd_mn 2026-06, imports_usd_mn 2026-06, fdi_usd_mn 2026-06, fpi_usd_mn 2026-06, dxy 2026-09, cpi_us 2026-08, fed_funds_rate 2026-08, vix 2026-09, us_10y_yield 2026-08, brent 2026-09, fed_balance_sheet 2026-09, india_stir 2026-07, cpi_india 2026-08, cpi_india_yoy 2026-08, india_policy_rate 2026-07, india_repo_rate 2026-09, india_wacr 2026-03, fwd_premium_1m 2026-06, fwd_premium_3m 2026-06, fwd_premium_6m 2026-06, rbi_net_purchase_usd_mn 2026-07, rbi_fwd_book_usd_mn 2026-07, rbi_intervention_usd_mn 2026-07
 
 ## Charts
 

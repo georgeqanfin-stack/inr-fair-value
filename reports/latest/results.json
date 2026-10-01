@@ -432,6 +432,46 @@
           "cointegrated_5pct": false
         },
         "johansen_rank": 0
+      },
+      "fwd": {
+        "regressors": [
+          "log_dxy",
+          "rel_prod",
+          "real_fwd_diff"
+        ],
+        "nobs": 300,
+        "sample": [
+          "2001-02",
+          "2026-08"
+        ],
+        "coef": {
+          "const": 1.1167618672614443,
+          "log_dxy": 0.7327722423826418,
+          "rel_prod": -0.4124154492680347,
+          "real_fwd_diff": -0.002088055939499166
+        },
+        "t_hac": {
+          "const": 2.656470913870966,
+          "log_dxy": 8.681960588192508,
+          "rel_prod": -8.422493798354513,
+          "real_fwd_diff": -0.5423195721459911
+        },
+        "expected_sign": {
+          "log_dxy": "+",
+          "rel_prod": "-",
+          "real_fwd_diff": "-"
+        },
+        "engle_granger": {
+          "stat": -1.183944494489897,
+          "pvalue": 0.9820580048916546,
+          "n_vars": 4,
+          "nobs": 307,
+          "crit_1pct": -4.702885985304797,
+          "crit_5pct": -4.1328347046007945,
+          "crit_10pct": -3.8376726130975265,
+          "cointegrated_5pct": false
+        },
+        "johansen_rank": 1
       }
     },
     "sample": [
@@ -1023,6 +1063,71 @@
     },
     "units": "INR/USD % change (log x 100; positive = rupee weaker); flows in US$ bn, positive = inflow"
   },
+  "market": {
+    "spot": 95.43602090372703,
+    "asof": "2026-08",
+    "forwards": {
+      "3m": {
+        "premium": 3.098254520219,
+        "month": "2026-06",
+        "forward": 96.17523361161874
+      },
+      "6m": {
+        "premium": 2.982057976632,
+        "month": "2026-06",
+        "forward": 96.85899964069691
+      }
+    },
+    "spread": {
+      "value": 1.228254520219,
+      "month": "2026-06",
+      "percentile": 85.53459119496856,
+      "mean": -0.3675812204106443,
+      "sd": 1.638051712117201
+    },
+    "uip": {
+      "3m": {
+        "h": 3,
+        "premium": "fwd_premium_3m",
+        "sample": [
+          "2000-01",
+          "2026-05"
+        ],
+        "nobs": 317,
+        "slope": 0.5987709590656491,
+        "se": 0.4441967424528764,
+        "t_vs_0": 1.3479859301966204,
+        "t_vs_1": -0.9032687604117586,
+        "r2": 0.011519067183408338
+      },
+      "6m": {
+        "h": 6,
+        "premium": "fwd_premium_6m",
+        "sample": [
+          "2000-01",
+          "2026-02"
+        ],
+        "nobs": 314,
+        "slope": 0.5892549008296232,
+        "se": 0.4617349531696258,
+        "t_vs_0": 1.2761756431576685,
+        "t_vs_1": -0.8895689969987673,
+        "r2": 0.018501218886289972
+      }
+    },
+    "spread_test": {
+      "sample": [
+        "2000-01",
+        "2026-07"
+      ],
+      "nobs": 319,
+      "coef": -0.04759562872122705,
+      "t": -0.6051844595358331,
+      "p": 0.545056440405078,
+      "coef_given_dxy": -0.07296864536669477,
+      "t_given_dxy": -1.1787667431052626
+    }
+  },
   "johansen": {
     "PPP [log INR, log CPI India, log CPI US]": {
       "rank": 0,
@@ -1044,11 +1149,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T06:32:25+00:00",
+      "fetched_at": "2026-10-01T06:44:43+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T06:28:30.262299923Z",
+        "registry_loaded_at": "2026-10-01T06:38:30.261208207Z",
         "status": "ok",
         "tables": 1049
       }
@@ -1528,6 +1633,9 @@
       "india_policy_rate": "2026-07",
       "india_repo_rate": "2026-09",
       "india_wacr": "2026-03",
+      "fwd_premium_1m": "2026-06",
+      "fwd_premium_3m": "2026-06",
+      "fwd_premium_6m": "2026-06",
       "rbi_net_purchase_usd_mn": "2026-07",
       "rbi_fwd_book_usd_mn": "2026-07",
       "rbi_intervention_usd_mn": "2026-07"

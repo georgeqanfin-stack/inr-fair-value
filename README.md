@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.15.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.16.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.16 | Regime model with time-varying transition probabilities tested; constant kept |
 | 0.15 | Formal panel cointegration (Pedroni-type, Westerlund) with bootstrap p; 16-spec family, Holm/BH |
 | 0.14 | Nonlinear/time-varying ECM variants and break tests; linear ECM kept (rolling not robust) |
 | 0.13 | Joint bootstrap corridor (panel, norm, elasticities, CA error, weights) with ex-post coverage check |
@@ -512,6 +513,26 @@ Break tests use sup-Wald with 15% trimming and block-bootstrap p-values. There i
 break in the 12-month ECM (p 0.69) or in the REER component's mean (p 0.30). The
 composite's mean breaks in Oct 2009 (14% to 7%, p 0.01), as does the FEER's (2005 and
 2009). Both fall in the years the FEER uses the backcast norm (see limitations).
+
+**Time-varying transition probabilities (v0.16).** Do oil, the VIX, portfolio flows or
+RBI intervention change the odds of switching between calm and stress? Each driver is
+lagged one month, point in time, and enters a logistic TVTP Markov-switching model
+(`models/regimes_tvtp.py`). Each is compared with the constant-probability model. The
+deciding test, set beforehand, is out of sample (2008–2026): the one-step-ahead
+predictive log score of each month's return, with parameters re-estimated yearly.
+
+| Transition drivers | AIC | BIC | Out-of-sample log score vs constant | p | AUC, big-move months |
+|---|---|---|---|---|---|
+| Constant (headline) | **1098.6** | **1121.1** | — | — | **0.66** |
+| Brent | 1101.8 | 1131.9 | −0.004 | 0.70 | 0.64 |
+| VIX | 1101.9 | 1132.0 | −0.015 | 0.94 | 0.64 |
+| RBI intervention | 1100.5 | 1130.6 | −0.019 | 0.85 | 0.65 |
+| FPI | 1099.3 | 1129.4 | −0.027 | 0.80 | 0.65 |
+| All four | 1110.2 | 1162.8 | −0.525 | 0.99 | 0.58 |
+
+No driver improves the next month's forecast over the regimes' own persistence, and
+all four together overfit. The constant model stays. A simulation in the tests checks
+that the same machinery does detect a driver that really moves the odds.
 
 **India CPI (v0.4).** The official MOSPI CPI-Combined, replacing the OECD series:
 

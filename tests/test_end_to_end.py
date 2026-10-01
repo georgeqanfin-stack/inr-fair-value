@@ -17,6 +17,7 @@ def run(tmp_path_factory):
     from inrfv.run import run_pipeline, save
     cfg = load_config()
     cfg["models"]["panel_anchor"]["coint_reps"] = 49      # the real run uses 999 (cached); tests need speed
+    cfg["models"]["regimes_tvtp"]["refit_every"] = 120    # the real run refits yearly (cached); tests need speed
     out = tmp_path_factory.mktemp("run")
     r = run_pipeline(cfg, refresh=False, run_dir=out)
     save(r, out)
@@ -162,3 +163,11 @@ def test_formal_panel_cointegration_reported(run):
     cen = r["panel_diag"]["specs"][r["panel_diag"]["central_spec"]]["formal"]
     assert cen["testable"] and cen["p_holm"] >= cen["p"]["group_adf"]
     assert "Formal panel cointegration tests" in (out / "report.md").read_text(encoding="utf-8")
+
+
+def test_tvtp_regimes_compared(run):
+    r, out = run
+    tv = r["regime_summary"]["tvtp"]
+    assert set(tv["oos"]) >= {"constant", "vix", "brent", "fpi", "all"}
+    assert tv["choice"] in tv["oos"]
+    assert "### Time-varying transition probabilities" in (out / "report.md").read_text(encoding="utf-8")

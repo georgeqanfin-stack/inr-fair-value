@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import benchmark, beer, composite, feer, flows, market, nonlinear, panel_anchor, peers, uncertainty, weights, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flows, market, nonlinear, panel_anchor, peers, regimes_tvtp, uncertainty, weights, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -44,6 +44,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     feer_q, feer_m = feer.run(ds.bop, ds.pit, cfg)
     beer_out, beer_diag = beer.run(ds, cfg)
     reg_out, reg_summary = regimes.run(ds.pit, cfg)
+    reg_summary["tvtp"] = regimes_tvtp.run(ds.pit, cfg) if cfg["models"].get("regimes_tvtp") else None
     anchor, anchor_diag = reer_anchor.run(ds, cfg)
     pdata = panel_data.load(cfg, refresh=refresh)
     ucfg = cfg.get("uncertainty", {})

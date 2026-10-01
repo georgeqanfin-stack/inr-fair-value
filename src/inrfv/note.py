@@ -193,6 +193,13 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
              f"{g['p_stress_forecast'].get(12, g['p_stress_forecast'].get('12', np.nan)) * 100:.0f}%. "
              f"In stress months the rupee's monthly moves are about {g['stress']['sd_pct'] / g['calm']['sd_pct']:.0f} "
              f"times as large as in calm ones ({g['stress']['sd_pct']:.1f}% vs {g['calm']['sd_pct']:.1f}% standard deviation).\n")
+    tv = g.get("tvtp")
+    if tv:
+        worse = all(v["diff_vs_constant"] <= 0 for k, v in tv["oos"].items() if k != "constant")
+        L.append("Letting oil, the VIX, portfolio flows or RBI intervention drive the switching odds "
+                 + ("did not predict the next month better than the regimes' own persistence, so the odds stay constant."
+                    if worse and tv["choice"] == "constant" else
+                    f"was tested; the model uses '{tv['choice']}'.") + "\n")
     mk = r.get("market")
     if mk:
         f6, s, st = mk["forwards"]["6m"], mk["spread"], mk["spread_test"]

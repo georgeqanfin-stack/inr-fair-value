@@ -319,6 +319,15 @@ min_obs     = 96
 refit_every = 12
 seed        = 42
 
+[models.regimes_tvtp]
+# Time-varying transition probabilities (models/regimes_tvtp.py), tested against the
+# constant model; the headline regime model switches only if a TVTP spec beats it out
+# of sample (log score) with a one-sided p below switch_p.
+min_obs     = 96
+refit_every = 12
+switch_p    = 0.10
+seed        = 42
+
 [composite]
 # REER component: "hp" (one-sided HP gap), "anchor" (India-only fundamentals anchor) or
 # "panel" (panel anchor, pooled across emerging markets).

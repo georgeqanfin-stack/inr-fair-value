@@ -21,8 +21,8 @@ until the backtest looks better.
 | 6 | Joint uncertainty: whole-pipeline bootstrap | **Done (v0.13)** |
 | 7 | Nonlinear and time-varying adjustment, structural breaks | **Done (v0.14)** |
 | 9 | Formal panel cointegration tests, multiple-testing adjustment | **Done (v0.15)** |
-| 8 | Regime model with time-varying transition probabilities | Next |
-| 10 | FEER: cyclical adjustment and income balance | Planned |
+| 8 | Regime model with time-varying transition probabilities | **Done (v0.16)** |
+| 10 | FEER: cyclical adjustment and income balance | Next |
 | 11 | Flow identification beyond contemporaneous OLS | Planned |
 | 15 | Engineering: lint, types, coverage, data schemas, Docker | Planned |
 
@@ -125,7 +125,9 @@ plan: Pedroni and Westerlund panel cointegration tests alongside
 the Fisher approximation; adjust for the 13 specifications tried (Holm or
 Romano-Wolf).
 
-**8. Regimes.** Markov switching with transition probabilities driven by oil, VIX,
+**8. Regimes (done).** TVTP with VIX, Brent, FPI and RBI drivers loses to the
+constant model out of sample (log score −0.004 to −0.53; AIC/BIC prefer constant);
+constant kept. Original plan: Markov switching with transition probabilities driven by oil, VIX,
 FPI and RBI intervention (TVTP). Compare with the constant model by likelihood and
 out-of-sample regime classification.
 

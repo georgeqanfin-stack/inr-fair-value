@@ -204,6 +204,27 @@ def build_report(r: dict) -> str:
              f"duration {g['stress']['expected_duration_m']:.1f}m.\n")
     q, qd = _last(r["regimes"]["oil_dxy_quadrant"])
     L.append(f"Oil × DXY quadrant (expanding medians): {q} ({qd}).\n")
+    tv = g.get("tvtp")
+    if tv:
+        L.append("### Time-varying transition probabilities\n")
+        L.append(f"Switching odds driven by last month's VIX change, Brent change, FPI flows and RBI intervention "
+                 f"(standardised, point in time), against the constant-probability model. Full sample "
+                 f"{_mon(tv['sample'][0])}–{_mon(tv['sample'][1])}; out of sample {_mon(tv['oos_window'][0])}–"
+                 f"{_mon(tv['oos_window'][1])}: one-step-ahead predictive log score of the monthly return, parameters "
+                 f"re-estimated yearly; t-test on the log-score difference (Newey-West); AUC of the predicted stress "
+                 f"probability for months with the largest 20% of moves. Rule set beforehand: switch only if a "
+                 f"specification beats the constant model out of sample with one-sided p < {tv['switch_p']}.\n")
+        L.append("| Transition drivers | Log-lik. | AIC | BIC | LR p | OOS log score | vs constant | t | p | AUC big moves |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|")
+        for n, f in tv["full_sample"].items():
+            o = tv["oos"][n]
+            drv = ", ".join(tv["specs"][n]["drivers"]) or "none (constant)"
+            lrp = f"{f['lr_p']:.2f}" if "lr_p" in f else "—"
+            tt = f"{o['t']:+.2f}" if o["p_one_sided"] is not None else "—"
+            pp = f"{o['p_one_sided']:.2f}" if o["p_one_sided"] is not None else "—"
+            L.append(f"| {drv} | {f['loglik']:.1f} | {f['aic']:.1f} | {f['bic']:.1f} | {lrp} | {o['mean_log_score']:.4f} | "
+                     f"{o['diff_vs_constant']:+.4f} | {tt} | {pp} | {o['auc_big_moves']:.2f} |")
+        L.append(f"\nChoice: **{tv['choice']}**.\n")
 
     mk = r.get("market")
     if mk:

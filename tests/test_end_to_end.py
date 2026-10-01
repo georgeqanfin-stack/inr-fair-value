@@ -113,3 +113,13 @@ def test_imf_benchmark_is_reported(run):
     assert "## External benchmark" in (out / "report.md").read_text(encoding="utf-8")
     assert "IMF check" in (out / "dashboard.html").read_text(encoding="utf-8")
     assert "the IMF" in (out / "note.md").read_text(encoding="utf-8")
+
+
+def test_peers_are_reported(run):
+    r, out = run
+    pe = r["peers"]
+    assert pe["n"] >= 15 and 1 <= pe["focus_rank"] <= pe["n"]
+    assert r["peer_gaps"]["IND"].dropna().round(6).equals(r["panel"]["misalignment_pct"].dropna().round(6))
+    assert "## Peer currencies" in (out / "report.md").read_text(encoding="utf-8")
+    assert 'id="peerBars"' in (out / "dashboard.html").read_text(encoding="utf-8")
+    assert (out / "model_peers.csv").exists()

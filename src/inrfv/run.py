@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, peers, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -47,6 +47,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     anchor, anchor_diag = reer_anchor.run(ds, cfg)
     pdata = panel_data.load(cfg, refresh=refresh)
     panel_out, panel_diag = panel_anchor.run(ds, pdata, cfg)
+    peer_gaps = panel_diag.pop("peer_gaps")
     reer_component = {"hp": reer, "anchor": anchor, "panel": panel_out}[cfg["composite"].get("reer_component", "hp")]
     comp = composite.run(ds.pit, reer_component, feer_m, cfg)
     bt, fcs = backtest.run(comp, reg_out, cfg)
@@ -81,6 +82,8 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
             "run_id": run_dir.name if run_dir else "adhoc"}
     r["revisions"] = vintages.revision_effect(r, cfg) if cfg.get("vintages", {}).get("revision_check") else None
     r["benchmark"] = benchmark.run(r, cfg)
+    r["peer_gaps"] = peer_gaps
+    r["peers"] = peers.run(peer_gaps, cfg)
     return r
 
 
@@ -100,6 +103,8 @@ def save(r: dict, run_dir) -> None:
     r["beer"].to_csv(run_dir / "model_beer.csv")
     r["regimes"].to_csv(run_dir / "model_regimes.csv")
     r["flows"].to_csv(run_dir / "model_flows.csv")
+    if r.get("peer_gaps") is not None:
+        r["peer_gaps"].to_csv(run_dir / "model_peers.csv")
     rev = r.get("revisions")
     if rev:
         rev["series"].rename("composite_diff_pp").to_csv(run_dir / "revision_effect.csv")
@@ -108,7 +113,7 @@ def save(r: dict, run_dir) -> None:
         fc.to_csv(run_dir / f"oos_forecasts_{h}m.csv")
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
                "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"],
-               "benchmark": r.get("benchmark"),
+               "benchmark": r.get("benchmark"), "peers": r.get("peers"),
                "revisions": {k: v for k, v in (r.get("revisions") or {}).items() if k != "series"} or None,
                "johansen": r["johansen"],
                "data_meta": ds.meta, "warnings": r["warnings"]}

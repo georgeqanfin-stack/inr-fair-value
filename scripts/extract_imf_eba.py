@@ -10,6 +10,9 @@ to re-run). Each year has the same tables:
   REER-Index and REER-Level tables: first column = total REER gap (+ = overvalued)
   External Sustainability table: assumed CA/REER semi-elasticity (second-last column)
 
+Also writes data/raw/manual/imf_eba_panel.csv: the same fields for the 11 panel
+currencies the IMF assesses (long format, ISO3 codes), for the peer cross-section check.
+
 Run:  python scripts/extract_imf_eba.py
 """
 
@@ -24,6 +27,9 @@ from pypdf import PdfReader
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "data" / "raw" / "manual" / "imf_eba"
 OUT = ROOT / "data" / "raw" / "manual" / "imf_eba_india.csv"
+OUT_PANEL = ROOT / "data" / "raw" / "manual" / "imf_eba_panel.csv"
+NAMES = {"Brazil": "BRA", "China": "CHN", "India": "IND", "Indonesia": "IDN", "Korea": "KOR", "Malaysia": "MYS",
+         "Mexico": "MEX", "Poland": "POL", "South Africa": "ZAF", "Thailand": "THA", "Turkey": "TUR", "Türkiye": "TUR"}
 # Month each analysis became public: the External Sector Report of the following year
 # (July; August in 2020 and 2021).
 PUBLISHED = {2017: "2018-07", 2018: "2019-07", 2019: "2020-08", 2020: "2021-08", 2021: "2022-07",
@@ -31,25 +37,31 @@ PUBLISHED = {2017: "2018-07", 2018: "2019-07", 2019: "2020-08", 2020: "2021-08",
 PCT = re.compile(r"-?\d+(?:\.\d+)?%?")
 
 
-def india_row(lines: list[str]) -> list[float]:
-    row = next(l for l in lines if l.strip().startswith("India"))
-    return [float(x.rstrip("%")) for x in PCT.findall(row.split("India", 1)[1])]
+def country_row(lines: list[str], name: str) -> list[float] | None:
+    row = next((l for l in lines if re.match(rf"\s*{re.escape(name)}\s+-?\d", l)), None)
+    return None if row is None else [float(x.rstrip("%")) for x in PCT.findall(row.split(name, 1)[1])]
 
 
-def extract(year: int) -> dict:
+def extract(year: int, name: str = "India") -> dict | None:
     pages = [(p.extract_text() or "").splitlines() for p in PdfReader(SRC / f"EBAEstimates-analysis-{year}.pdf").pages]
 
-    def table(pattern: str) -> list[float]:
+    def table(pattern: str) -> list[float] | None:
         for lines in pages:
             title = next((l for l in lines if re.match(r"\s*Table\s+\d+", l)), "")
-            if re.search(pattern, title) and any(l.strip().startswith("India") for l in lines):
-                return india_row(lines)
-        raise ValueError(f"{year}: no table matching {pattern!r}")
+            if re.search(pattern, title):
+                row = country_row(lines, name)
+                if row is not None:
+                    return row
+        return None
 
     ca = table(rf"EBA Regression Analysis of {year} Current Accounts")
     idx = table(r"REER-Index Model|Analysis of the \d{4} REER$|Analysis of the \d{4} REER\b(?!.*Level)")
     lvl = table(r"REER-Level Model|Level of the REER")
     es = table(r"External Sustainability")
+    if ca is None or idx is None or lvl is None or es is None:
+        if name == "India":
+            raise ValueError(f"{year}: India rows not found")
+        return None
     return {"analysis_year": year, "published": PUBLISHED[year],
             "ca_actual": ca[0], "ca_cyc_adj": ca[2], "ca_norm": ca[3], "ca_gap": ca[-1],
             "reer_gap_index": idx[0], "reer_gap_level": lvl[0], "elasticity": es[-2],
@@ -58,6 +70,15 @@ def extract(year: int) -> dict:
 
 
 if __name__ == "__main__":
-    rows = [extract(y) for y in sorted(PUBLISHED) if (SRC / f"EBAEstimates-analysis-{y}.pdf").exists()]
+    years = [y for y in sorted(PUBLISHED) if (SRC / f"EBAEstimates-analysis-{y}.pdf").exists()]
+    rows = [extract(y) for y in years]
     pd.DataFrame(rows).to_csv(OUT, index=False)
     print(pd.DataFrame(rows).drop(columns="source").to_string(index=False))
+    panel = []
+    for y in years:
+        for name, iso in NAMES.items():
+            rec = extract(y, name)
+            if rec is not None:
+                panel.append({"country": iso, **{k: v for k, v in rec.items() if k != "source"}})
+    pd.DataFrame(panel).sort_values(["analysis_year", "country"]).to_csv(OUT_PANEL, index=False)
+    print(pd.DataFrame(panel).groupby("analysis_year")["country"].apply(lambda s: " ".join(sorted(s))).to_string())

@@ -305,6 +305,41 @@ def build_report(r: dict) -> str:
                          f"{s['mean_abs_diff_pp']:.1f} pp |")
         L.append("")
 
+    pe = r.get("peers")
+    if pe:
+        L.append("## Peer currencies (panel REER anchor)\n")
+        L.append(f"Every panel currency's REER misalignment from the same pooled fit, {_mon(pe['month'])} "
+                 f"(+ = undervalued; relative to each currency's own history, so rankings and movements matter "
+                 f"more than levels). India ranks **{pe['focus_rank']} of {pe['n']}** (1 = most undervalued); "
+                 f"median {pe['median']:+.1f}%.\n")
+        L.append("| Rank | Currency | Misalignment |")
+        L.append("|---|---|---|")
+        for i, (c, v) in enumerate(pe["latest"].items(), 1):
+            star = " **(India)**" if c == pe["focus"] else ""
+            L.append(f"| {i} | {c}{star} | {v:+.1f}% |")
+        if pe["episodes"]:
+            ok = sum(e["pass"] for e in pe["episodes"])
+            L.append(f"\nKnown episodes (fixed in the config before looking at results): {ok} of "
+                     f"{len(pe['episodes'])} move the expected way.\n")
+            L.append("| Currency | Episode | Before | After | Expected | Result |")
+            L.append("|---|---|---|---|---|---|")
+            for e in pe["episodes"]:
+                L.append(f"| {e['country']} | {e['label']} | {e['before_mean']:+.1f}% ({e['before'][0]}–{e['before'][1]}) | "
+                         f"{e['after_mean']:+.1f}% ({e['after'][0]}–{e['after'][1]}) | {e['expect']} | "
+                         f"{'as expected' if e['pass'] else 'not as expected'} |")
+        im = pe.get("imf")
+        if im:
+            L.append(f"\nAgainst the IMF's EBA assessments of {len(im['countries'])} panel currencies "
+                     f"({im['years'][0]}–{im['years'][1]}; IMF signs flipped to + = undervalued):\n")
+            L.append("| IMF measure | n | Pooled correlation | Same sign | Rank correlation within a year (mean, min) | "
+                     "Correlation within a country over time |")
+            L.append("|---|---|---|---|---|---|")
+            for s in im["stats"].values():
+                L.append(f"| {s['label']} | {s['n']} | {s['pooled_corr']:+.2f} | {s['same_sign']:.0%} | "
+                         f"{s['mean_rank_corr']:+.2f}, {s['min_rank_corr']:+.2f} | {s['within_country_corr']:+.2f} |")
+            L.append("\nThe panel anchor is a REER model; it agrees closely with the IMF's REER models. The IMF's CA model "
+                     "and its REER models disagree with each other across countries, so no REER model matches both.\n")
+
     rv = r.get("revisions")
     L.append("## Data revisions\n")
     if rv:

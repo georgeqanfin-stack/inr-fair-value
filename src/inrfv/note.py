@@ -41,6 +41,10 @@ def _month(ym: str) -> str:
         return ym
 
 
+def _ordinal(n: int) -> str:
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
 def size_word(m: float) -> str:
     a = abs(m)
     if a < 2:
@@ -226,6 +230,16 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append("the India-only REER model fails its long-run test")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
+    pe = r.get("peers")
+    if pe and pe.get("focus_rank"):
+        im = (pe.get("imf") or {}).get("stats", {}).get("imf_reer_index")
+        which = "the most" if pe["focus_rank"] == 1 else f"the {_ordinal(pe['focus_rank'])} most"
+        s = (f"Among {pe['n']} emerging-market currencies on the same model, the rupee is {which} "
+             f"undervalued ({_month(pe['month'])}).")
+        if im:
+            s += (f" Across countries the model ranks currencies much as the IMF's REER assessments do "
+                  f"(average rank correlation {im['mean_rank_corr']:.2f}).")
+        L.append(s + "\n")
     bm = r.get("benchmark")
     if bm:
         s = bm["stats"].get("composite_at_pub~imf_ca", {})

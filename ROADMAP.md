@@ -16,8 +16,8 @@ until the backtest looks better.
 | 2 | Real-time data vintages | **Done (v0.8)**; ALFRED live since v0.10 |
 | 4 | Automate manual and stale inputs | **Done (v0.9)** |
 | 12 | External benchmark: IMF External Sector Report track record | **Done (v0.10)** |
-| 13 | Peer currencies: panel anchor for all 19 | Next |
-| 5 | Composite weights tested, not assumed | Planned |
+| 13 | Peer currencies: panel anchor for all 19 | **Done (v0.11)** |
+| 5 | Composite weights tested, not assumed | Next |
 | 6 | Joint uncertainty: whole-pipeline bootstrap | Planned |
 | 7 | Nonlinear and time-varying adjustment, structural breaks | Planned |
 | 9 | Formal panel cointegration tests, multiple-testing adjustment | Planned |
@@ -85,7 +85,10 @@ dashboard. Original plan: table of the IMF External Sector Report's India assess
 at each ESR's publication. Report the correlation and the sign agreement.
 *Done when:* the track record is in the report and README.
 
-**13. Peer currencies.** Run the panel anchor for all 19 currencies; publish the
+**13. Peer currencies (done).** India ranks 3rd most undervalued of 19 (Sep 2026);
+6 of 7 pre-set crisis episodes move as expected (China 2015 does not); across the 11
+currencies the IMF assesses, rank correlation with the IMF REER-index model averages
+0.83 a year. In the report, note and dashboard. Original plan: run the panel anchor for all 19 currencies; publish the
 cross-section of gaps and check India's rank, as well as whether known episodes
 (e.g. Turkey 2018, Brazil 2015) show sensible gaps.
 *Done when:* a peer table and chart are in the report and dashboard.

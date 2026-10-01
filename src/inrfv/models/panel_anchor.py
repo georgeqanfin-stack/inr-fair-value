@@ -133,6 +133,7 @@ def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
     out = pd.DataFrame(index=ds.pit.index, dtype=float,
                        columns=["reer_bis", "reer_star", "gap_log", "gap_log_lo", "gap_log_hi"])
     fit, signature, history = None, None, []
+    peers = {}                                        # month -> {country: misalignment %}
     for t in ds.pit.index:
         known = reer_in[reer_in.index + MS(p["reer_lag"]) <= t].dropna()
         if known.empty:
@@ -146,6 +147,8 @@ def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
             if years >= p["min_years"]:
                 fit = estimate(panel, regs, p["dols_k"])
                 history.append({"date": t.strftime("%Y-%m"), **fit["b"].to_dict(), "nobs": fit["nobs"]})
+        if fit is not None:
+            peers[t] = peer_gaps(pdata, panel, fit, regs, t, p["reer_lag"])
         if fit is None or FOCUS not in fit["alpha"].index:
             continue
         x = latest_x(panel, regs)
@@ -163,7 +166,26 @@ def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
                       np.percentile(draws, lo_p) - lr, np.percentile(draws, hi_p) - lr]
     out["misalignment_pct"] = (np.exp(out["gap_log"]) - 1) * 100
     out["fair_inr"] = ds.pit["inr_usd"] * np.exp(-out["gap_log"])
-    return out, diagnostics(pdata, cfg, ds.pit.index[-1], history)
+    diag = diagnostics(pdata, cfg, ds.pit.index[-1], history)
+    diag["peer_gaps"] = pd.DataFrame.from_dict(peers, orient="index").sort_index()
+    return out, diag
+
+
+def peer_gaps(pdata, panel: pd.DataFrame, fit: dict, regs: list[str], t: pd.Timestamp, reer_lag: int) -> dict:
+    """Every panel currency's REER misalignment (%, + = undervalued) from the current pooled fit:
+    its own country effect plus the pooled coefficients times its latest published fundamentals,
+    against its latest published monthly REER. Each gap averages zero over the country's sample."""
+    out = {}
+    for c in fit["alpha"].index:
+        known = pdata.reer[c][pdata.reer.index + MS(reer_lag) <= t].dropna()
+        if known.empty:
+            continue
+        x = latest_x(panel, regs, c)
+        if x.isna().any():
+            continue
+        star = fit["alpha"][c] + float(x @ fit["b"])
+        out[c] = float((np.exp(star - np.log(known.iloc[-1])) - 1) * 100)
+    return out
 
 
 def diagnostics(pdata, cfg: dict, info: pd.Timestamp, history: list[dict]) -> dict:

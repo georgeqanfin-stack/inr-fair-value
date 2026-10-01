@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.10.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.11.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.11 | Peer currencies: gaps for all 19, India's rank, crisis episodes, cross-section vs the IMF |
 | 0.10 | IMF track record: EBA assessments 2017–2025 vs this model; ALFRED US CPI live |
 | 0.9 | Automatic inputs: CPI 2024=100 and BPM6 BoP from RBI Bulletin tables, INR/USD from RBI daily rates, reserves gaps from weekly data; 2026 IMF norm; smarter gates |
 
@@ -349,6 +350,25 @@ REER component moves with them (correlation 0.79) but sits about 12 points lower
 FEER-vs-IMF-CA pairing is not independent, since the FEER uses the IMF's published
 norms. The latest IMF staff assessment (ESR 2026, FY2025/26) puts the REER gap at −8.4%
 (range −11.7% to −5.1%), i.e. +8.4% undervalued; this model read +14.3% in July 2026.
+
+**Peer currencies (v0.11).** The panel anchor's pooled fit gives every one of the 19
+currencies a point-in-time REER misalignment each month (its own country effect plus
+the pooled productivity effect; `model_peers.csv`). Gaps are relative to each
+currency's own history, so rankings and movements matter more than levels. In
+September 2026 the rupee is the 3rd most undervalued of 19, behind the Turkish lira
+and the Korean won.
+
+- *Episodes,* fixed in the config before looking at the results: 6 of 7 move the
+  expected way. These are Turkey 2018, Brazil 2015, South Africa 2015, Mexico 2016,
+  Mexico's 2023–24 "super peso" (towards overvaluation), and India's 2013 taper
+  tantrum. China's Aug 2015 devaluation does not: the renminbi's trade-weighted rate
+  stayed near its peak.
+- *Against the IMF:* the IMF's EBA assesses 11 of the 19 currencies each year
+  (`data/raw/manual/imf_eba_panel.csv`, 2017–2025). The model agrees closely with the
+  IMF's REER models: pooled correlation 0.80 with the REER-index model, mean rank
+  correlation within a year 0.83 (never below 0.74), and correlation within each
+  country over time 0.86. It does not match the IMF's CA model (−0.20), but neither do
+  the IMF's own REER models; the IMF's two approaches disagree across countries.
 
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY

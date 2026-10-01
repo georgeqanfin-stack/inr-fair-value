@@ -127,6 +127,7 @@ def collect(r: dict) -> dict:
                                if "misalignment_pct_imf_path" in fm else None, 1)},
         "flows": flows_block(r.get("flows_diag")),
         "market": market_block(r.get("market")),
+        "peers": peers_block(r.get("peers"), r["config"]),
     }
 
 
@@ -141,6 +142,24 @@ def flows_block(fd: dict | None) -> dict | None:
     return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
             "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way"),
             "rbi": rbi_block(fd.get("rbi"))}
+
+
+PEER_NAMES = {"IND": "India", "CHN": "China", "BRA": "Brazil", "MEX": "Mexico", "IDN": "Indonesia", "TUR": "Turkey",
+              "ZAF": "South Africa", "KOR": "Korea", "THA": "Thailand", "MYS": "Malaysia", "PHL": "Philippines",
+              "CHL": "Chile", "COL": "Colombia", "PER": "Peru", "POL": "Poland", "HUN": "Hungary", "CZE": "Czechia",
+              "ISR": "Israel", "ROU": "Romania"}
+
+
+def peers_block(pe: dict | None, cfg: dict) -> dict | None:
+    if not pe:
+        return None
+    im = (pe.get("imf") or {}).get("stats", {}).get("imf_reer_index")
+    eps = pe.get("episodes", [])
+    return {"month": pe["month"], "rank": pe["focus_rank"], "n": pe["n"], "focus": pe["focus"],
+            "rows": [{"c": c, "name": PEER_NAMES.get(c, c), "v": _num(v, 1)} for c, v in pe["latest"].items()],
+            "imf_rank_corr": _num(im["mean_rank_corr"], 2) if im else None,
+            "imf_n_countries": len(pe["imf"]["countries"]) if pe.get("imf") else None,
+            "episodes_ok": sum(e["pass"] for e in eps), "episodes_n": len(eps)}
 
 
 def market_block(mk: dict | None) -> dict | None:
@@ -265,6 +284,7 @@ ul.warn { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 1
 .flows .row { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 12px; align-items: center; font-size: 13px; }
 .flows .row.total { font-weight: 600; border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin-bottom: 2px; }
 .flows .k { color: var(--ink-2); overflow-wrap: anywhere; }
+.flows .row.focus { font-weight: 600; } .flows .row.focus .k { color: var(--ink); }
 .flows svg { display: block; width: 100%; height: 22px; overflow: visible; }
 .flows .cell { position: relative; min-width: 0; }
 .flows .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 11.5px var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -325,6 +345,13 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     <h2 style="font:600 1rem/1.3 var(--f-body);margin:0">Models</h2>
     <p class="sub">The composite averages the REER component and the FEER. The others are reported for context; a failed long-run test means the model describes where fundamentals point, not a level the rupee returns to.</p>
     <div class="tablewrap"><table id="tblModels"></table></div>
+  </section>
+
+  <section class="panel" id="peerPanel">
+    <h2 style="font:600 1rem/1.3 var(--f-body);margin:0">Rupee among emerging-market peers</h2>
+    <p class="sub" id="peerSub"></p>
+    <div class="flows" id="peerBars" role="img"></div>
+    <p class="sub" id="peerNote" style="margin-top:14px"></p>
   </section>
 
   <section class="panel" id="flowPanel">
@@ -558,6 +585,35 @@ function drawFlows() {
     + (F.two_way ? "Flows and the rupee feed each other (foreign investors also sell a falling currency), so these are associations, not causes. " : "")
     + "Ex post and by reference month; this explains spot moves and does not change the fair value.";
 }
+// ---------- peers
+const PE = D.peers;
+if (PE) {
+  $("peerSub").textContent = `REER misalignment of each currency on the same pooled productivity model, ${monthName(PE.month)}. Above zero = weaker than its own fundamentals imply. India ranks ${PE.rank} of ${PE.n}.`;
+  const host = $("peerBars"), W = 400, mid = W / 2, room = 70;
+  const m = Math.max(...PE.rows.map(r => Math.abs(r.v)), 1), scale = (mid - room) / m;
+  host.setAttribute("aria-label", PE.rows.map(r => `${r.name} ${sgn(r.v)}%`).join("; "));
+  PE.rows.forEach(r => {
+    const focus = r.c === PE.focus;
+    const row = document.createElement("div"); row.className = "row" + (focus ? " focus" : "");
+    const k = document.createElement("div"); k.className = "k"; k.textContent = r.name; row.appendChild(k);
+    const svg = el("svg", { viewBox: `0 0 ${W} 22`, preserveAspectRatio: "none", "aria-hidden": "true" });
+    el("line", { x1: mid, x2: mid, y1: 0, y2: 22, stroke: css("--rule"), "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, svg);
+    const len = Math.abs(r.v) * scale;
+    if (len > 0.5) {
+      const b = el("rect", { x: r.v > 0 ? mid : mid - len, y: 5, width: len, height: 12, rx: 2, fill: focus ? css("--accent") : css("--ink-3") }, svg);
+      el("title", {}, b).textContent = `${r.name}: ${sgn(r.v)}%`;
+    }
+    const cell = document.createElement("div"); cell.className = "cell";
+    const t = document.createElement("span"); t.className = "val"; t.textContent = `${sgn(r.v)}%`;
+    const off = `calc(50% + ${(len / W) * 100}% + 6px)`;
+    if (r.v >= 0) t.style.left = off; else t.style.right = off;
+    cell.append(svg, t); row.appendChild(cell); host.appendChild(row);
+  });
+  $("peerNote").textContent = `Gaps are relative to each currency's own history, so the ranking matters more than the level. `
+    + (PE.imf_rank_corr !== null ? `Across the ${PE.imf_n_countries} currencies the IMF also assesses, the model orders them much as the IMF's REER-index assessments do (average rank correlation ${fmt(PE.imf_rank_corr)} a year). ` : "")
+    + (PE.episodes_n ? `${PE.episodes_ok} of ${PE.episodes_n} known crisis episodes, fixed in advance, move the expected way.` : "");
+} else { $("peerPanel").hidden = true; }
+
 if (F && F.windows.length) {
   $("flowWin").innerHTML = F.windows.map(w => `<button type="button" data-m="${w.months}">${w.months}M</button>`).join("");
   try { flowWin = +localStorage.getItem("inrfv-flowwin") || null; } catch (e) {}

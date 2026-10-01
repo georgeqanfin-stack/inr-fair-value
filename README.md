@@ -84,6 +84,17 @@ by hand from the Actions tab. It runs the tests first, commits and pushes only i
 every gate passes, and attaches the outputs as an artifact either way. An optional
 repository secret `FRED_API_KEY` is used if set.
 
+**Scheduling on this PC (Windows).** To run it locally instead, create a scheduled
+task for your user (no admin rights or password needed):
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\schedule_monthly_refresh.ps1
+```
+
+It runs `scripts\monthly_refresh.cmd` on the 15th at 09:00 (`-Day`, `-Time` to
+change), catches up at the next logon if the PC was off, logs to
+`outputs\refresh_logs\`, and commits locally without pushing. `-Remove` deletes it.
+
 **Manual inputs** (the refresh warns when they look out of date):
 
 | File | When | Source |
@@ -250,20 +261,31 @@ Russia and Taiwan are excluded. The data are the annual BIS broad REER (FRED
 country fixed effects and standard errors clustered by country, re-estimated
 whenever a new year is published. India's equilibrium = its country effect + pooled
 coefficients × its latest fundamentals, with a band from coefficient and
-country-effect uncertainty. Three specifications are reported:
+country-effect uncertainty. Four specifications are reported:
 
 | Spec | Regressors | Years | Productivity coef. (t) | Panel cointegration p |
 |---|---|---|---|---|
 | **prod** (central) | relative productivity | 1996–2024 | +0.31 (4.4) | 0.025 |
 | long | + government consumption, openness | 1996–2024 | +0.29 (4.0) | 0.98 |
 | short | + terms of trade | 2007–2023 | +0.15 (0.7) | 1.00 |
+| prod_nfa | + net foreign assets | 1996–2023 | +0.32 (4.4) | 0.42 |
 
 Panel cointegration combines per-country ADF tests on the pooled residuals
 (Engle-Granger p-values, Fisher / Maddala-Wu). This approximates formal panel tests.
 Twelve variants were compared, and only productivity-only DOLS passed, so the result
 is suggestive, not conclusive. Because India's country effect is its mean residual,
-the anchor measures deviation from India's own fundamentals-adjusted norm. It has no
-net-foreign-assets term.
+the anchor measures deviation from India's own fundamentals-adjusted norm.
+
+*Net foreign assets* come from the External Wealth of Nations database (Lane &
+Milesi-Ferretti, Brookings, 1970–2024), with year-end data entering 16 months
+later. They do not help. With net IIP excluding gold (EWN's estimate) the
+coefficient is −0.0005 per pp of GDP (t −0.5). With the officially reported IIP it is −0.0007
+(t −0.7). Both have the wrong sign, and adding NFA breaks the panel cointegration
+check (p 0.42 and 0.25). So `prod_nfa` is reported every run but is not central.
+For India the two NFA measures differ sharply (−34% vs −10% of GDP in 2024),
+because EWN values foreign holdings of Indian equity at market prices. EWN is used
+as one vintage, so its history includes later revisions. Removing `[panel.nfa]`
+from the config drops NFA entirely.
 
 **REER component choice.** All three REER measures run every time;
 `[composite] reer_component` picks one (`panel`, `hp` or `anchor`). Composite
@@ -298,6 +320,7 @@ against a random walk with drift.
 | RBI DBIE Excel downloads | Same series | Optional manual download to `data/raw/rbi_*.xlsx`; merged with the API |
 | FRED | US CPI, Fed funds, broad and major dollar indices, VIX, 10Y, Brent, Fed balance sheet, India call rate, OECD India CPI | Automatic, cached in `data/raw/fred/` |
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
+| External Wealth of Nations (Lane & Milesi-Ferretti, Brookings) | Net IIP / GDP for the 19 panel countries | Automatic (latest workbook found on the Brookings page); compact cache `data/raw/ewn/ewn_nfa.csv` |
 | MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |
 | MOSPI | CPI-Combined, 2024 = 100 (from Jan 2025) | Manual, verified: `data/raw/manual/mospi_cpi_2024base.csv` |
 
@@ -316,9 +339,9 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
 
 ## Known limitations (Phase 2 roadmap)
 
-- The panel anchor has no net-foreign-assets term (no cross-country IIP source yet;
-  the IMF's External Wealth of Nations data would add it), and its cointegration
-  evidence comes from one specification out of twelve tried.
+- The panel anchor's cointegration evidence comes from one specification out of
+  thirteen tried. Net foreign assets (External Wealth of Nations) were added and
+  tested, entered with the wrong sign, and broke the panel check.
 - The panel's World Bank fundamentals lag by one to two years, so the equilibrium
   moves in annual steps and the recent gap is driven mostly by the REER itself.
 - Before Feb 2013 there is no published IMF norm for India, so the FEER uses the

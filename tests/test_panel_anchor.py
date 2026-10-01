@@ -81,3 +81,13 @@ def test_panel_anchor_does_not_look_ahead(rng, cfg):
     cols = ["reer_bis", "reer_star", "gap_log"]
     pd.testing.assert_frame_equal(a.loc[:t, cols], b.loc[:t, cols])
     assert not np.allclose(a.loc["2016-08-01":, "reer_star"], b.loc["2016-08-01":, "reer_star"])
+
+
+def test_nfa_enters_only_after_its_publication_lag(rng, cfg):
+    p = cfg["models"]["panel_anchor"]
+    pdata = _pdata(rng)
+    pdata.nfa = pd.DataFrame({c: -20.0 for c in COUNTRIES}, index=list(range(1994, 2026)))
+    years = pa.annual_panel(pdata, p, pd.Timestamp("2020-06-01")).loc["IND"]
+    # EWN year-end 2018 is public from May 2020 (lag 16); 2019 is not yet.
+    assert years["nfa"].dropna().index.max() == 2018
+    assert "nfa" not in pa.annual_panel(_pdata(rng), p, pd.Timestamp("2020-06-01")).columns

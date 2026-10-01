@@ -100,7 +100,9 @@ def build_report(r: dict) -> str:
     L.append(f"\nCoefficient range across {pdg['n_estimates']} point-in-time re-estimations since "
              f"{pdg['first_estimate']}: " + ", ".join(f"{k} {v[0]:+.2f} to {v[1]:+.2f}" for k, v in pdg["coef_path"].items())
              + ". Twelve specifications were compared when this model was built; only productivity-only DOLS "
-             "passed the panel check, so treat the cointegration result as suggestive.\n")
+             "passed the panel check, so treat the cointegration result as suggestive. Net foreign assets "
+             "(External Wealth of Nations) were tested later and are shown as `prod_nfa`: insignificant, "
+             "wrong sign, and adding them breaks the panel check.\n")
 
     bd = r["beer_diag"]
     L.append("### BEER (bilateral, real INR/USD)\n")

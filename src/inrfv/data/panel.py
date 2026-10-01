@@ -4,6 +4,8 @@
   FRED series ``RB<ISO2>BIS``, cached in ``data/raw/fred``.
 * Fundamentals: World Bank WDI annual indicators for every panel country plus the
   world aggregate, cached in ``data/raw/worldbank_panel/<indicator>.csv``.
+* Net foreign assets: External Wealth of Nations (Lane & Milesi-Ferretti), % of GDP,
+  cached in ``data/raw/ewn/ewn_nfa.csv`` (see data/ewn.py).
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from ..config import path
-from . import fred, worldbank
+from . import ewn, fred, worldbank
 
 
 @dataclass
@@ -21,6 +23,7 @@ class PanelData:
     reer: pd.DataFrame          # monthly, columns = ISO3 codes
     wdi: dict[str, pd.DataFrame]  # indicator key -> wide annual table (index year, columns ISO3 incl. WLD)
     countries: list[str]
+    nfa: pd.DataFrame | None = None  # annual NFA, % of GDP (index year, columns ISO3)
 
 
 def load(cfg: dict, refresh: bool = False) -> PanelData:
@@ -39,4 +42,8 @@ def load(cfg: dict, refresh: bool = False) -> PanelData:
     for key, indicator in p["indicators"].items():
         long = worldbank.fetch_panel(countries + ["WLD"], indicator, wb_cache / f"{indicator}.csv", refresh)
         wdi[key] = long.pivot(index="year", columns="country", values="value").sort_index()
-    return PanelData(reer=reer, wdi=wdi, countries=countries)
+    nfa = None
+    if p.get("nfa"):
+        long = ewn.load(countries, path(cfg, "raw") / "ewn", refresh=refresh)
+        nfa = long.pivot(index="year", columns="country", values=p["nfa"]["measure"]).sort_index()
+    return PanelData(reer=reer, wdi=wdi, countries=countries, nfa=nfa)

@@ -22,3 +22,7 @@ outputs/latest.txt
 Thumbs.db
 .vscode/
 .idea/
+
+# EWN workbook (large); the compact data/raw/ewn/ewn_nfa.csv is tracked
+data/raw/ewn/*.xlsx
+outputs/refresh_logs/

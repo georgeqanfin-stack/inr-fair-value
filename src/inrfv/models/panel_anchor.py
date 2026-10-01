@@ -8,7 +8,8 @@ country effect plus the pooled coefficients times its fundamentals:
     log REER_ct = a_c + b' X_ct + e_ct         (annual, BIS broad real REER)
 
 X: relative productivity = log(GDP per capita PPP / world), and optionally log terms of
-trade, government consumption (% GDP) and trade openness (% GDP), all World Bank WDI.
+trade, government consumption (% GDP) and trade openness (% GDP), all World Bank WDI,
+and net foreign assets (% GDP, External Wealth of Nations).
 Estimated by panel dynamic OLS (Kao & Chiang 2000; Mark & Sul 2003: country fixed
 effects, levels plus leads and lags of the differenced regressors) with standard errors
 clustered by country. Re-estimated whenever a new year becomes public; annual data enter
@@ -20,8 +21,10 @@ an approximation to formal panel cointegration tests.
 
 Because a_c is the country's mean residual, India's gap averages zero over its sample:
 the anchor measures deviations from India's own fundamentals-adjusted norm, not an
-absolute over- or undervaluation. There is no NFA term (no cross-country IIP source
-in the pipeline yet).
+absolute over- or undervaluation. NFA is available as a regressor but is not in the
+central specification: in this panel it is insignificant with the wrong sign, and adding
+it breaks the panel cointegration check (see config). EWN is used as a single vintage,
+so past NFA values include later revisions (the only non-point-in-time input here).
 """
 
 from __future__ import annotations
@@ -34,7 +37,7 @@ from statsmodels.tsa.adfvalues import mackinnonp
 from statsmodels.tsa.stattools import adfuller
 
 MS = pd.offsets.MonthBegin
-EXPECTED_SIGN = {"rel_prod": "+", "log_tot": "+", "gov_cons": "+", "openness": "-"}
+EXPECTED_SIGN = {"rel_prod": "+", "log_tot": "+", "gov_cons": "+", "openness": "-", "nfa": "+"}
 FOCUS = "IND"
 
 
@@ -58,6 +61,8 @@ def annual_panel(pdata, p: dict, info: pd.Timestamp) -> pd.DataFrame:
         "gov_cons": published(w["gov_cons"], p["release_lag"])[pdata.countries],
         "openness": published(w["openness"], p["release_lag"])[pdata.countries],
     }
+    if pdata.nfa is not None:
+        parts["nfa"] = published(pdata.nfa, p["nfa_release_lag"])[pdata.countries]
     long = pd.concat({k: v.stack() for k, v in parts.items()}, axis=1)
     long.index.names = ["year", "country"]
     return long.swaplevel().sort_index()
@@ -166,6 +171,8 @@ def diagnostics(pdata, cfg: dict, info: pd.Timestamp, history: list[dict]) -> di
     panel = annual_panel(pdata, p, info)
     specs = {}
     for name, regs in p["specs"].items():
+        if not set(regs) <= set(panel.columns):   # e.g. NFA switched off in the config
+            continue
         fit = estimate(panel, regs, p["dols_k"])
         coint = panel_cointegration(fit["resid"], len(regs))
         x = latest_x(panel, regs)

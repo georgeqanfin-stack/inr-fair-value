@@ -192,17 +192,28 @@ tot        = "TT.PRI.MRCH.XD.WD"   # net barter terms of trade (WDI coverage sta
 gov_cons   = "NE.CON.GOVT.ZS"      # government consumption, % of GDP
 openness   = "NE.TRD.GNFS.ZS"      # exports + imports, % of GDP
 
+[panel.nfa]
+# Net foreign assets, % of GDP, from the External Wealth of Nations database (Lane &
+# Milesi-Ferretti, Brookings; data/raw/ewn). "nfa_ewn": net IIP excl. gold, authors'
+# estimates (consistent across countries, 1970+); "nfa_official": IIP as reported.
+# Remove this table to drop NFA from the panel entirely.
+measure = "nfa_ewn"
+
 [models.panel_anchor]
 # Pooled dynamic OLS with country fixed effects, annual; standard errors clustered by country.
 # "prod": relative productivity only (Balassa-Samuelson), the one specification whose
 # residuals pass the panel cointegration check (Fisher p = 0.025 after trying 12 variants,
 # so treat it as suggestive); "long" adds government consumption and openness (1995+);
-# "short" adds terms of trade (2005+, WDI coverage). All three are reported every run.
+# "short" adds terms of trade (2005+, WDI coverage); "prod_nfa" adds net foreign assets.
+# All are reported every run. NFA enters with the wrong sign and is insignificant
+# (t -0.5 EWN, -0.7 official) and adding it breaks the panel cointegration check
+# (Fisher p 0.42 EWN, 0.25 official), so it is a reported diagnostic, not central.
 central_spec   = "prod"
 dols_k         = 1
 min_years      = 10         # minimum usable years before the first estimate
 release_lag    = 7          # months after December until WDI annual data are public
 tot_release_lag = 18
+nfa_release_lag = 16        # EWN year-end y data appear around April of y+2
 reer_lag       = 1          # months until a month's BIS REER is public
 band_draws     = 2000
 band_percentiles = [10, 90]
@@ -212,6 +223,7 @@ seed           = 13
 prod  = ["rel_prod"]
 long  = ["rel_prod", "gov_cons", "openness"]
 short = ["rel_prod", "log_tot", "gov_cons", "openness"]
+prod_nfa = ["rel_prod", "nfa"]
 
 [models.beer]
 # Real INR/USD (PPP imposed) on long-run fundamentals, dynamic OLS; see models/beer.py.

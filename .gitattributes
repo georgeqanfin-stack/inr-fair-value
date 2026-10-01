@@ -1,4 +1,2 @@
-# Keep raw inputs byte-identical so data/raw/MANIFEST.sha256 verifies on every checkout.
-data/raw/** -text
-*.xlsx binary
-*.png binary
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

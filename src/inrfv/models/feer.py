@@ -11,7 +11,9 @@ For each quarter, using only data public when that quarter's BoP was released:
                       semi = -(eta_x * exports/GDP + eta_m * imports/GDP) / 100
                       (pp of GDP per 1% REER appreciation), with gross goods and services
                       flows from the BoP and eta from IMF EBA-Lite 3.0.
-4. Norms            - "imf": the IMF EBA CA norm for India (-2.0% of GDP, s.e. 0.7);
+4. Norms            - "imf_path" (central): the IMF EBA CA norms for India as published
+                      2013-2025 (from -4.2% to -2.0% of GDP), each from its publication month;
+                      "imf": a single IMF norm (-2.0% of GDP, s.e. 0.7);
                       "niip": the CA that keeps the net IIP/GDP ratio constant,
                       n * g / (1 + g) with n = NIIP/GDP and g = trailing nominal US$ growth;
                       "static": the legacy -2.5% assumption, for comparison.
@@ -35,7 +37,30 @@ def _roll(s: pd.Series, n: int) -> pd.Series:
     return s.rolling(n, min_periods=n).sum()
 
 
-def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict) -> pd.DataFrame:
+def load_norm_path(cfg: dict) -> pd.DataFrame:
+    """IMF CA norms for India as published: columns available (month start), norm, se, assessed, source."""
+    from ..config import path
+    f = path(cfg, "manual") / cfg["models"]["feer"]["norm_path_file"]
+    df = pd.read_csv(f)
+    df["available"] = pd.to_datetime(df["available"] + "-01")
+    return df.sort_values("available").reset_index(drop=True)
+
+
+def norm_from_path(available: pd.Series, path_df: pd.DataFrame) -> pd.DataFrame:
+    """The latest published norm at each date; before the first publication, the first norm (labelled)."""
+    rows = []
+    for d in available:
+        pub = path_df[path_df["available"] <= d]
+        if len(pub):
+            r = pub.iloc[-1]
+            rows.append((r["norm"], r["se"], f"{r['source']} [{r['assessed']}]"))
+        else:
+            r = path_df.iloc[0]
+            rows.append((r["norm"], r["se"], f"backcast: earliest IMF norm ({r['assessed']})"))
+    return pd.DataFrame(rows, index=available.index, columns=["norm", "se", "source"])
+
+
+def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict, norm_path: pd.DataFrame | None = None) -> pd.DataFrame:
     q = bop.copy().sort_index()
     q.index.name = "quarter"
     w = p["window_quarters"]
@@ -91,9 +116,17 @@ def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict) -> pd.DataFram
     else:
         q["niip_pct_gdp"] = q["nominal_usd_growth"] = q["norm_niip"] = np.nan
 
-    for name in ["imf", "niip", "static"]:
+    names = ["imf", "niip", "static"]
+    if norm_path is not None:
+        np_ = norm_from_path(q["available"], norm_path)
+        q["norm_imf_path"], q["norm_imf_path_se"], q["norm_imf_path_source"] = np_["norm"], np_["se"], np_["source"]
+        names.insert(0, "imf_path")
+    elif p["central_norm"] == "imf_path":
+        raise ValueError("central_norm = 'imf_path' needs the IMF norm path file")
+    for name in names:
         q[f"misalignment_pct_{name}"] = -(q["cad_underlying"] - q[f"norm_{name}"]) / q["semi_elasticity"]
     q["norm_central"] = q[f"norm_{p['central_norm']}"]
+    q["norm_central_se"] = q["norm_imf_path_se"] if p["central_norm"] == "imf_path" else p["imf_norm_se"]
     q["misalignment_pct"] = q[f"misalignment_pct_{p['central_norm']}"]
     q["fair_inr_q"] = q["inr_q"] / (1 + q["misalignment_pct"] / 100)
 
@@ -110,8 +143,8 @@ def band(q: pd.DataFrame, p: dict) -> pd.DataFrame:
     """Monte Carlo percentiles of the misalignment over norm and elasticity uncertainty."""
     rng = np.random.default_rng(p["seed"])
     d, u = p["band_draws"], p["eta_uncertainty"]
-    norm_sd = p["imf_norm_se"]
-    norm = q["norm_central"].to_numpy()[:, None] + rng.normal(0, norm_sd, d)[None, :]
+    norm_sd = q["norm_central_se"].to_numpy(dtype=float)[:, None]
+    norm = q["norm_central"].to_numpy()[:, None] + norm_sd * rng.normal(0, 1, d)[None, :]
     ex, im = q["exports_pct_gdp"].to_numpy()[:, None], q["imports_pct_gdp"].to_numpy()[:, None]
     ex_d = p["eta_exports"] * rng.uniform(1 - u, 1 + u, d)[None, :]
     im_d = p["eta_imports"] * rng.uniform(1 - u, 1 + u, d)[None, :]
@@ -128,15 +161,18 @@ def band(q: pd.DataFrame, p: dict) -> pd.DataFrame:
     return out
 
 
-def run(bop: pd.DataFrame, pit: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
+def run(bop: pd.DataFrame, pit: pd.DataFrame, cfg: dict,
+        norm_path: pd.DataFrame | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     p = cfg["models"]["feer"]
-    q = build_quarters(bop, pit, p)
+    if norm_path is None and p["central_norm"] == "imf_path":
+        norm_path = load_norm_path(cfg)
+    q = build_quarters(bop, pit, p, norm_path)
     q = q.join(band(q, p))
     lo, hi = f"misalignment_p{min(p['band_percentiles'])}", f"misalignment_p{max(p['band_percentiles'])}"
 
     # Monthly view: the latest quarter public at each month-end.
     keep = ["misalignment_pct", "misalignment_pct_conditional", lo, hi,
-            "misalignment_pct_imf", "misalignment_pct_niip", "misalignment_pct_static"]
+            "misalignment_pct_imf_path", "misalignment_pct_imf", "misalignment_pct_niip", "misalignment_pct_static"]
     keep = [c for c in keep if c in q.columns]
     rel = q.dropna(subset=["misalignment_pct"]).reset_index().set_index("available").sort_index()
     rel = rel[~rel.index.duplicated(keep="last")]

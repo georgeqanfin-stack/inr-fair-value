@@ -46,7 +46,7 @@ Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED
 | REER panel anchor (19 EMs) | +18.4% | 80.60 | **REER component of the composite**; productivity-based, panel-cointegrated (p = 0.025) |
 | REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge |
 | REER fundamentals anchor (India only) | +10.1% | 86.64 | Not cointegrated (p = 0.85): reported only |
-| FEER, IMF norm −2.0% (central) | +6.7% | 89.46 | Latest BoP quarter Oct–Dec 2025; 10th–90th percentile +1.2% to +13.6% |
+| FEER, IMF norm path (central; latest −2.0%) | +6.7% | 89.46 | Latest BoP quarter Oct–Dec 2025; 10th–90th percentile +1.2% to +13.6% |
 | FEER, NIIP-stabilising norm (−0.4%) | −3.4% | | Alternative norm |
 | BEER, current (real INR/USD, DOLS) | +25.8% | 75.89 | Not cointegrated (p = 0.98): descriptive only |
 | BEER, total (permanent fundamentals) | +21.5% | 78.55 | Fundamentals at their one-sided HP trends |
@@ -58,9 +58,10 @@ rate of 95.44. The panel anchor's gap for full-year 2025 was +8.8%; it widened
 because the REER fell about 13% during 2026 while the productivity-implied level kept rising.
 Filtered P(stress) = 0.14; 12-month-ahead P(stress) = 0.34 (steady state).
 
-**The ECM still does not beat the benchmark.** Out of sample (2010–2025), the
-composite ECT does not significantly beat a random walk with drift at any horizon.
-At 12 months the RMSE ratio is 1.02 and the Clark-West p-value is 0.22. With the
+**The ECM is close to the benchmark but not significantly better.** Out of sample
+(2010–2025), at 12 months the composite's RMSE is 2.3% below a random walk with
+drift (ratio 0.977). That is the first configuration to beat drift on RMSE, but
+the Clark-West p-value is 0.13, so the improvement is not statistically significant. With the
 panel anchor, the error-correction coefficient has the right sign in every
 out-of-sample window (−0.82 to −0.26 at 12 months), which the HP-based composite did
 not (−0.22 to +0.15, Clark-West p = 1.00). Treat the misalignment figures as
@@ -133,9 +134,15 @@ switches it in.
 - *Semi-elasticity*: the IMF EBA formula −(η_x·X/GDP + η_m·M/GDP)/100 with
   η_x = 0.46 and η_m = 0.25 (IMF EBA-Lite 3.0) and India's gross goods and services
   trade shares. This is about −0.16 pp of GDP per 1% REER, where v0.2 assumed −0.267.
-- *Norms*: the IMF EBA norm for India, −2.0% of GDP (s.e. 0.7; 2025 Article IV,
-  central); the CA that keeps NIIP/GDP constant, n·g/(1+g) (about −0.4% today);
-  and the legacy −2.5% for comparison.
+- *Norms*: central is the **IMF norm path**, India's EBA current-account norms
+  as the IMF published them, from −3.4% (2013 Article IV) through −4.2%
+  (2015–16) to −2.0% (2025). Each applies from its publication month (data file
+  `data/raw/manual/imf_ca_norm_india.csv`, sourced row by row from the IMF EBA
+  estimate tables and Article IV staff reports). Quarters before Feb 2013 use the
+  earliest norm and are labelled as a backcast. Also reported: a fixed −2.0%, the
+  CA that keeps NIIP/GDP constant, n·g/(1+g) (about −0.4% today), and the legacy
+  −2.5%. The IMF's own CA-to-REER elasticities in those tables (0.15–0.18) bracket
+  this model's −0.16.
 - *Band*: 2,000 Monte Carlo draws over the norm (normal, s.e. 0.7) and both
   elasticities (±50% uniform), giving percentiles per quarter and the fair-value corridor.
 
@@ -245,10 +252,16 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
   evidence comes from one specification out of twelve tried.
 - The panel's World Bank fundamentals lag by one to two years, so the equilibrium
   moves in annual steps and the recent gap is driven mostly by the REER itself.
-- The FEER applies today's IMF norm (−2.0%) to every year back to 2001; norms
-  change over time (India ran surpluses in 2001–04, which show up as a 30–40%
-  "undervaluation"). The choice between the IMF and NIIP-stabilising norms moves the
-  current reading by about 10pp, which is more than the whole Monte Carlo band.
+- Before Feb 2013 there is no published IMF norm for India, so the FEER uses the
+  earliest one (−3.4%). That makes the 2002–08 surplus years read as a 25–55%
+  "undervaluation". The 2017 EBA vintage (assessing 2016) is not available online,
+  so the 2016 norm carries forward until Jul 2018.
+- The IMF norm and the NIIP-stabilising norm still differ by about 1.6pp today,
+  which moves the reading by about 10pp. That is more than the Monte Carlo band.
+- A panel model estimating India's norm from structural fundamentals (relative
+  income, demographics, oil balance; 19 EMs) was tried and dropped: R² 0.09, no
+  correctly-signed significant coefficient. The IMF's norms rely on a much wider
+  panel and policy variables this project does not have.
 - The FEER has no output-gap adjustment (the IMF adjusts for the domestic and
   partner-country cycle) and no income-balance semi-elasticity.
 - Neither the BEER nor the India-only REER anchor is cointegrated on 2001–26 data.

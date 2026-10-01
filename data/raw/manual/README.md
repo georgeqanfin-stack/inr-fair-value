@@ -39,6 +39,22 @@ funds) and reports how closely it tracks the repo rate. Set
 `india_policy_source = "repo"` in the config to use the repo rate from Jun 2008,
 with the call rate before.
 
+## `imf_ca_norm_india.csv`
+India's current-account norm (% of GDP) from the IMF External Balance Assessment,
+one row per publication: `available` is the month the norm became public.
+`assessed` is the year or fiscal year the IMF assessed, and `se` is the standard
+error (0.7 as stated in the 2024 and 2025 Article IVs; also used for earlier rows).
+Values were read from:
+- the IMF "EBA estimates" tables at https://www.imf.org/external/np/res/eba/data.htm
+  (Table 1, "CA Norm" column; 2013–2015 and 2017–2024 assessments)
+- the India Article IV staff reports: CR 13/37, 16/75, 25/54 and 25/314
+
+Each row was checked against the table's own arithmetic (cyclically adjusted CA −
+norm = total gap). The vintage assessing 2016 (published 2017) is not online.
+Publication months are the External Sector Report release months (July; Aug in
+2020 and 2021) and the Article IV publication months. Add a row each year when the
+new External Sector Report comes out.
+
 ## Legacy FII flows (`../parsed_fpi_inr.csv`)
 Monthly net FII investment in INR crore, Jan 2000 – Jun 2025, parsed by the legacy
 notebook from an RBI workbook that was later overwritten. It is the only surviving

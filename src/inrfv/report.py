@@ -45,8 +45,11 @@ def build_report(r: dict) -> str:
         ("REER fundamentals anchor", r["anchor"]["misalignment_pct"], r["anchor"]["fair_inr"],
          ("cointegrated" if r["anchor_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: reported only")
          + ("; used in composite" if r["config"]["composite"].get("reer_component") == "anchor" else "")),
-        (f"FEER, {fp['central_norm'].upper()} norm (central)", fm["misalignment_pct"], fm["fair_inr"],
+        ({"imf_path": "FEER, IMF norm path (central)", "imf": "FEER, fixed IMF norm (central)",
+          "niip": "FEER, NIIP-stabilising norm (central)", "static": "FEER, legacy norm (central)"}[fp["central_norm"]],
+         fm["misalignment_pct"], fm["fair_inr"],
          f"{qlabel}; {min(fp['band_percentiles'])}–{max(fp['band_percentiles'])}th pct {_f(_last(fm[lo_c])[0])}% to {_f(_last(fm[hi_c])[0])}%"),
+        ("FEER, fixed IMF −2.0% norm", fm.get("misalignment_pct_imf", pd.Series(dtype=float)), None, "for comparison"),
         ("FEER, NIIP-stabilising norm", fm.get("misalignment_pct_niip", pd.Series(dtype=float)), None, "alternative norm"),
         ("FEER, legacy −2.5% norm", fm.get("misalignment_pct_static", pd.Series(dtype=float)), None, "v0.2 assumption, for comparison"),
         ("FEER conditional (experimental)", fm["misalignment_pct_conditional"], None, "ad hoc norm, not in composite"),
@@ -73,7 +76,8 @@ def build_report(r: dict) -> str:
     L.append(f"Quarter from {x.name:%b %Y}, public {x['available']:%b %Y}: 4-quarter CA {x['ca_pct_4q']:+.2f}% of GDP; "
              f"oil adjustment {x['oil_adjustment']:+.2f}pp (net oil imports {_f(x['net_oil_pct_gdp'], '{:.2f}')}% of GDP, "
              f"Brent paid ${x['brent_paid']:.0f} vs 5-year norm ${x['brent_norm']:.0f}); underlying CA "
-             f"{x['cad_underlying']:+.2f}%. Norms: IMF {x['norm_imf']:+.1f}%, NIIP-stabilising "
+             f"{x['cad_underlying']:+.2f}%. Norms: IMF path {_f(x.get('norm_imf_path'), '{:+.1f}')}% "
+             f"({x.get('norm_imf_path_source', 'n/a')}), fixed IMF {x['norm_imf']:+.1f}%, NIIP-stabilising "
              f"{_f(x['norm_niip'], '{:+.2f}')}%, legacy {x['norm_static']:+.1f}%. Semi-elasticity "
              f"{x['semi_elasticity']:.3f} pp/1% ({x['semi_source']}; X {_f(x['exports_pct_gdp'], '{:.1f}')}%, "
              f"M {_f(x['imports_pct_gdp'], '{:.1f}')}% of GDP).\n")

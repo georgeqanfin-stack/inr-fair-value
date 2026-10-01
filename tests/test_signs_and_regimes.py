@@ -122,3 +122,30 @@ def test_stress_forecast_rejects_legacy_matrix():
     legacy = np.array([[0.876, 0.272], [0.124, 0.728]])  # rows sum to 1.148 / 0.852
     with pytest.raises(ValueError):
         regimes.stress_forecast(legacy, np.array([0.9, 0.1]))
+
+
+def test_imf_norm_path_is_point_in_time():
+    path = pd.DataFrame({"available": pd.to_datetime(["2014-07-01", "2018-07-01"]),
+                         "assessed": ["2013", "2017"], "norm": [-3.9, -3.0], "se": [0.7, 0.5],
+                         "source": ["EBA 2014", "EBA 2018"]})
+    avail = pd.Series(pd.to_datetime(["2012-01-01", "2014-06-01", "2014-07-01", "2018-06-01", "2020-01-01"]))
+    got = feer.norm_from_path(avail, path)
+    assert got["norm"].tolist() == [-3.9, -3.9, -3.9, -3.9, -3.0]       # a norm applies only once published
+    assert got["source"].iloc[0].startswith("backcast")                 # before the first: earliest, labelled
+    assert not got["source"].iloc[2].startswith("backcast")
+    assert got["se"].iloc[-1] == 0.5
+
+
+def test_feer_uses_norm_path_and_its_se(cfg):
+    idx = pd.date_range("2005-01-01", periods=120, freq="MS")
+    pit = pd.DataFrame({"brent": 70.0, "inr_usd": 80.0}, index=idx)
+    q = pd.date_range("2005-01-01", periods=24, freq="QS-JAN")
+    path = pd.DataFrame({"available": pd.to_datetime(["2005-01-01", "2008-01-01"]), "assessed": ["a", "b"],
+                         "norm": [-4.0, -1.0], "se": [0.01, 2.0], "source": ["s1", "s2"]})
+    cfg["models"]["feer"]["central_norm"] = "imf_path"
+    fq, _ = feer.run(_flat_bop(q, -2.0, **GROSS), pit, cfg, norm_path=path)
+    early, late = fq[fq["available"] < "2008-01-01"].dropna(subset=["misalignment_pct"]), fq[fq["available"] >= "2008-01-01"]
+    assert (early["misalignment_pct"] > 0).all()            # CA -2% vs norm -4%: room to appreciate
+    assert (late["misalignment_pct"] < 0).all()             # CA -2% vs norm -1%: overvalued
+    width = lambda d: (d["misalignment_p90"] - d["misalignment_p10"]).mean()
+    assert width(late) > 3 * width(early)                    # the band widens with the published s.e.

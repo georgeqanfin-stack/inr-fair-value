@@ -124,11 +124,13 @@ min_obs   = 36          # months of REER history before the one-sided HP trend i
 
 [models.feer]
 # Current-account norm (% of GDP) used for the central estimate:
-#   "imf"    IMF EBA CA norm for India, FY2024/25: -2.0, s.e. 0.7
-#            (IMF Country Report No. 25/314, 2025 Article IV, external sector assessment)
-#   "niip"   CA that keeps NIIP/GDP at its current level: n * g / (1 + g)
-#   "static" legacy v0.2 assumption
-central_norm      = "imf"
+#   "imf_path" IMF EBA CA norms for India as published over time (data/raw/manual/imf_ca_norm_india.csv),
+#              each applying from its publication month; before the first one, the first is used
+#   "imf"      a single IMF norm (imf_norm, imf_norm_se) for every period
+#   "niip"     CA that keeps NIIP/GDP at its current level: n * g / (1 + g)
+#   "static"   legacy v0.2 assumption
+central_norm      = "imf_path"
+norm_path_file    = "imf_ca_norm_india.csv"
 imf_norm          = -2.0
 imf_norm_se       = 0.7
 static_norm       = -2.5

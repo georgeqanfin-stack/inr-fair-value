@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.13.0 · run `20261001-160530` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.14.0 · run `20261001-202217` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -146,6 +146,33 @@ Weighting schemes for the REER component and the FEER, all point in time, throug
 | Inverse variance (bands) | 0.35, 0.14 | +12.9% | 1.005 (0.58) | 1.015 (0.63) | 1.012 (0.39) | 1.037 (0.53) |
 | Performance (Bates-Granger) | 0.53, 0.50 | +14.4% | 1.000 (0.19) | 1.007 (0.32) | 1.016 (0.22) | 0.976 (0.13) |
 
+### Nonlinear and time-varying adjustment
+
+Each variant is re-estimated point in time like the headline ECM and scored the same way. Rule set before testing: replace the linear ECM only if a variant lowers the 12-month RMSE ratio by at least 0.01 and has a lower Clark-West p.
+
+| Variant | 1m RMSE ratio (CW p) | 3m RMSE ratio (CW p) | 6m RMSE ratio (CW p) | 12m RMSE ratio (CW p) |
+|---|---|---|---|---|
+| Linear ECM (headline) | 0.998 (0.14) | 1.006 (0.28) | 1.015 (0.21) | 0.977 (0.13) |
+| Threshold ECM | 1.012 (0.04) | 1.069 (0.75) | 1.044 (0.42) | 1.340 (0.55) |
+| Cubic (ESTAR approximation) | 1.005 (0.39) | 1.022 (0.59) | 1.030 (0.43) | 1.416 (0.15) |
+| Rolling-window ECM | 1.001 (0.13) | 1.004 (0.20) | 1.008 (0.17) | 0.944 (0.08) |
+| Time-varying parameters (Kalman) | 1.010 (0.46) | 1.124 (0.78) | 1.236 (0.93) | 1.299 (0.52) |
+
+Latest fits: threshold |gap| 0.104 log points, slope inside +0.13 and outside -0.32; cubic term +1.88 (negative would mean faster reversion of large gaps).
+
+Rolling window, 12-month ratio by window length: 72 months 0.982 (p 0.07), 96 months 0.983 (p 0.12), 120 months 0.944 (p 0.08), 144 months 0.968 (p 0.09), 180 months 0.970 (p 0.08); median 0.970. The rule's choice: **rolling**. Adopted: **linear** (the rolling window passes at its pre-set length but not at the median of nearby lengths; this robustness requirement was added after the first results). `[backtest] window_months` switches the headline ECM to a rolling window.
+
+Structural breaks (sup-Wald, 15% trimming, block-bootstrap p; a second break is tested on the larger segment when the first is significant):
+
+| Series | Sample | Break | sup-F | p | Before | After |
+|---|---|---|---|---|---|---|
+| 12-month ECM (intercept and slope) | 2004-07–2025-09 | Jun 2013 | 12.7 | 0.690 | +0.103, -0.720 | +0.011, +0.284 |
+| Mean of composite misalignment | 2004-07–2026-09 | Oct 2009 | 134.0 | 0.010 | +14.3 | +7.4 |
+| Mean of composite misalignment | 2009-10–2026-09 | Sep 2013 | 73.5 | 0.070 | +3.7 | +8.4 |
+| Mean of REER component misalignment | 2004-07–2026-09 | Dec 2011 | 40.7 | 0.300 | +2.5 | +6.3 |
+| Mean of FEER misalignment | 2001-04–2026-09 | Oct 2005 | 580.5 | 0.005 | +41.3 | +11.8 |
+| Mean of FEER misalignment | 2005-10–2026-09 | Jul 2009 | 169.3 | 0.020 | +23.1 | +9.3 |
+
 ### Joint uncertainty (bootstrap corridor)
 
 2000 joint draws a month of: the panel slope and India's effect (country-block bootstrap, 300 draws per re-estimation), the IMF norm (its standard error), the trade elasticities (±50%), current-account measurement error (sd 0.2 pp of GDP) and the weighting scheme (equal, performance or inverse variance). Sep 2026: fair value 79.93–86.40 (misalignment +10.4% to +19.4%); 100% of draws say undervalued. End-to-end band: 78.27–88.53. Headline corridor: **bootstrap**.
@@ -271,7 +298,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T10:34:35+00:00, mirror loaded 2026-10-01T10:28:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T14:51:26+00:00, mirror loaded 2026-10-01T14:48:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

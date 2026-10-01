@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.15.0 · run `20261001-205656` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.16.0 · run `20261001-215847` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -102,6 +102,21 @@ Filtered P(stress) = **0.08** (2026-09), steady state 0.34. Forward: 1m 0.18, 3m
 Calm: mean +0.10%/mo, sd 0.76%, duration 7.8m. Stress: mean +0.49%/mo, sd 2.40%, duration 4.1m.
 
 Oil × DXY quadrant (expanding medians): OilHi_DXYHi (Sep 2026).
+
+### Time-varying transition probabilities
+
+Switching odds driven by last month's VIX change, Brent change, FPI flows and RBI intervention (standardised, point in time), against the constant-probability model. Full sample Apr 2000–Sep 2026; out of sample Apr 2008–Sep 2026: one-step-ahead predictive log score of the monthly return, parameters re-estimated yearly; t-test on the log-score difference (Newey-West); AUC of the predicted stress probability for months with the largest 20% of moves. Rule set beforehand: switch only if a specification beats the constant model out of sample with one-sided p < 0.1.
+
+| Transition drivers | Log-lik. | AIC | BIC | LR p | OOS log score | vs constant | t | p | AUC big moves |
+|---|---|---|---|---|---|---|---|---|---|
+| none (constant) | -543.3 | 1098.6 | 1121.1 | — | -1.9451 | +0.0000 | — | — | 0.66 |
+| VIX (change) | -542.9 | 1101.9 | 1132.0 | 0.72 | -1.9604 | -0.0153 | -1.52 | 0.94 | 0.64 |
+| Brent (% change) | -542.9 | 1101.8 | 1131.9 | 0.70 | -1.9487 | -0.0036 | -0.52 | 0.70 | 0.64 |
+| FPI flows | -541.7 | 1099.3 | 1129.4 | 0.20 | -1.9722 | -0.0271 | -0.85 | 0.80 | 0.65 |
+| RBI intervention | -542.2 | 1100.5 | 1130.6 | 0.35 | -1.9639 | -0.0188 | -1.03 | 0.85 | 0.65 |
+| VIX (change), Brent (% change), FPI flows, RBI intervention | -541.1 | 1110.2 | 1162.8 | 0.82 | -2.4697 | -0.5247 | -2.27 | 0.99 | 0.58 |
+
+Choice: **constant**.
 
 ## Market pricing (forward premia)
 
@@ -323,7 +338,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T15:26:07+00:00, mirror loaded 2026-10-01T15:18:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T16:27:54+00:00, mirror loaded 2026-10-01T16:18:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

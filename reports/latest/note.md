@@ -1,6 +1,6 @@
 # INR/USD fair value note, September 2026
 
-Data to September 2026 · run `20261001-205656` · written 01 Oct 2026
+Data to September 2026 · run `20261001-215847` · written 01 Oct 2026
 
 ## The reading
 
@@ -17,6 +17,8 @@ No source published new or revised data since the last refresh.
 ## Risk regime
 
 The regime model reads **calm**: the probability of the high-volatility stress state is 8% (Sep 2026), against a long-run average of 34%. Twelve months ahead it puts the odds at 34%. In stress months the rupee's monthly moves are about 3 times as large as in calm ones (2.4% vs 0.8% standard deviation).
+
+Letting oil, the VIX, portfolio flows or RBI intervention drive the switching odds did not predict the next month better than the regimes' own persistence, so the odds stay constant.
 
 The forward market prices the rupee at 96.83 in six months (premium 3.0% a year, Jun 2026). The premium is +1.2 points over the policy-rate gap, higher than 86% of months since 2000: a sign of hedging demand and expected depreciation beyond carry. Historically the spread has not predicted the next month's move.
 

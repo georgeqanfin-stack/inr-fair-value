@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.14.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.15.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.15 | Formal panel cointegration (Pedroni-type, Westerlund) with bootstrap p; 16-spec family, Holm/BH |
 | 0.14 | Nonlinear/time-varying ECM variants and break tests; linear ECM kept (rolling not robust) |
 | 0.13 | Joint bootstrap corridor (panel, norm, elasticities, CA error, weights) with ex-post coverage check |
 | 0.12 | Composite weights tested: equal vs performance vs inverse-variance; equal kept by a pre-set rule |
@@ -413,6 +414,31 @@ For India the two NFA measures differ sharply (−34% vs −10% of GDP in 2024),
 because EWN values foreign holdings of Indian equity at market prices. EWN is used
 as one vintage, so its history includes later revisions. Removing `[panel.nfa]`
 from the config drops NFA entirely.
+
+*Formal panel cointegration and the specification search (v0.15).* The check above
+is a Fisher combination of ADF tests on the pooled, common-slope residuals. The formal
+tests let each country have its own slope. They are Pedroni-type group and panel ADF
+on country-by-country cointegrating regressions, and Westerlund's Gt and Pt
+error-correction tests (`stats/panel_coint.py`). Their p-values come from 999
+bootstrap panels generated under no cointegration, with years resampled jointly
+across countries to keep cross-country correlation.
+
+A Monte Carlo (`scripts/mc_panel_coint.py`) fixed the primary statistic. The group ADF
+rejects 5% of non-cointegrated panels at 5%; the Westerlund bootstrap rejects 15–18%,
+so its p-values are too low here. The search family is every combination of
+productivity with government consumption, openness, terms of trade and NFA: 16
+specifications, 12 with enough years.
+
+| | Group ADF p | Holm | BH |
+|---|---|---|---|
+| Productivity only (central) | 0.023 | 0.25 | 0.09 |
+| Specifications passing at 5%, before adjustment | 5 of 12 | 0 | 0 at 5%, 10 at 10% |
+
+Each country's REER is broadly cointegrated with its own productivity. The central
+result does not survive a family-wise correction for the search (Holm 0.25). It holds
+at a 10% false-discovery rate (BH 0.09). So the anchor's equilibrium is suggestive,
+not conclusive, which is now quantified. The p-values themselves vary by about ±0.01
+between bootstrap seeds.
 
 **REER component choice.** All three REER measures run every time;
 `[composite] reer_component` picks one (`panel`, `hp` or `anchor`). Composite

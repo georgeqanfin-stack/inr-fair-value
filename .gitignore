@@ -28,3 +28,5 @@ data/raw/ewn/*.xlsx
 outputs/refresh_logs/
 # IMF EBA estimate PDFs (re-download; scripts/extract_imf_eba.py writes the tracked CSV)
 data/raw/manual/imf_eba/
+# Cached slow diagnostics (re-computable)
+outputs/cache/

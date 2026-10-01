@@ -68,7 +68,10 @@ def collect(r: dict) -> dict:
               "Average of the REER and FEER log gaps"),
         model("REER panel anchor (19 EMs)", r["panel"]["misalignment_pct"], r["panel"]["fair_inr"], used("panel"),
               "ok" if pc["cointegrated_5pct"] else "fail",
-              f"Productivity effect pooled across emerging markets; panel cointegration p = {pc['pvalue']:.3f}"),
+              f"Productivity effect pooled across emerging markets; panel cointegration p = {pc['pvalue']:.3f}"
+              + (f" (formal group ADF p = {fc['p']['group_adf']:.3f}; {fc['p_holm']:.2f} after the "
+                 f"{pdg['formal_family']['n_testable']}-specification search, Holm)"
+                 if (fc := pdg["specs"][pdg["central_spec"]].get("formal")) and fc.get("testable") else "")),
         model("FEER, IMF norm path", fm["misalignment_pct"], fm["fair_inr"], "composite", "n/a",
               f"80% band {_num(_last(fm[lo_c])[0], 1)}% to {_num(_last(fm[hi_c])[0], 1)}%"),
         model("REER gap (one-sided HP)", r["reer"]["misalignment_pct"], r["reer"]["fair_inr"], used("hp"), "n/a",

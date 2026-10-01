@@ -16,6 +16,7 @@ def run(tmp_path_factory):
     from inrfv.config import load_config
     from inrfv.run import run_pipeline, save
     cfg = load_config()
+    cfg["models"]["panel_anchor"]["coint_reps"] = 49      # the real run uses 999 (cached); tests need speed
     out = tmp_path_factory.mktemp("run")
     r = run_pipeline(cfg, refresh=False, run_dir=out)
     save(r, out)
@@ -152,3 +153,12 @@ def test_nonlinear_variants_and_breaks_reported(run):
     lin = nl["variants"]["linear"]["by_horizon"][12]["rmse_ratio"]
     assert lin == pytest.approx(r["backtest"][12]["oos"]["rmse_ratio_ecm_vs_drift"])    # same as the headline
     assert "### Nonlinear and time-varying adjustment" in (out / "report.md").read_text(encoding="utf-8")
+
+
+def test_formal_panel_cointegration_reported(run):
+    r, out = run
+    ff = r["panel_diag"]["formal_family"]
+    assert ff["primary"] == "group_adf" and ff["n_specs"] == 16
+    cen = r["panel_diag"]["specs"][r["panel_diag"]["central_spec"]]["formal"]
+    assert cen["testable"] and cen["p_holm"] >= cen["p"]["group_adf"]
+    assert "Formal panel cointegration tests" in (out / "report.md").read_text(encoding="utf-8")

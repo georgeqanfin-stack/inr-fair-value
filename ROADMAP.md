@@ -20,8 +20,8 @@ until the backtest looks better.
 | 5 | Composite weights tested, not assumed | **Done (v0.12)** |
 | 6 | Joint uncertainty: whole-pipeline bootstrap | **Done (v0.13)** |
 | 7 | Nonlinear and time-varying adjustment, structural breaks | **Done (v0.14)** |
-| 9 | Formal panel cointegration tests, multiple-testing adjustment | Next |
-| 8 | Regime model with time-varying transition probabilities | Planned |
+| 9 | Formal panel cointegration tests, multiple-testing adjustment | **Done (v0.15)** |
+| 8 | Regime model with time-varying transition probabilities | Next |
 | 10 | FEER: cyclical adjustment and income balance | Planned |
 | 11 | Flow identification beyond contemporaneous OLS | Planned |
 | 15 | Engineering: lint, types, coverage, data schemas, Docker | Planned |
@@ -118,7 +118,10 @@ norm years). Original plan: threshold ECM and ESTAR (large gaps
 revert faster), time-varying-parameter ECM (Kalman), Bai-Perron break tests on the
 ECM and the anchors. Evaluate out of sample with the same tests as the linear model.
 
-**9. Panel statistics.** Pedroni and Westerlund panel cointegration tests alongside
+**9. Panel statistics (done).** Bootstrap Pedroni-type and Westerlund tests; Monte
+Carlo picks the group ADF (correct size; Westerlund over-rejects). Central p 0.023;
+over the 16-spec family Holm 0.25, BH 0.09: suggestive, not conclusive. Original
+plan: Pedroni and Westerlund panel cointegration tests alongside
 the Fisher approximation; adjust for the 13 specifications tried (Holm or
 Romano-Wolf).
 

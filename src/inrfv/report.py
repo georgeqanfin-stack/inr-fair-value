@@ -111,6 +111,36 @@ def build_report(r: dict) -> str:
              "passed the panel check, so treat the cointegration result as suggestive. Net foreign assets "
              "(External Wealth of Nations) were tested later and are shown as `prod_nfa`: insignificant, "
              "wrong sign, and adding them breaks the panel check.\n")
+    ff = pdg.get("formal_family")
+    if ff:
+        L.append("**Formal panel cointegration tests.** 'Panel coint. p' above is a Fisher combination of per-country "
+                 "ADF tests on the pooled (common-slope) residuals. The tests below allow each country its own slope "
+                 "(Pedroni-type group and panel ADF on country-by-country cointegrating regressions; Westerlund Gt and "
+                 f"Pt error-correction tests), with p-values from {ff['reps']} bootstrap panels generated under no "
+                 "cointegration (years resampled jointly across countries). The primary statistic is the group ADF: in a "
+                 "Monte Carlo (scripts/mc_panel_coint.py) it rejected 5% of non-cointegrated panels at the 5% level, "
+                 "while the Westerlund bootstrap rejected 15-18%, so Westerlund p-values here are too low.\n")
+        L.append(f"Search family: every specification containing relative productivity ({ff['n_specs']} specs, "
+                 f"{ff['n_testable']} with enough years). {ff['n_pass_raw']} pass at 5% before adjustment. Holm controls "
+                 "the chance of any false pass; Benjamini-Hochberg (BH) the share of false passes.\n")
+        L.append("| Specification | Years | Group ADF p | Holm | BH | Panel ADF p | Westerlund Gt p | Pt p | Fisher (pooled slope) |")
+        L.append("|---|---|---|---|---|---|---|---|---|")
+        fisher = {frozenset(s["regressors"]): s["panel_cointegration"]["pvalue"] for s in pdg["specs"].values()}
+        for name, v in ff["specs"].items():
+            fz = fisher.get(frozenset(v["regressors"]))
+            fz = f"{fz:.3f}" if fz is not None else "—"
+            if not v.get("testable"):
+                L.append(f"| {name.replace('+', ' + ')} | — | too few years | | | | | | {fz} |")
+                continue
+            pv = v["p"]
+            L.append(f"| {name.replace('+', ' + ')} | {v['years']} | {pv['group_adf']:.3f} | {v['p_holm']:.2f} | "
+                     f"{v['p_bh']:.2f} | {pv['panel_adf']:.3f} | {pv['Gt']:.3f} | {pv['Pt']:.3f} | {fz} |")
+        cen = pdg["specs"][pdg["central_spec"]].get("formal")
+        if cen and cen.get("testable"):
+            L.append(f"\nCentral specification: group ADF p {cen['p']['group_adf']:.3f}; after the search, Holm "
+                     f"{cen['p_holm']:.2f} and BH {cen['p_bh']:.2f}. Country-by-country cointegration with productivity is "
+                     "broadly supported; the common slope the anchor imposes, and the central specification's p-value "
+                     "after accounting for the search, are suggestive rather than conclusive.\n")
 
     bd = r["beer_diag"]
     L.append("### BEER (bilateral, real INR/USD)\n")

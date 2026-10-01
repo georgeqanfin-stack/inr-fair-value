@@ -228,6 +228,12 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append(f"the market-based BEER ({_signed(b)}) fails its long-run test, so it is shown for context only")
     if not r["anchor_diag"]["engle_granger"]["cointegrated_5pct"]:
         caveats.append("the India-only REER model fails its long-run test")
+    pdg = r.get("panel_diag", {})
+    fc = pdg.get("specs", {}).get(pdg.get("central_spec"), {}).get("formal")
+    if fc and fc.get("testable") and fc["p"]["group_adf"] < 0.05 <= fc["p_holm"]:
+        caveats.append(f"the productivity anchor passes its long-run test (p {fc['p']['group_adf']:.3f}) but not once the "
+                       f"{pdg['formal_family']['n_testable']} specifications tried are allowed for (p {fc['p_holm']:.2f}), "
+                       "so its equilibrium is suggestive")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
     nl = r.get("nonlinear")

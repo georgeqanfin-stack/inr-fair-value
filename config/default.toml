@@ -244,6 +244,14 @@ reer_lag       = 1          # months until a month's BIS REER is public
 band_draws     = 2000
 band_percentiles = [10, 90]
 seed           = 13
+# Formal panel cointegration (stats/panel_coint.py): bootstrap p-values under no
+# cointegration for Pedroni-type and Westerlund tests, over the family of every
+# specification containing the first candidate; Holm and BH adjustment of the primary
+# statistic. Primary = Pedroni-type group ADF: correct size in a Monte Carlo
+# (scripts/mc_panel_coint.py), where the Westerlund bootstrap over-rejected (15-18% at 5%).
+coint_candidates = ["rel_prod", "gov_cons", "openness", "log_tot", "nfa"]
+coint_primary    = "group_adf"
+coint_reps       = 999     # p-values vary by about +/-0.01 across seeds even at 999; cached until annual data change
 
 [models.panel_anchor.specs]
 prod  = ["rel_prod"]

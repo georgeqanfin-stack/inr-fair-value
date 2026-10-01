@@ -263,10 +263,20 @@ def diagnostics(pdata, cfg: dict, info: pd.Timestamp, history: list[dict]) -> di
             "india_latest_annual_gap_pct": float((np.exp(star - in_hist.iloc[-1]) - 1) * 100),
             "india_latest_reer_year": int(in_hist.index.max()),
         }
+    formal = None
+    cands = [c for c in p.get("coint_candidates", []) if c in panel.columns]
+    if cands:
+        from ..config import path as cfg_path
+        from ..stats import panel_coint
+        formal = panel_coint.family_tests(panel, cands, cands[0], p["coint_reps"], p["seed"], p["coint_primary"],
+                                          cache_dir=cfg_path(cfg, "runs").parent / "cache")
+        by_set = {frozenset(v["regressors"]): v for v in formal["specs"].values()}
+        for s in specs.values():
+            s["formal"] = by_set.get(frozenset(s["regressors"]))
     hist = pd.DataFrame(history)
     path = {}
     if len(hist):
         for r in p["specs"][p["central_spec"]]:
             path[r] = [float(hist[r].min()), float(hist[r].max())]
-    return {"central_spec": p["central_spec"], "specs": specs, "coef_path": path,
+    return {"central_spec": p["central_spec"], "specs": specs, "coef_path": path, "formal_family": formal,
             "first_estimate": hist["date"].min() if len(hist) else None, "n_estimates": len(hist)}

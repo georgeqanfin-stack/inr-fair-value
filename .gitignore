@@ -26,3 +26,5 @@ Thumbs.db
 # EWN workbook (large); the compact data/raw/ewn/ewn_nfa.csv is tracked
 data/raw/ewn/*.xlsx
 outputs/refresh_logs/
+# IMF EBA estimate PDFs (re-download; scripts/extract_imf_eba.py writes the tracked CSV)
+data/raw/manual/imf_eba/

@@ -13,10 +13,10 @@ until the backtest looks better.
 | 1 | RBI FX intervention and forward book | **Done (v0.6)** |
 | 14 | Version number consistent everywhere | **Done (v0.6)** |
 | 3 | Market inputs: forward premium, implied rate differential | **Done (v0.7)** |
-| 2 | Real-time data vintages | **Done (v0.8)**; ALFRED activates with a FRED key |
+| 2 | Real-time data vintages | **Done (v0.8)**; ALFRED live since v0.10 |
 | 4 | Automate manual and stale inputs | **Done (v0.9)** |
-| 12 | External benchmark: IMF External Sector Report track record | Next |
-| 13 | Peer currencies: panel anchor for all 19 | Planned |
+| 12 | External benchmark: IMF External Sector Report track record | **Done (v0.10)** |
+| 13 | Peer currencies: panel anchor for all 19 | Next |
 | 5 | Composite weights tested, not assumed | Planned |
 | 6 | Joint uncertainty: whole-pipeline bootstrap | Planned |
 | 7 | Nonlinear and time-varying adjustment, structural breaks | Planned |
@@ -76,7 +76,11 @@ gated and documented.
 
 ## Validation
 
-**12. IMF benchmark.** Table of the IMF External Sector Report's India assessments
+**12. IMF benchmark (done).** Nine IMF EBA assessments (2017–2025). The composite
+matches the IMF CA model's sign in 9/9 years, 2.9 pp apart on average at publication
+(correlation 0.63); the REER component co-moves with the IMF REER-level model (0.79)
+but disagrees on sign (IMF mostly "overvalued" until 2025). In the report, note and
+dashboard. Original plan: table of the IMF External Sector Report's India assessments
 (REER gap and CA gap by year, 2012 onward) against this model's reading as it stood
 at each ESR's publication. Report the correlation and the sign agreement.
 *Done when:* the track record is in the report and README.

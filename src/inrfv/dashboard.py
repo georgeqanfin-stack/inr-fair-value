@@ -80,6 +80,15 @@ def collect(r: dict) -> dict:
         model("REER anchor (India only)", r["anchor"]["misalignment_pct"], r["anchor"]["fair_inr"], used("anchor"),
               eg(r["anchor_diag"]), "Single-country fundamentals; too short a sample"),
     ]
+    bm = r.get("benchmark")
+    if bm:
+        lb = bm["latest"]
+        models.append({"name": f"IMF EBA current-account model ({lb['analysis_year']})",
+                       "misalignment": _num(lb["imf_ca"], 1), "fair": None, "asof": lb["published"],
+                       "role": "benchmark", "status": "n/a",
+                       "note": f"External check: CA gap {lb['ca_gap']:+.1f}% of GDP vs norm {lb['ca_norm']:.1f}%, "
+                               f"elasticity {lb['elasticity']:.2f}; our composite averaged {lb['composite_year']:+.1f}% "
+                               f"that year"})
 
     bt = []
     for h, res in r["backtest"].items():
@@ -499,7 +508,7 @@ document.querySelectorAll("#range button").forEach(b => b.addEventListener("clic
 const recent = S.slice(-24).reverse();
 $("tblMonths").innerHTML = `<thead><tr><th>Month</th><th class="n">Spot</th><th class="n">Fair</th><th class="n">Range</th><th class="n">Gap</th><th class="n">P(stress)</th></tr></thead><tbody>`
   + recent.map(r => `<tr><td>${monthName(r[0])}</td><td class="n">${fmt(r[1])}</td><td class="n">${fmt(r[2])}</td><td class="n">${fmt(r[3])}–${fmt(r[4])}</td><td class="n">${sgn(r[7])}%</td><td class="n">${r[8] === null ? "n/a" : (r[8] * 100).toFixed(0) + "%"}</td></tr>`).join("") + "</tbody>";
-const roleLbl = { headline: "Headline", composite: "In composite", reported: "Reported only" };
+const roleLbl = { headline: "Headline", composite: "In composite", reported: "Reported only", benchmark: "IMF check" };
 const statusLbl = { ok: '<span class="pill ok"><span class="dot"></span>Passes</span>', fail: '<span class="pill fail"><span class="dot"></span>Fails</span>', "n/a": '<span class="pill">Not applicable</span>' };
 $("tblModels").innerHTML = `<thead><tr><th>Model</th><th class="n">Misalignment</th><th class="n">Fair INR/USD</th><th>Use</th><th>Long-run test</th></tr></thead><tbody>`
   + D.models.map(mm => `<tr class="${mm.role === "headline" ? "head" : ""}"><td>${mm.name}<span class="note">${mm.note}${mm.asof ? ` · ${mm.asof}` : ""}</span></td><td class="n">${sgn(mm.misalignment)}%</td><td class="n">${fmt(mm.fair)}</td><td>${roleLbl[mm.role]}</td><td>${statusLbl[mm.status]}</td></tr>`).join("") + "</tbody>";

@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import beer, composite, feer, flows, market, panel_anchor, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -80,6 +80,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
             "johansen": johansen, "warnings": warnings, "headline_h": h, "config": cfg,
             "run_id": run_dir.name if run_dir else "adhoc"}
     r["revisions"] = vintages.revision_effect(r, cfg) if cfg.get("vintages", {}).get("revision_check") else None
+    r["benchmark"] = benchmark.run(r, cfg)
     return r
 
 
@@ -107,6 +108,7 @@ def save(r: dict, run_dir) -> None:
         fc.to_csv(run_dir / f"oos_forecasts_{h}m.csv")
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
                "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"],
+               "benchmark": r.get("benchmark"),
                "revisions": {k: v for k, v in (r.get("revisions") or {}).items() if k != "series"} or None,
                "johansen": r["johansen"],
                "data_meta": ds.meta, "warnings": r["warnings"]}

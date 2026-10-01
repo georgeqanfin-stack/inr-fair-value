@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.9.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.10.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.10 | IMF track record: EBA assessments 2017–2025 vs this model; ALFRED US CPI live |
 | 0.9 | Automatic inputs: CPI 2024=100 and BPM6 BoP from RBI Bulletin tables, INR/USD from RBI daily rates, reserves gaps from weekly data; 2026 IMF norm; smarter gates |
 
 ## Quick start
@@ -328,6 +329,27 @@ revisions.
   how far they differ from the revised series. Without a key, the revised series with
   a one-month lag is used and the report says so.
 
+**External benchmark: the IMF (v0.10).** Each year the IMF's External Balance
+Assessment (EBA) assesses India's current account and real exchange rate for the
+previous year. India's rows for the 2017–2025 analyses (ESR 2018–2026) were extracted
+from the IMF's "EBA estimates" tables into `data/raw/manual/imf_eba_india.csv`
+(`scripts/extract_imf_eba.py`). Every run compares them with this model, on the same
+sign convention (positive = undervalued):
+
+| This model vs IMF | Same sign | Mean abs. difference at IMF publication | Correlation at publication |
+|---|---|---|---|
+| Composite vs IMF CA model (CA gap / elasticity) | 9 of 9 years | 2.9 pp (ours 1.5 pp more undervalued) | 0.63 |
+| FEER vs IMF CA model | 9 of 9 | 5.0 pp | 0.61 |
+| REER component vs IMF REER-level model | 1 of 9 | 11.6 pp | 0.79 |
+
+The IMF's own models disagree about India. Its CA model, which staff assessments rest
+on, has found the rupee undervalued every year, and this model agrees on the sign
+every year. Its REER regressions mostly found it overvalued until 2025. This model's
+REER component moves with them (correlation 0.79) but sits about 12 points lower. The
+FEER-vs-IMF-CA pairing is not independent, since the FEER uses the IMF's published
+norms. The latest IMF staff assessment (ESR 2026, FY2025/26) puts the REER gap at −8.4%
+(range −11.7% to −5.1%), i.e. +8.4% undervalued; this model read +14.3% in July 2026.
+
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY
 quadrants use expanding medians.
@@ -403,6 +425,8 @@ against a random walk with drift.
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
 | RBI Handbook / DBIE (via the RBIH Data API) | Inter-bank forward premia, 1, 3 and 6 months, monthly average | Automatic, cached in `data/raw/dbie/fwd_premium_*.csv` |
 | RBI Bulletin Table 4 (via the RBIH Data API) | RBI spot net dollar purchases and sales, outstanding net forward position | Automatic, cached in `data/raw/dbie/rbi_intervention.csv` |
+| IMF EBA estimates (2017–2025 analyses) | India's CA norm, CA gap, REER-index and REER-level gaps, CA/REER elasticity | Extracted from the IMF PDFs by `scripts/extract_imf_eba.py` into `data/raw/manual/imf_eba_india.csv` (yearly) |
+| FRED / ALFRED | US CPI as published at each date (needs `FRED_API_KEY` in `.env`) | Automatic, cached in `data/raw/alfred/` |
 | External Wealth of Nations (Lane & Milesi-Ferretti, Brookings) | Net IIP / GDP for the 19 panel countries | Automatic (latest workbook found on the Brookings page); compact cache `data/raw/ewn/ewn_nfa.csv` |
 | MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |
 | MOSPI via RBI Bulletin (RBIH Data API) | CPI-Combined, 2024 = 100 (from Jan 2025), with the provisional flag | Automatic, cached in `data/raw/dbie/cpi_2024base.csv`; `data/raw/manual/mospi_cpi_2024base.csv` is the check and fallback |

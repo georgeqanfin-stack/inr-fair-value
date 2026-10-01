@@ -104,3 +104,12 @@ def test_revision_check_is_reported(run):
     assert "## Data revisions" in (out / "report.md").read_text(encoding="utf-8")
     assert "Data revisions" in (out / "note.md").read_text(encoding="utf-8")
     assert "cpi_us_vintage" in r["dataset"].meta
+
+
+def test_imf_benchmark_is_reported(run):
+    r, out = run
+    bm = r["benchmark"]
+    assert bm is not None and bm["n_years"] >= 9
+    assert "## External benchmark" in (out / "report.md").read_text(encoding="utf-8")
+    assert "IMF check" in (out / "dashboard.html").read_text(encoding="utf-8")
+    assert "the IMF" in (out / "note.md").read_text(encoding="utf-8")

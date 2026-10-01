@@ -280,6 +280,31 @@ def build_report(r: dict) -> str:
              f"predicted Δlog INR {cf['forecast_log_change']*100:+.1f}% (drift alone {cf['drift_only']*100:+.1f}%). "
              "Estimated on all realised targets; only as credible as the backtest above.\n")
 
+    bm = r.get("benchmark")
+    if bm:
+        L.append("## External benchmark: the IMF's assessments of India\n")
+        L.append("IMF External Balance Assessment for each year (published with the following year's External Sector "
+                 "Report), on this report's sign convention (positive = rupee undervalued). The IMF CA model's REER "
+                 "equivalent is CA gap / semi-elasticity; IMF staff assessments rest mainly on it. Our columns: the "
+                 "average of this model's point-in-time readings over the year assessed, and the reading in the month "
+                 "the IMF published. Our FEER uses the IMF's published norms, so the FEER-vs-IMF-CA pairing is not "
+                 "independent.\n")
+        L.append("| Year | IMF published | IMF CA gap (% GDP) | IMF CA model | IMF REER index | IMF REER level | "
+                 "Our FEER (year) | Our REER comp. (year) | Our composite (year) | Our composite (at publication) |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|")
+        for t in bm["table"]:
+            L.append(f"| {t['analysis_year']} | {_mon(t['published'])} | {t['ca_gap']:+.1f} | {t['imf_ca']:+.1f}% | "
+                     f"{t['imf_reer_index']:+.1f}% | {t['imf_reer_level']:+.1f}% | {t['feer_year']:+.1f}% | "
+                     f"{t['reer_year']:+.1f}% | {t['composite_year']:+.1f}% | {t['composite_at_pub']:+.1f}% |")
+        L.append("\n| Ours vs IMF | When | n | Same sign | Correlation | Mean difference (ours − IMF) | Mean absolute difference |")
+        L.append("|---|---|---|---|---|---|---|")
+        for s in bm["stats"].values():
+            if "corr" in s:
+                L.append(f"| {s['ours']} vs {s['imf']} | {'year average' if s['when'] == 'year' else 'at publication'} | "
+                         f"{s['n']} | {s['same_sign']:.0%} | {s['corr']:+.2f} | {s['mean_diff_pp']:+.1f} pp | "
+                         f"{s['mean_abs_diff_pp']:.1f} pp |")
+        L.append("")
+
     rv = r.get("revisions")
     L.append("## Data revisions\n")
     if rv:

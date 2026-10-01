@@ -226,6 +226,16 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append("the India-only REER model fails its long-run test")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
+    bm = r.get("benchmark")
+    if bm:
+        s = bm["stats"].get("composite_at_pub~imf_ca", {})
+        lb = bm["latest"]
+        if "same_sign" in s:
+            L.append(f"Against the IMF's own assessments ({bm['first_year']}–{lb['analysis_year']}, its current-account "
+                     f"model), this model pointed the same way in {s['same_sign'] * s['n']:.0f} of {s['n']} years and was "
+                     f"{abs(s['mean_diff_pp']):.1f} points {'more' if s['mean_diff_pp'] > 0 else 'less'} undervalued on "
+                     f"average when the IMF published. The IMF's latest ({lb['analysis_year']}) implies "
+                     f"{lb['imf_ca']:+.1f}%.\n")
     rv = r.get("revisions")
     if rv:
         verdict = "matter little" if rv["max_abs_pp"] < 1 else "matter"

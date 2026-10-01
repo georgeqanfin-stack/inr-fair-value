@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.17.0 · run `20261001-222256` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.18.0 · run `20261001-225002` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -151,6 +151,19 @@ Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-ind
 | Jul 2025–Jun 2026 | +10.0% | +3.8 | -0.3 | -0.2 | -0.1 | +6.4 | +0.4 | +3.7 |
 
 Direction: FPI this month → INR next month t -2.6 (p 0.009); INR last month → FPI this month t -2.0 (p 0.050). Reading: one-way or none at the 5% level. Flow data end Jun 2026.
+
+### Identifying the flow effect
+
+Monthly, Mar 2011–Jun 2026 (n = 184; one standard deviation of net FPI = US$4.0 bn). Per US$1 bn of net inflow, % change of INR/USD (negative = rupee stronger). Ordering A treats the same-month co-movement as flows moving the rupee; ordering B as the rupee moving flows (impact zero by construction). Both condition on same-month VIX, US 10-year yield and dollar-index changes and on two lags of every variable. Local projections give the cumulative effect h months out (Newey-West errors).
+
+| Method | h=0 | h=1 | h=2 | h=3 | h=4 | h=5 | h=6 |
+|---|---|---|---|---|---|---|---|
+| Ordering A (flows → rupee) | -0.130 (t -3.8) | -0.164 (t -3.4) | -0.167 (t -2.6) | -0.137 (t -2.1) | -0.149 (t -2.3) | -0.139 (t -1.9) | -0.067 (t -0.8) |
+| Ordering B (rupee → flows) | 0 (by construction) | -0.009 (t -0.2) | -0.018 (t -0.3) | +0.017 (t +0.2) | -0.010 (t -0.1) | +0.006 (t +0.1) | +0.082 (t +0.9) |
+
+Instrumental variables (2SLS; instruments: changes in vix, us10y; controls: dollar index, Brent, FDI, lags): -0.070 (se 0.067, t -1.1); first-stage F 21.0, Hansen J p 0.16. Exclusion (global push shocks reach the rupee only through portfolio flows, given the dollar) cannot be tested and is a strong assumption.
+
+Reading: the same-month estimate used in the attribution (-0.131) equals ordering A's impact, the upper end of the identified range (0 to -0.130); the IV estimate is 54% of it. On the IV estimate, portfolio flows would account for +0.7 points of the Apr 2026–Jun 2026 move instead of +1.3, and the RBI's absorbed pressure would scale down in the same proportion.
 
 ### RBI intervention
 
@@ -340,7 +353,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T16:52:04+00:00, mirror loaded 2026-10-01T16:48:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T17:19:08+00:00, mirror loaded 2026-10-01T17:18:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

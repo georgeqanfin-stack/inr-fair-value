@@ -1,6 +1,6 @@
 # INR/USD fair value note, September 2026
 
-Data to September 2026 · run `20261001-222256` · written 01 Oct 2026
+Data to September 2026 · run `20261001-225002` · written 01 Oct 2026
 
 ## The reading
 
@@ -10,7 +10,7 @@ The two components agree: the productivity-based REER anchor puts the rupee +18.
 
 ## Since the last note
 
-From Sep 2026 to Sep 2026 the rupee was unchanged from 95.41 to 95.41 per dollar, and composite fair value moved from 83.59 to 82.50. Misalignment went from +14.1% to +15.7%: the REER component contributed +0.0 points and the FEER +1.3.
+No new month of exchange-rate data since the last note (Sep 2026); the reading is unchanged at +15.7%.
 
 No source published new or revised data since the last refresh.
 
@@ -24,7 +24,7 @@ The forward market prices the rupee at 96.83 in six months (premium 3.0% a year,
 
 ## What moved the rupee
 
-From Apr 2026 to Jun 2026 the rupee weakened 2.4%. Split by a monthly regression on flows and global drivers (points of the move, positive = weaker): trend depreciation +1.6, portfolio flows +1.3, direct investment -0.3; unexplained -0.3. Each US$1bn of net portfolio outflow goes with about 0.13% rupee weakness.
+From Apr 2026 to Jun 2026 the rupee weakened 2.4%. Split by a monthly regression on flows and global drivers (points of the move, positive = weaker): trend depreciation +1.6, portfolio flows +1.3, direct investment -0.3; unexplained -0.3. Each US$1bn of net portfolio outflow goes with about 0.13% rupee weakness. Separating cause from effect is hard: if flows drive the rupee within the month the effect is the full 0.13% per US$1bn; if the rupee drives flows it is close to zero; using global risk shocks as instruments gives about 0.07% (54% of it), so the portfolio-flow share above is an upper bound.
 
 Over the same months the RBI sold a net US$14.7 bn, counting forwards. Valued at the market's price of a dollar, that held the rupee about 1.9 points stronger: without it the rupee would have weakened about 4.3% instead of 2.4%, so the RBI absorbed roughly 45% of the pressure (a lower bound). Its net forward sales outstanding stand at US$137 bn, 20% of reserves (Jul 2026).
 

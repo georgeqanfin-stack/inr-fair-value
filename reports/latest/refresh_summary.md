@@ -1,10 +1,10 @@
 # Data refresh 01 Oct 2026
 
-Run `20261001-222256` · as of **2026-09**
+Run `20261001-225002` · as of **2026-09**
 
 ## Headline
 
-Composite misalignment +14.1% → **+15.7%** (2026-09 → 2026-09); fair value 83.59 → **82.50**; spot 95.41 → 95.41. Change in the ECT by component: REER component +0.0pp, FEER +1.3pp.
+Composite misalignment +15.7% → **+15.7%** (2026-09 → 2026-09); fair value 82.50 → **82.50**; spot 95.41 → 95.41. Change in the ECT by component: REER component +0.0pp, FEER +0.0pp.
 
 ## Gates
 

@@ -26,6 +26,14 @@ until the backtest looks better.
 | 11 | Flow identification beyond contemporaneous OLS | **Done (v0.18)** |
 | 15 | Engineering: lint, types, coverage, data schemas, Docker | **Done (v1.0)** |
 
+Beyond the roadmap (towards 9.5):
+
+| # | Item | Status |
+|---|---|---|
+| 16 | Recalibrate the corridor from its measured coverage | **Done (v1.1)** |
+| 17 | Write-up for outside review | Open |
+| 18 | Let the vintage archive accumulate; real-time India evaluation | Open (time) |
+
 ## Data
 
 **1. RBI intervention (done).** RBI Bulletin Table 4 via the RBIH Data API: spot net
@@ -144,6 +152,13 @@ Original plan: local projections of the rupee on FPI shocks, with
 global EM fund flows or index rebalancing dates as instruments where data allow;
 otherwise a VAR with timing restrictions. Report how far the contemporaneous estimate
 moves.
+
+**16. Corridor recalibration (done).** Split-conformal scaling of the bootstrap
+corridor against its own ex-post misses, rule fixed in the config before computing.
+Leave-one-year-out coverage 66% → 78% (k 1.23; shift-and-scale 69%); the Sep 2026
+corridor widens from 78.70–85.08 to 77.90–85.77. In real time (Aug 2020 on) the scaled
+corridor over-covers (95% vs raw 77%): misses cluster in 2017–21, so calibration error
+is not stable over time. Re-fitted each July.
 
 ## Engineering
 

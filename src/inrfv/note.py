@@ -276,6 +276,15 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
                               if cb["below"] > 0 and cb["above"] == 0 else
                               "; when it missed, the real-time reading had understated the undervaluation"
                               if cb["above"] > 0 and cb["below"] == 0 else "") + ".")
+            rc = un.get("recalibration")
+            if rc and rc["choice"] != "raw":
+                how = "recentred and widened" if rc["choice"] == "shift_scale" else "widened"
+                s += (f" The range is therefore {how} by a factor of {rc['params'][rc['choice']]['k']:.2f}, learned from "
+                      f"those misses; tested on years left out of the fit, coverage becomes "
+                      f"{rc['loyo'][rc['choice']]['coverage']:.0%}"
+                      + (f" (applied in real time since {_month(rc['realtime_from'])} it would have covered "
+                         f"{rc['realtime'][rc['choice']]['coverage']:.0%}, wider than needed)"
+                         if rc["realtime"].get(rc["choice"], {}).get("coverage", 0) > rc["nominal"] + 0.05 else "") + ".")
         L.append(s + "\n")
     wt = r.get("weights")
     if wt:

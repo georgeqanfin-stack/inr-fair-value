@@ -304,11 +304,28 @@ panel_boot_draws  = 300      # country-block bootstrap draws per panel re-estima
 draws             = 2000     # joint draws per month
 ca_measurement_sd = 0.2      # current-account measurement/revision error, % of GDP (4-quarter sum)
 weight_schemes    = ["equal", "performance", "inverse_variance"]
-# Headline corridor: "bootstrap" (joint draws; ex-post coverage 75% vs nominal 80%, 2017-25)
+# Headline corridor: "bootstrap" (joint draws; ex-post coverage 75% vs nominal 80%, 2017-25,
+# 66% after the v0.17 FEER changes, hence [uncertainty.recalibration])
 # or "end_to_end" (the component bands joined end to end; coverage 100%, about twice as
 # wide). Chosen after the coverage test, as the one closer to nominal; see README.
 headline_corridor = "bootstrap"
 seed              = 23
+
+[uncertainty.recalibration]
+# Conformal recalibration of the bootstrap corridor against its own ex-post misses
+# (uncertainty.recalibrate). Candidates: "scale" widens both sides by one factor k;
+# "shift_scale" also moves the centre by the mean past miss. Real time: a month uses
+# only years whose IMF assessment (hence ex-post value) was published by then, and at
+# least min_years of them; earlier months keep the raw corridor.
+# Decision rule, set before computing the recalibrated corridors: judge on
+# leave-one-year-out coverage; keep the raw corridor unless a candidate is closer to
+# nominal; prefer "scale" (one parameter) unless "shift_scale" is closer by more than
+# 5 pp. Real-time coverage is reported alongside.
+enabled    = true
+methods    = ["scale", "shift_scale"]
+nominal    = 0.80
+min_years  = 3
+prefer_gap = 0.05
 
 [models.nonlinear]
 enabled        = true

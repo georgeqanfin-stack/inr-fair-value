@@ -117,6 +117,89 @@ def coverage(ex: pd.DataFrame, bands: dict[str, tuple[pd.Series, pd.Series]]) ->
     return out
 
 
+def conformal_k(s: np.ndarray, level: float) -> float:
+    """Split-conformal quantile of the scores: the ceil((n+1) level)/n empirical quantile."""
+    s = np.sort(np.asarray(s, dtype=float))
+    n = len(s)
+    return float(s[min(n, int(np.ceil((n + 1) * level))) - 1])
+
+
+def scores(d: pd.DataFrame, shift: float) -> np.ndarray:
+    """Distance of the ex-post gap from the (shifted) centre, in units of the corridor's
+    own half-width on that side."""
+    c = d["mid"] + shift
+    up = (d["x"] - c) / (d["hi"] - d["mid"])
+    dn = (c - d["x"]) / (d["mid"] - d["lo"])
+    return np.where(d["x"] >= c, up, dn)
+
+
+def fit_recal(cal: pd.DataFrame, method: str, level: float) -> tuple[float, float]:
+    shift = float((cal["x"] - cal["mid"]).mean()) if method == "shift_scale" else 0.0
+    return shift, conformal_k(scores(cal, shift), level)
+
+
+def apply_recal(d: pd.DataFrame, shift: float, k: float) -> pd.DataFrame:
+    c = d["mid"] + shift
+    return pd.DataFrame({"lo": c - k * (d["mid"] - d["lo"]), "hi": c + k * (d["hi"] - d["mid"])}, index=d.index)
+
+
+def _cov(x: pd.Series, lo: pd.Series, hi: pd.Series) -> dict:
+    m = pd.concat([x, lo, hi], axis=1, keys=["x", "lo", "hi"]).dropna()
+    if m.empty:
+        return {"n": 0, "coverage": None, "below": None, "above": None, "median_width_pct": None}
+    return {"n": int(len(m)), "coverage": float(((m["x"] >= m["lo"]) & (m["x"] <= m["hi"])).mean()),
+            "below": float((m["x"] < m["lo"]).mean()), "above": float((m["x"] > m["hi"]).mean()),
+            "median_width_pct": float(((np.exp(m["hi"]) - np.exp(m["lo"])) * 100).median())}
+
+
+def recalibrate(bands: pd.DataFrame, ex: pd.DataFrame, published: dict[int, pd.Timestamp], rc: dict) -> dict:
+    """Conformal recalibration of the corridor against its own ex-post misses (see config
+    [uncertainty.recalibration]). Leave-one-year-out coverage decides; real-time coverage
+    (each month calibrated only on years published by then) is reported alongside, and the
+    real-time corridor is the one used when a candidate is adopted."""
+    level, min_years = rc["nominal"], rc["min_years"]
+    d = pd.concat([ex["ect_ex"].rename("x"), bands[["lo", "mid", "hi"]]], axis=1, join="inner").dropna()
+    years = d.index.year
+    loyo, realtime, params = {"raw": _cov(d["x"], d["lo"], d["hi"])}, {}, {}
+    rt_series = {}
+    for m in rc["methods"]:
+        parts = [apply_recal(d[years == y], *fit_recal(d[years != y], m, level)) for y in sorted(set(years))]
+        cv = pd.concat(parts)
+        loyo[m] = _cov(d["x"], cv["lo"], cv["hi"])
+        # Real time: refit whenever the set of published years changes.
+        out = pd.DataFrame(index=bands.index, columns=["lo", "hi"], dtype=float)
+        cache: dict[tuple, tuple[float, float]] = {}
+        for t in bands.index[bands["mid"].notna()]:
+            known = tuple(y for y, p in sorted(published.items()) if p <= t and (years == y).any())
+            if len(known) < min_years:
+                continue
+            if known not in cache:
+                cache[known] = fit_recal(d[np.isin(years, known)], m, level)
+            out.loc[t] = apply_recal(bands.loc[[t]], *cache[known]).iloc[0]
+        rt_series[m] = out
+        full = max(cache, key=len) if cache else None
+        params[m] = ({"shift": cache[full][0], "k": cache[full][1], "years": [int(full[0]), int(full[-1])]}
+                     if full else None)
+    first = next((s.dropna().index.min() for s in rt_series.values() if s.notna().any().any()), None)
+    if first is not None:
+        dd = d.loc[first:]
+        realtime["raw"] = _cov(dd["x"], dd["lo"], dd["hi"])
+        for m, s in rt_series.items():
+            realtime[m] = _cov(dd["x"], s["lo"], s["hi"])
+    dist = {k: abs(v["coverage"] - level) for k, v in loyo.items() if v["coverage"] is not None}
+    better = [m for m in rc["methods"] if m in dist and dist[m] < dist["raw"]]
+    choice = "raw"
+    if "scale" in better:
+        choice = "scale"
+        if "shift_scale" in better and dist["scale"] - dist["shift_scale"] > rc.get("prefer_gap", 0.05):
+            choice = "shift_scale"
+    elif better:
+        choice = better[0]
+    return {"loyo": loyo, "realtime": realtime, "params": params, "choice": choice, "nominal": level,
+            "realtime_from": first.strftime("%Y-%m") if first is not None else None,
+            "series": rt_series.get(choice), "years": [int(min(years)), int(max(years))], "n_years": int(len(set(years)))}
+
+
 def apply_corridor(comp: pd.DataFrame, series: pd.DataFrame) -> None:
     """Make the bootstrap corridor the headline one (in place); the end-to-end band is kept
     as *_e2e columns. Months without bootstrap draws keep the end-to-end band."""
@@ -146,9 +229,30 @@ def run(r: dict, pdata, cfg: dict, gap_draws: pd.DataFrame) -> dict | None:
     e2e = ("ect_lo_e2e", "ect_hi_e2e") if "ect_lo_e2e" in comp else ("ect_lo", "ect_hi")
     cov = coverage(ex, {"bootstrap": (bands["lo"], bands["hi"]), "end_to_end": (comp[e2e[0]], comp[e2e[1]])})
     t_last = bands["mid"].last_valid_index()
+    rc = cfg["uncertainty"].get("recalibration", {})
+    recal = None
+    if rc.get("enabled") and len(ex):
+        imf = pd.read_csv(path(cfg, "manual") / "imf_eba_india.csv")
+        published = {int(y): pd.Timestamp(p + "-01") for y, p in zip(imf["analysis_year"], imf["published"])}
+        recal = recalibrate(bands, ex, published, rc)
+    raw = bands.copy()
+    p_und = float((last > 0).mean()) if last is not None else None
+    if recal and recal["choice"] != "raw":
+        rs = recal.pop("series")
+        bands = bands.assign(lo=rs["lo"].combine_first(bands["lo"]), hi=rs["hi"].combine_first(bands["hi"]))
+        pr = recal["params"][recal["choice"]]
+        if last is not None:                            # draws mapped through the same shift and scale
+            mid = bands.at[t_last, "mid"]
+            p_und = float((mid + pr["shift"] + pr["k"] * (last - mid) > 0).mean())
+        cov["recalibrated"] = recal["realtime"][recal["choice"]]
+    elif recal:
+        recal.pop("series")
+    lat = {"fair_strong_raw": float(spot[t_last] * np.exp(-raw.at[t_last, "hi"])),
+           "fair_weak_raw": float(spot[t_last] * np.exp(-raw.at[t_last, "lo"])),
+           "p_undervalued_raw": float((last > 0).mean()) if last is not None else None}
     return {
         "series": bands.assign(fair_strong=spot * np.exp(-bands["hi"]), fair_weak=spot * np.exp(-bands["lo"]),
-                               fair_mid=spot * np.exp(-bands["mid"])),
+                               fair_mid=spot * np.exp(-bands["mid"]), lo_raw=raw["lo"], hi_raw=raw["hi"]),
         "expost": ex,
         "latest": {"month": t_last.strftime("%Y-%m"),
                    "fair_strong": float(spot[t_last] * np.exp(-bands.at[t_last, "hi"])),
@@ -156,9 +260,10 @@ def run(r: dict, pdata, cfg: dict, gap_draws: pd.DataFrame) -> dict | None:
                    "fair_weak": float(spot[t_last] * np.exp(-bands.at[t_last, "lo"])),
                    "mis_lo": float((np.exp(bands.at[t_last, "lo"]) - 1) * 100),
                    "mis_hi": float((np.exp(bands.at[t_last, "hi"]) - 1) * 100),
-                   "p_undervalued": float((last > 0).mean()) if last is not None else None,
+                   "p_undervalued": p_und, **lat,
                    "old_strong": float(comp["fair_inr_strong"].iloc[-1]), "old_weak": float(comp["fair_inr_weak"].iloc[-1])},
         "headline": cfg["uncertainty"].get("headline_corridor", "end_to_end"),
+        "recalibration": recal,
         "coverage": cov, "draws": int(cfg["uncertainty"]["draws"]),
         "panel_boot_draws": int(gap_draws.shape[1]),
         "expost_window": [ex.index.min().strftime("%Y-%m"), ex.index.max().strftime("%Y-%m")] if len(ex) else None,

@@ -436,6 +436,32 @@ def build_report(r: dict) -> str:
                      "roughly. Misses below the band mean the real-time reading overstated undervaluation relative to the "
                      "later estimate. The bootstrap corridor was made the headline after this test, as the one closer to "
                      "nominal coverage.\n")
+        rc = un.get("recalibration")
+        if rc:
+            L.append("#### Recalibration\n")
+            L.append(f"Conformal recalibration against the corridor's own ex-post misses ({rc['years'][0]}–{rc['years'][1]}, "
+                     f"{rc['n_years']} assessed years). *Scale* widens both sides by one factor k; *shift and scale* also moves "
+                     "the centre by the mean past miss. Leave-one-year-out: each year judged with k fitted on the other years. "
+                     f"Real time (from {_mon(rc['realtime_from'])}): each month uses only years whose IMF assessment was "
+                     "published by then. Rule, set before computing: keep the raw corridor unless a candidate is closer to "
+                     "nominal out of year; prefer scale unless shift and scale is closer by more than 5 pp.\n")
+            L.append("| Corridor | Shift | k | Leave-one-year-out coverage | below | above | Real-time coverage | below | above "
+                     "| Median width (real time) |")
+            L.append("|---|---|---|---|---|---|---|---|---|---|")
+            for m in ["raw"] + [k for k in rc["loyo"] if k != "raw"]:
+                lo_, rt = rc["loyo"][m], rc["realtime"].get(m, {})
+                pr = rc["params"].get(m) or {"shift": 0.0, "k": 1.0}
+                L.append(f"| {m.replace('_', ' and ')} | {pr['shift'] * 100:+.1f} pp | {pr['k']:.2f} | {lo_['coverage']:.0%} | "
+                         f"{lo_['below']:.0%} | {lo_['above']:.0%} | {rt.get('coverage', float('nan')):.0%} | "
+                         f"{rt.get('below', float('nan')):.0%} | {rt.get('above', float('nan')):.0%} | "
+                         f"{rt.get('median_width_pct', float('nan')):.1f} pp |")
+            lt = un["latest"]
+            L.append(f"\nAdopted: **{rc['choice'].replace('_', ' and ')}**. "
+                     + (f"{_mon(lt['month'])} corridor {lt['fair_strong']:.2f}–{lt['fair_weak']:.2f} (raw "
+                        f"{lt['fair_strong_raw']:.2f}–{lt['fair_weak_raw']:.2f}). " if rc["choice"] != "raw" else "")
+                     + "The misses cluster in 2017–21; since 2022 the raw corridor has covered, so a correction learned "
+                     "from the early years over-covers in real time (and a shift learned then over-corrects). Nine years "
+                     "is a small calibration set: k is re-fitted every year as assessments are published.\n")
 
     L.append("### Full-sample predictive regressions\n")
     L.append("| h | β (Hodrick) | t (Hodrick 1B) | p | non-overlapping β median [min, max] | t median |")

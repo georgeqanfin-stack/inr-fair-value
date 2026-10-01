@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 1.0.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 1.1.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 1.1 | Corridor recalibrated (conformal, against its own ex-post misses): one-year-out coverage 66% → 78% |
 | 1.0 | Engineering: ruff, mypy, coverage gate (85%), data schemas as a refresh gate, Docker image built and tested in CI. Roadmap complete |
 | 0.18 | Flow effect identified: recursive orderings, local projections, 2SLS with global push instruments |
 | 0.17 | FEER: IMF-style cyclical adjustment (output gaps) and income term; quarterly real GDP to Apr–Jun 2026 |
@@ -159,9 +160,10 @@ Spot INR/USD 95.41 (Sep 2026 average of RBI's daily reference rates).
 | BEER, total (permanent fundamentals) | +21.4% | 78.56 | Fundamentals at their one-sided HP trends |
 | **Composite (panel anchor + FEER)** | **+15.7%** | **82.50** | Positive = INR weaker than fair |
 
-**Fair-value corridor: 78.7 – 85.1** (10th–90th percentile of a joint bootstrap
+**Fair-value corridor: 77.9 – 85.8** (10th–90th percentile of a joint bootstrap
 of the panel parameters, the FEER norm and elasticities, current-account
-measurement error and the model weights), against a spot rate of 95.41. All 2,000
+measurement error and the model weights, widened by 1.23 to correct its past
+under-coverage; v1.1), against a spot rate of 95.41. All 2,000
 draws say the rupee is undervalued. Since the August reading (+12.4%), the FEER has
 risen for three reasons:
 - the Jan–Mar 2026 quarter, a US$6.5 bn current-account surplus;
@@ -521,6 +523,30 @@ undervaluation relative to the later estimate (by about 2 pp on average). The
 bootstrap was made the headline after this test, as the one closer to nominal.
 Months overlap heavily, so coverage is measured roughly (about nine independent
 years). `[uncertainty] headline_corridor = "end_to_end"` restores the old band.
+
+**Corridor recalibration (v1.1).** After the v0.17 FEER changes the bootstrap covered
+only 66%, so the corridor is now recalibrated against its own misses (split-conformal).
+Each month's ex-post miss is measured in units of that month's half-width on the side
+it fell; k is the finite-sample 80th percentile of those scores. Two candidates: *scale*
+(one factor k on both sides) and *shift and scale* (also moves the centre by the mean
+past miss). The rule was set before computing them: judge on leave-one-year-out
+coverage; keep the raw corridor unless a candidate is closer to 80%; prefer scale
+unless shift and scale is closer by more than 5 pp.
+
+| Corridor | Shift | k | One year out | Real time (Aug 2020 on) | Median width, real time |
+|---|---|---|---|---|---|
+| Raw bootstrap | 0 | 1 | 66% (33% below) | 77% | 9.0 pp |
+| **Scale (adopted)** | 0 | 1.23 | **78%** (22% below) | 95% | 13.4 pp |
+| Shift and scale | −2.5 pp | 0.91 | 69% (19% below, 11% above) | 63% (37% above) | 6.5 pp |
+
+In real time a month uses only years whose IMF assessment had been published, and at
+least three of them, so the recalibrated history starts in Aug 2020. The adopted
+corridor over-covers in real time: the misses cluster in 2017–21, and since 2022 the
+raw corridor has covered, so a correction learned from the early years is too wide
+later, and a shift learned then over-corrects. Nine assessed years is a small
+calibration set; k is re-fitted each July as the IMF publishes. The Sep 2026 corridor
+moves from 78.70–85.08 to 77.90–85.77. The ex-post fair value still uses the final
+panel coefficients, which were not known in real time.
 
 **Nonlinear and time-varying adjustment, breaks (v0.14).** Four variants of the ECM
 are re-estimated point in time and scored like the headline. The rule was set before

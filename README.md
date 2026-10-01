@@ -24,6 +24,24 @@ Optional: copy `.env.example` to `.env` and set `FRED_API_KEY`. Without a key th
 pipeline uses FRED's public CSV endpoint. After editing anything in `data/raw` by
 hand, run `python -m inrfv.run --write-raw-manifest` to record the new checksums.
 
+## Dashboard
+
+Every run writes `dashboard.html`, and each refresh copies it to
+`reports/latest/dashboard.html`. It is a single self-contained file: the run's
+numbers are embedded, the charts are drawn in the browser, and only the fonts
+load from the internet. It shows:
+
+- the verdict: composite misalignment, fair value, the fair-value range against
+  spot, and the stress regime
+- INR/USD against composite fair value and its uncertainty range, with 5Y/10Y/all
+  ranges, hover readouts and a table of the last 24 months
+- misalignment by component (REER component, FEER, composite)
+- the filtered stress probability
+- every model's reading, its role, and whether its long-run test passes
+- the out-of-sample forecast record, input freshness and the run's data notes
+
+It follows the viewer's light or dark theme.
+
 ## Monthly refresh
 
 `python -m inrfv.refresh` (add `--commit` to commit the result):
@@ -62,6 +80,7 @@ Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
 | File | Contents |
 |---|---|
 | `report.md` | Current reading, regimes, backtest, diagnostics, data warnings, charts |
+| `dashboard.html` | Interactive one-page monitor (self-contained; open in any browser) |
 | `results.json` | Every statistic in the report, machine-readable |
 | `manifest.json` | Code revision, full config, config hash, SHA-256 of every raw input |
 | `panel_reference_month.csv` / `panel_point_in_time.csv` | The data, by reference month and by publication month |

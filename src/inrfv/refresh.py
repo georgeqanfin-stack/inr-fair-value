@@ -236,7 +236,7 @@ def publish_reports(run_dir: Path, root: Path, asof: str) -> list[Path]:
         if t.exists():
             shutil.rmtree(t)
         t.mkdir(parents=True)
-        for f in ["report.md", "refresh_summary.md", "results.json", "manifest.json", "composite_ect.csv"] + \
+        for f in ["report.md", "refresh_summary.md", "results.json", "manifest.json", "composite_ect.csv", "dashboard.html"] + \
                  [p.name for p in run_dir.glob("*.png")]:
             if (run_dir / f).exists():
                 shutil.copy2(run_dir / f, t / f)

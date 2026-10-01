@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-from . import backtest, report
+from . import backtest, dashboard, report
 from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
@@ -102,6 +102,7 @@ def save(r: dict, run_dir) -> None:
     if charts:
         md += "\n## Charts\n\n" + "\n".join(f"![{c}]({c})" for c in charts) + "\n"
     (run_dir / "report.md").write_text(md, encoding="utf-8")
+    dashboard.write(r, run_dir)
 
 
 def _json(o):

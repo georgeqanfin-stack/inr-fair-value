@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.14.0 · run `20261001-202217` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.15.0 · run `20261001-205656` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -38,6 +38,31 @@ REER component used in the composite: **panel**. Panel dynamic OLS with country 
 | prod_nfa | 1996–2023 | 532 | rel_prod +0.318 (+4.4, exp. +), nfa -0.001 (-0.5, exp. +) | 0.415 | 11% | 0.39 | +10.0% (2025) |
 
 Coefficient range across 23 point-in-time re-estimations since 2004-07: rel_prod +0.31 to +0.87. Twelve specifications were compared when this model was built; only productivity-only DOLS passed the panel check, so treat the cointegration result as suggestive. Net foreign assets (External Wealth of Nations) were tested later and are shown as `prod_nfa`: insignificant, wrong sign, and adding them breaks the panel check.
+
+**Formal panel cointegration tests.** 'Panel coint. p' above is a Fisher combination of per-country ADF tests on the pooled (common-slope) residuals. The tests below allow each country its own slope (Pedroni-type group and panel ADF on country-by-country cointegrating regressions; Westerlund Gt and Pt error-correction tests), with p-values from 999 bootstrap panels generated under no cointegration (years resampled jointly across countries). The primary statistic is the group ADF: in a Monte Carlo (scripts/mc_panel_coint.py) it rejected 5% of non-cointegrated panels at the 5% level, while the Westerlund bootstrap rejected 15-18%, so Westerlund p-values here are too low.
+
+Search family: every specification containing relative productivity (16 specs, 12 with enough years). 5 pass at 5% before adjustment. Holm controls the chance of any false pass; Benjamini-Hochberg (BH) the share of false passes.
+
+| Specification | Years | Group ADF p | Holm | BH | Panel ADF p | Westerlund Gt p | Pt p | Fisher (pooled slope) |
+|---|---|---|---|---|---|---|---|---|
+| rel_prod | 32 | 0.023 | 0.25 | 0.09 | 0.067 | 0.011 | 0.020 | 0.025 |
+| rel_prod + gov_cons | 30 | 0.052 | 0.37 | 0.09 | 0.212 | 0.018 | 0.125 | — |
+| rel_prod + openness | 31 | 0.033 | 0.33 | 0.09 | 0.132 | 0.088 | 0.081 | — |
+| rel_prod + log_tot | 20 | 0.150 | 0.37 | 0.15 | 0.281 | 0.107 | 0.129 | — |
+| rel_prod + nfa | 31 | 0.155 | 0.37 | 0.15 | 0.402 | 0.034 | 0.274 | 0.415 |
+| rel_prod + gov_cons + openness | 30 | 0.019 | 0.23 | 0.09 | 0.135 | 0.121 | 0.105 | 0.976 |
+| rel_prod + gov_cons + log_tot | 20 | 0.038 | 0.34 | 0.09 | 0.117 | 0.209 | 0.263 | — |
+| rel_prod + gov_cons + nfa | 30 | 0.071 | 0.37 | 0.09 | 0.367 | 0.040 | 0.080 | — |
+| rel_prod + openness + log_tot | 20 | 0.046 | 0.37 | 0.09 | 0.361 | 0.312 | 0.227 | — |
+| rel_prod + openness + nfa | 30 | 0.077 | 0.37 | 0.09 | 0.351 | 0.063 | 0.157 | — |
+| rel_prod + log_tot + nfa | 20 | 0.060 | 0.37 | 0.09 | 0.207 | 0.018 | 0.013 | — |
+| rel_prod + gov_cons + openness + log_tot | — | too few years | | | | | | 0.999 |
+| rel_prod + gov_cons + openness + nfa | 30 | 0.074 | 0.37 | 0.09 | 0.189 | 0.095 | 0.101 | — |
+| rel_prod + gov_cons + log_tot + nfa | — | too few years | | | | | | — |
+| rel_prod + openness + log_tot + nfa | — | too few years | | | | | | — |
+| rel_prod + gov_cons + openness + log_tot + nfa | — | too few years | | | | | | — |
+
+Central specification: group ADF p 0.023; after the search, Holm 0.25 and BH 0.09. Country-by-country cointegration with productivity is broadly supported; the common slope the anchor imposes, and the central specification's p-value after accounting for the search, are suggestive rather than conclusive.
 
 ### BEER (bilateral, real INR/USD)
 
@@ -298,7 +323,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T14:51:26+00:00, mirror loaded 2026-10-01T14:48:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T15:26:07+00:00, mirror loaded 2026-10-01T15:18:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

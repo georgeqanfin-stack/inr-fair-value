@@ -729,7 +729,29 @@
         },
         "india_cointegration_p": 0.08262772159867893,
         "india_latest_annual_gap_pct": 8.8492740328463,
-        "india_latest_reer_year": 2025
+        "india_latest_reer_year": 2025,
+        "formal": {
+          "regressors": [
+            "rel_prod"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.596216260422303,
+            "panel_adf": -9.661211919104232,
+            "Gt": -2.33416884651446,
+            "Pt": -8.751736152807917
+          },
+          "p": {
+            "group_adf": 0.023,
+            "panel_adf": 0.067,
+            "Gt": 0.011,
+            "Pt": 0.02
+          },
+          "countries": 19,
+          "years": 32,
+          "p_holm": 0.253,
+          "p_bh": 0.0924
+        }
       },
       "long": {
         "regressors": [
@@ -788,7 +810,31 @@
         },
         "india_cointegration_p": 0.305887513901301,
         "india_latest_annual_gap_pct": 8.555949985015609,
-        "india_latest_reer_year": 2025
+        "india_latest_reer_year": 2025,
+        "formal": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "openness"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.2982293459556695,
+            "panel_adf": -12.328365318745806,
+            "Gt": -2.2350066839644462,
+            "Pt": -8.715811208742721
+          },
+          "p": {
+            "group_adf": 0.019,
+            "panel_adf": 0.135,
+            "Gt": 0.121,
+            "Pt": 0.105
+          },
+          "countries": 19,
+          "years": 30,
+          "p_holm": 0.22799999999999998,
+          "p_bh": 0.0924
+        }
       },
       "short": {
         "regressors": [
@@ -851,7 +897,16 @@
         },
         "india_cointegration_p": 0.4455413657375807,
         "india_latest_annual_gap_pct": 2.6203005900309773,
-        "india_latest_reer_year": 2025
+        "india_latest_reer_year": 2025,
+        "formal": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "openness",
+            "log_tot"
+          ],
+          "testable": false
+        }
       },
       "prod_nfa": {
         "regressors": [
@@ -906,7 +961,30 @@
         },
         "india_cointegration_p": 0.3932001974937229,
         "india_latest_annual_gap_pct": 9.951901314634949,
-        "india_latest_reer_year": 2025
+        "india_latest_reer_year": 2025,
+        "formal": {
+          "regressors": [
+            "rel_prod",
+            "nfa"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.7545069821327077,
+            "panel_adf": -9.9073043974118,
+            "Gt": -2.3546175646415186,
+            "Pt": -7.678443031563006
+          },
+          "p": {
+            "group_adf": 0.155,
+            "panel_adf": 0.402,
+            "Gt": 0.034,
+            "Pt": 0.274
+          },
+          "countries": 19,
+          "years": 31,
+          "p_holm": 0.368,
+          "p_bh": 0.155
+        }
       }
     },
     "coef_path": {
@@ -914,6 +992,335 @@
         0.3088677025260718,
         0.8674994353250649
       ]
+    },
+    "formal_family": {
+      "primary": "group_adf",
+      "reps": 999,
+      "n_specs": 16,
+      "n_testable": 12,
+      "specs": {
+        "rel_prod": {
+          "regressors": [
+            "rel_prod"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.596216260422303,
+            "panel_adf": -9.661211919104232,
+            "Gt": -2.33416884651446,
+            "Pt": -8.751736152807917
+          },
+          "p": {
+            "group_adf": 0.023,
+            "panel_adf": 0.067,
+            "Gt": 0.011,
+            "Pt": 0.02
+          },
+          "countries": 19,
+          "years": 32,
+          "p_holm": 0.253,
+          "p_bh": 0.0924
+        },
+        "rel_prod+gov_cons": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.8955903215189425,
+            "panel_adf": -10.614853865484907,
+            "Gt": -2.4405679257474446,
+            "Pt": -8.30773979578132
+          },
+          "p": {
+            "group_adf": 0.052,
+            "panel_adf": 0.212,
+            "Gt": 0.018,
+            "Pt": 0.125
+          },
+          "countries": 19,
+          "years": 30,
+          "p_holm": 0.368,
+          "p_bh": 0.0924
+        },
+        "rel_prod+openness": {
+          "regressors": [
+            "rel_prod",
+            "openness"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.9439242240058414,
+            "panel_adf": -11.036843844453296,
+            "Gt": -2.1538180937582667,
+            "Pt": -8.411526896856973
+          },
+          "p": {
+            "group_adf": 0.033,
+            "panel_adf": 0.132,
+            "Gt": 0.088,
+            "Pt": 0.081
+          },
+          "countries": 19,
+          "years": 31,
+          "p_holm": 0.33,
+          "p_bh": 0.0924
+        },
+        "rel_prod+log_tot": {
+          "regressors": [
+            "rel_prod",
+            "log_tot"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.786747046166301,
+            "panel_adf": -10.385137829744806,
+            "Gt": -2.143773931001255,
+            "Pt": -8.070162678142115
+          },
+          "p": {
+            "group_adf": 0.15,
+            "panel_adf": 0.281,
+            "Gt": 0.107,
+            "Pt": 0.129
+          },
+          "countries": 19,
+          "years": 20,
+          "p_holm": 0.368,
+          "p_bh": 0.155
+        },
+        "rel_prod+nfa": {
+          "regressors": [
+            "rel_prod",
+            "nfa"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -2.7545069821327077,
+            "panel_adf": -9.9073043974118,
+            "Gt": -2.3546175646415186,
+            "Pt": -7.678443031563006
+          },
+          "p": {
+            "group_adf": 0.155,
+            "panel_adf": 0.402,
+            "Gt": 0.034,
+            "Pt": 0.274
+          },
+          "countries": 19,
+          "years": 31,
+          "p_holm": 0.368,
+          "p_bh": 0.155
+        },
+        "rel_prod+gov_cons+openness": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "openness"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.2982293459556695,
+            "panel_adf": -12.328365318745806,
+            "Gt": -2.2350066839644462,
+            "Pt": -8.715811208742721
+          },
+          "p": {
+            "group_adf": 0.019,
+            "panel_adf": 0.135,
+            "Gt": 0.121,
+            "Pt": 0.105
+          },
+          "countries": 19,
+          "years": 30,
+          "p_holm": 0.22799999999999998,
+          "p_bh": 0.0924
+        },
+        "rel_prod+gov_cons+log_tot": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "log_tot"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.298338114170512,
+            "panel_adf": -12.602214509595521,
+            "Gt": -2.0307241493886203,
+            "Pt": -7.063608764413361
+          },
+          "p": {
+            "group_adf": 0.038,
+            "panel_adf": 0.117,
+            "Gt": 0.209,
+            "Pt": 0.263
+          },
+          "countries": 19,
+          "years": 20,
+          "p_holm": 0.34199999999999997,
+          "p_bh": 0.0924
+        },
+        "rel_prod+gov_cons+nfa": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "nfa"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.2201048235741894,
+            "panel_adf": -11.51808628934862,
+            "Gt": -2.4409641239101467,
+            "Pt": -9.131353502531242
+          },
+          "p": {
+            "group_adf": 0.071,
+            "panel_adf": 0.367,
+            "Gt": 0.04,
+            "Pt": 0.08
+          },
+          "countries": 19,
+          "years": 30,
+          "p_holm": 0.368,
+          "p_bh": 0.0924
+        },
+        "rel_prod+openness+log_tot": {
+          "regressors": [
+            "rel_prod",
+            "openness",
+            "log_tot"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.345955519300287,
+            "panel_adf": -11.951625127007127,
+            "Gt": -1.9108849215173582,
+            "Pt": -7.195633840835482
+          },
+          "p": {
+            "group_adf": 0.046,
+            "panel_adf": 0.361,
+            "Gt": 0.312,
+            "Pt": 0.227
+          },
+          "countries": 19,
+          "years": 20,
+          "p_holm": 0.368,
+          "p_bh": 0.0924
+        },
+        "rel_prod+openness+nfa": {
+          "regressors": [
+            "rel_prod",
+            "openness",
+            "nfa"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.194265501230921,
+            "panel_adf": -11.601567616023985,
+            "Gt": -2.323278911940271,
+            "Pt": -8.359134617707566
+          },
+          "p": {
+            "group_adf": 0.077,
+            "panel_adf": 0.351,
+            "Gt": 0.063,
+            "Pt": 0.157
+          },
+          "countries": 19,
+          "years": 30,
+          "p_holm": 0.368,
+          "p_bh": 0.0924
+        },
+        "rel_prod+log_tot+nfa": {
+          "regressors": [
+            "rel_prod",
+            "log_tot",
+            "nfa"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.2345458745635733,
+            "panel_adf": -12.109842640941316,
+            "Gt": -2.4659247041478713,
+            "Pt": -9.891144084799754
+          },
+          "p": {
+            "group_adf": 0.06,
+            "panel_adf": 0.207,
+            "Gt": 0.018,
+            "Pt": 0.013
+          },
+          "countries": 19,
+          "years": 20,
+          "p_holm": 0.368,
+          "p_bh": 0.0924
+        },
+        "rel_prod+gov_cons+openness+log_tot": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "openness",
+            "log_tot"
+          ],
+          "testable": false
+        },
+        "rel_prod+gov_cons+openness+nfa": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "openness",
+            "nfa"
+          ],
+          "testable": true,
+          "stats": {
+            "group_adf": -3.4710710746366744,
+            "panel_adf": -13.437425631317993,
+            "Gt": -2.2927446553119175,
+            "Pt": -8.857598936885097
+          },
+          "p": {
+            "group_adf": 0.074,
+            "panel_adf": 0.189,
+            "Gt": 0.095,
+            "Pt": 0.101
+          },
+          "countries": 19,
+          "years": 30,
+          "p_holm": 0.368,
+          "p_bh": 0.0924
+        },
+        "rel_prod+gov_cons+log_tot+nfa": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "log_tot",
+            "nfa"
+          ],
+          "testable": false
+        },
+        "rel_prod+openness+log_tot+nfa": {
+          "regressors": [
+            "rel_prod",
+            "openness",
+            "log_tot",
+            "nfa"
+          ],
+          "testable": false
+        },
+        "rel_prod+gov_cons+openness+log_tot+nfa": {
+          "regressors": [
+            "rel_prod",
+            "gov_cons",
+            "openness",
+            "log_tot",
+            "nfa"
+          ],
+          "testable": false
+        }
+      },
+      "n_pass_raw": 5
     },
     "first_estimate": "2004-07",
     "n_estimates": 23
@@ -2261,11 +2668,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T14:51:26+00:00",
+      "fetched_at": "2026-10-01T15:26:07+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T14:48:30.262849441Z",
+        "registry_loaded_at": "2026-10-01T15:18:30.564749983Z",
         "status": "ok",
         "tables": 1049
       }

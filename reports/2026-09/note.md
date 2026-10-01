@@ -1,6 +1,6 @@
 # INR/USD fair value note, September 2026
 
-Data to September 2026 · run `20261001-202217` · written 01 Oct 2026
+Data to September 2026 · run `20261001-205656` · written 01 Oct 2026
 
 ## The reading
 
@@ -12,9 +12,7 @@ The two components agree: the productivity-based REER anchor puts the rupee +18.
 
 No new month of exchange-rate data since the last note (Sep 2026); the reading is unchanged at +14.1%.
 
-New and revised data this month:
-
-- **US and market data (FRED)**: 1 new observation, now to Sep 2026.
+No source published new or revised data since the last refresh.
 
 ## Risk regime
 
@@ -32,7 +30,7 @@ Over the same months the RBI sold a net US$14.7 bn, counting forwards. Valued at
 
 Out of sample (Jun 2010 to Sep 2025), the misalignment signal has a slightly lower forecast error than a random walk with drift at a 12-month horizon (forecast error ratio 0.977, Clark-West p = 0.13), but the difference is not statistically significant. Read the misalignment as a valuation gauge, not a timing signal.
 
-Also: the market-based BEER (+25.1%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test.
+Also: the market-based BEER (+25.1%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test; the productivity anchor passes its long-run test (p 0.023) but not once the 12 specifications tried are allowed for (p 0.25), so its equilibrium is suggestive.
 
 Letting large gaps revert faster, or letting the adjustment drift, did not forecast better out of sample; a rolling 10-year estimate did (0.944), but not robustly across window lengths, so the linear version stays.
 

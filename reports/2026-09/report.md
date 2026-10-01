@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.16.0 · run `20261001-215847` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.17.0 · run `20261001-222256` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -11,20 +11,22 @@ All figures are point-in-time: each value uses only data published by that month
 | REER gap (one-sided HP) | Sep 2026 | +4.8% | 91.06 | cyclical gauge; mean-reverting by construction |
 | REER panel anchor (EM panel) | Sep 2026 | +18.4% | 80.57 | productivity-based; BIS REER; spec 'prod' |
 | REER fundamentals anchor | Sep 2026 | +10.1% | 86.62 | **not cointegrated**: reported only |
-| FEER, IMF norm path (central) | Sep 2026 | +10.0% | 86.71 | BoP Jan–Mar 2026; 10–90th pct +5.2% to +16.8% |
-| FEER, fixed IMF −2.0% norm | Sep 2026 | +8.2% | n/a | for comparison |
-| FEER, NIIP-stabilising norm | Sep 2026 | -1.6% | n/a | alternative norm |
-| FEER, legacy −2.5% norm | Sep 2026 | +11.3% | n/a | v0.2 assumption, for comparison |
-| FEER conditional (experimental) | Jun 2026 | -1.5% | n/a | ad hoc norm, not in composite |
+| FEER, IMF norm path (central) | Sep 2026 | +13.0% | 84.46 | BoP Jan–Mar 2026; 10–90th pct +7.7% to +20.8% |
+| FEER, fixed IMF −2.0% norm | Sep 2026 | +11.0% | n/a | for comparison |
+| FEER, NIIP-stabilising norm | Sep 2026 | +0.9% | n/a | alternative norm |
+| FEER, legacy −2.5% norm | Sep 2026 | +14.2% | n/a | v0.2 assumption, for comparison |
+| FEER conditional (experimental) | Jun 2026 | +0.6% | n/a | ad hoc norm, not in composite |
 | BEER, current (real INR/USD, DOLS) | Sep 2026 | +25.1% | 76.27 | **not cointegrated**: descriptive only |
 | BEER, total (permanent fundamentals) | Sep 2026 | +21.4% | 78.56 | fundamentals at one-sided HP trend |
-| Composite (REER+FEER) | Sep 2026 | +14.1% | 83.59 | drives the ECM |
+| Composite (REER+FEER) | Sep 2026 | +15.7% | 82.50 | drives the ECM |
 
-**Fair-value corridor (10th–90th percentile; joint bootstrap of panel parameters, FEER norm, elasticities, CA measurement and model weights): 79.93 – 86.40** (central 83.59, spot 95.41).
+**Fair-value corridor (10th–90th percentile; joint bootstrap of panel parameters, FEER norm, elasticities, CA measurement and model weights): 78.70 – 85.08** (central 82.50, spot 95.41).
 
 ### FEER, latest quarter
 
-Quarter from Jan 2026, public Jul 2026: 4-quarter CA -0.68% of GDP; oil adjustment +nanpp (net oil imports n/a% of GDP, Brent paid $70 vs 5-year norm $82); underlying CA -0.68%. Norms: IMF path -2.3% (IMF 2026 External Sector Report (30 Jul 2026) Table 2.11 India: EBA norm -2.3 percent of GDP with standard error 0.6 [FY2025/26]), fixed IMF -2.0%, NIIP-stabilising -0.43%, legacy -2.5%. Semi-elasticity -0.161 pp/1% (EBA shares; X 21.6%, M 24.7% of GDP).
+Quarter from Jan 2026, public Jul 2026: 4-quarter CA -0.68% of GDP; oil adjustment +nanpp (net oil imports n/a% of GDP, Brent paid $70 vs 5-year norm $82); underlying CA -0.29%. Norms: IMF path -2.3% (IMF 2026 External Sector Report (30 Jul 2026) Table 2.11 India: EBA norm -2.3 percent of GDP with standard error 0.6 [FY2025/26]), fixed IMF -2.0%, NIIP-stabilising -0.43%, legacy -2.5%. Semi-elasticity -0.155 pp/1% (EBA shares; X 21.6%, M 24.7% of GDP).
+
+Cyclical adjustment (applied): India's output gap +1.57% vs partners' +0.48% (relative +1.10pp) x EBA coefficient -0.3564 = -0.39pp of GDP from the cycle; underlying CA before it -0.68%. Income term (applied): net primary income -1.26% of GDP, foreign-currency share 0.5 (uniform 0-1 in the bands); trade-only semi-elasticity -0.161.
 
 ### REER panel anchor
 
@@ -94,7 +96,7 @@ Dynamic OLS, 2005-07–2026-04, n=82: log REER on relative productivity +0.150 (
 
 Reading: India's productivity relative to the world has more than doubled since 2005 while the REER stayed within a narrow range, so the fundamentals do not pin down the REER level over this sample (consistent with a managed exchange rate). The anchor's misalignment is therefore not used in the composite unless `[composite] reer_component = "anchor"`.
 
-Cross-check, FY2024/25: this model's CA -0.58% and underlying CA -0.50% vs the IMF's -0.6% actual and -0.4% cyclically adjusted (2025 Article IV); misalignment +9.6% (IMF: external position "moderately stronger" than fundamentals).
+Cross-check, FY2024/25: this model's CA -0.58% and underlying CA -0.02% vs the IMF's -0.6% actual and -0.4% cyclically adjusted (2025 Article IV); misalignment +13.2% (IMF: external position "moderately stronger" than fundamentals).
 
 ## Regime
 
@@ -167,24 +169,24 @@ Outstanding net forward position, Jul 2026: US$-136.8 bn (-20% of FX reserves). 
 
 | h | OOS window | n | RMSE ratio | OOS R² | Clark-West p | DM p | hit ECM | hit naive 'depreciate' | hit vs drift | α range |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2009-07–2026-08 | 206 | 0.998 | +0.003 | 0.145 | 0.853 | 58% | 58% | 49% | -0.06 to -0.01 |
-| 3 | 2009-09–2026-06 | 202 | 1.006 | -0.011 | 0.280 | 0.771 | 60% | 63% | 42% | -0.20 to -0.03 |
-| 6 | 2009-12–2026-03 | 196 | 1.015 | -0.030 | 0.211 | 0.718 | 68% | 71% | 41% | -0.41 to -0.09 |
-| 12 | 2010-06–2025-09 | 184 | 0.977 | +0.045 | 0.130 | 0.820 | 80% | 83% | 52% | -0.77 to -0.25 |
+| 1 | 2009-07–2026-08 | 206 | 0.996 | +0.009 | 0.107 | 0.639 | 58% | 58% | 50% | -0.06 to -0.01 |
+| 3 | 2009-09–2026-06 | 202 | 1.000 | -0.000 | 0.224 | 0.998 | 63% | 63% | 43% | -0.19 to -0.04 |
+| 6 | 2009-12–2026-03 | 196 | 0.998 | +0.004 | 0.174 | 0.965 | 71% | 71% | 41% | -0.35 to -0.10 |
+| 12 | 2010-06–2025-09 | 184 | 0.964 | +0.070 | 0.121 | 0.696 | 83% | 83% | 48% | -0.70 to -0.25 |
 
 RMSE ratio < 1 and Clark-West p < 0.05 would mean the ECT beats the drift benchmark. 'hit vs drift' asks whether the model gets the direction of the surprise relative to drift right.
 
 ### Composite weights
 
-Weighting schemes for the REER component and the FEER, all point in time, through the same backtest. Rule set beforehand: keep equal weights unless a scheme lowers the 12-month RMSE ratio by at least 0.01 and has a lower Clark-West p. The rule chooses: **equal** (configured: equal). Headline misalignment across the combination schemes: +12.9% to +14.4%.
+Weighting schemes for the REER component and the FEER, all point in time, through the same backtest. Rule set beforehand: keep equal weights unless a scheme lowers the 12-month RMSE ratio by at least 0.01 and has a lower Clark-West p. The rule chooses: **equal** (configured: equal). Headline misalignment across the combination schemes: +15.1% to +15.8%.
 
 | Scheme | REER weight (latest, mean) | Misalignment now | 1m RMSE ratio (CW p) | 3m RMSE ratio (CW p) | 6m RMSE ratio (CW p) | 12m RMSE ratio (CW p) |
 |---|---|---|---|---|---|---|
-| Equal (1/2 each) | 0.50, 0.50 | +14.1% | 0.998 (0.14) | 1.006 (0.28) | 1.015 (0.21) | 0.977 (0.13) |
+| Equal (1/2 each) | 0.50, 0.50 | +15.7% | 0.996 (0.11) | 1.000 (0.22) | 0.998 (0.17) | 0.964 (0.12) |
 | REER component only | 1.00, 1.00 | +18.4% | 1.004 (0.28) | 1.017 (0.47) | 1.070 (0.69) | 1.231 (0.50) |
-| FEER only | 0.00, 0.00 | +10.0% | 1.005 (0.56) | 1.015 (0.61) | 1.013 (0.40) | 1.046 (0.59) |
-| Inverse variance (bands) | 0.35, 0.14 | +12.9% | 1.005 (0.58) | 1.015 (0.63) | 1.012 (0.39) | 1.037 (0.53) |
-| Performance (Bates-Granger) | 0.53, 0.50 | +14.4% | 1.000 (0.19) | 1.007 (0.32) | 1.016 (0.22) | 0.976 (0.13) |
+| FEER only | 0.00, 0.00 | +13.0% | 1.004 (0.48) | 1.013 (0.53) | 1.009 (0.35) | 1.025 (0.44) |
+| Inverse variance (bands) | 0.39, 0.15 | +15.1% | 1.004 (0.49) | 1.014 (0.53) | 1.009 (0.34) | 1.020 (0.38) |
+| Performance (Bates-Granger) | 0.54, 0.50 | +15.8% | 0.997 (0.13) | 1.002 (0.24) | 0.999 (0.18) | 0.963 (0.12) |
 
 ### Nonlinear and time-varying adjustment
 
@@ -192,37 +194,37 @@ Each variant is re-estimated point in time like the headline ECM and scored the 
 
 | Variant | 1m RMSE ratio (CW p) | 3m RMSE ratio (CW p) | 6m RMSE ratio (CW p) | 12m RMSE ratio (CW p) |
 |---|---|---|---|---|
-| Linear ECM (headline) | 0.998 (0.14) | 1.006 (0.28) | 1.015 (0.21) | 0.977 (0.13) |
-| Threshold ECM | 1.012 (0.04) | 1.069 (0.75) | 1.044 (0.42) | 1.340 (0.55) |
-| Cubic (ESTAR approximation) | 1.005 (0.39) | 1.022 (0.59) | 1.030 (0.43) | 1.416 (0.15) |
-| Rolling-window ECM | 1.001 (0.13) | 1.004 (0.20) | 1.008 (0.17) | 0.944 (0.08) |
-| Time-varying parameters (Kalman) | 1.010 (0.46) | 1.124 (0.78) | 1.236 (0.93) | 1.299 (0.52) |
+| Linear ECM (headline) | 0.996 (0.11) | 1.000 (0.22) | 0.998 (0.17) | 0.964 (0.12) |
+| Threshold ECM | 1.012 (0.15) | 1.030 (0.29) | 1.026 (0.36) | 1.105 (0.41) |
+| Cubic (ESTAR approximation) | 1.002 (0.27) | 1.020 (0.58) | 1.018 (0.37) | 1.185 (0.12) |
+| Rolling-window ECM | 0.999 (0.09) | 1.000 (0.16) | 0.990 (0.11) | 0.928 (0.05) |
+| Time-varying parameters (Kalman) | 1.011 (0.41) | 1.118 (0.62) | 1.207 (0.83) | 1.278 (0.53) |
 
-Latest fits: threshold |gap| 0.104 log points, slope inside +0.13 and outside -0.32; cubic term +1.88 (negative would mean faster reversion of large gaps).
+Latest fits: threshold |gap| 0.122 log points, slope inside +0.23 and outside -0.30; cubic term +2.56 (negative would mean faster reversion of large gaps).
 
-Rolling window, 12-month ratio by window length: 72 months 0.982 (p 0.07), 96 months 0.983 (p 0.12), 120 months 0.944 (p 0.08), 144 months 0.968 (p 0.09), 180 months 0.970 (p 0.08); median 0.970. The rule's choice: **rolling**. Adopted: **linear** (the rolling window passes at its pre-set length but not at the median of nearby lengths; this robustness requirement was added after the first results). `[backtest] window_months` switches the headline ECM to a rolling window.
+Rolling window, 12-month ratio by window length: 72 months 0.933 (p 0.05), 96 months 0.984 (p 0.12), 120 months 0.928 (p 0.05), 144 months 0.951 (p 0.06), 180 months 0.948 (p 0.06); median 0.948. The rule's choice: **rolling**. Adopted: **rolling**. `[backtest] window_months` switches the headline ECM to a rolling window.
 
 Structural breaks (sup-Wald, 15% trimming, block-bootstrap p; a second break is tested on the larger segment when the first is significant):
 
 | Series | Sample | Break | sup-F | p | Before | After |
 |---|---|---|---|---|---|---|
-| 12-month ECM (intercept and slope) | 2004-07–2025-09 | Jun 2013 | 12.7 | 0.690 | +0.103, -0.720 | +0.011, +0.284 |
-| Mean of composite misalignment | 2004-07–2026-09 | Oct 2009 | 134.0 | 0.010 | +14.3 | +7.4 |
-| Mean of composite misalignment | 2009-10–2026-09 | Sep 2013 | 73.5 | 0.070 | +3.7 | +8.4 |
-| Mean of REER component misalignment | 2004-07–2026-09 | Dec 2011 | 40.7 | 0.300 | +2.5 | +6.3 |
-| Mean of FEER misalignment | 2001-04–2026-09 | Oct 2005 | 580.5 | 0.005 | +41.3 | +11.8 |
-| Mean of FEER misalignment | 2005-10–2026-09 | Jul 2009 | 169.3 | 0.020 | +23.1 | +9.3 |
+| 12-month ECM (intercept and slope) | 2004-07–2025-09 | Jun 2013 | 13.9 | 0.655 | +0.110, -0.692 | -0.009, +0.542 |
+| Mean of composite misalignment | 2004-07–2026-09 | Jul 2009 | 211.9 | 0.005 | +16.3 | +7.9 |
+| Mean of composite misalignment | 2009-07–2026-09 | Jan 2014 | 48.9 | 0.195 | +5.7 | +8.7 |
+| Mean of REER component misalignment | 2004-07–2026-09 | Dec 2011 | 40.7 | 0.315 | +2.5 | +6.3 |
+| Mean of FEER misalignment | 2001-04–2026-09 | Jan 2009 | 724.0 | 0.005 | +38.1 | +10.5 |
+| Mean of FEER misalignment | 2009-01–2026-09 | Jul 2014 | 46.5 | 0.245 | +6.8 | +12.1 |
 
 ### Joint uncertainty (bootstrap corridor)
 
-2000 joint draws a month of: the panel slope and India's effect (country-block bootstrap, 300 draws per re-estimation), the IMF norm (its standard error), the trade elasticities (±50%), current-account measurement error (sd 0.2 pp of GDP) and the weighting scheme (equal, performance or inverse variance). Sep 2026: fair value 79.93–86.40 (misalignment +10.4% to +19.4%); 100% of draws say undervalued. End-to-end band: 78.27–88.53. Headline corridor: **bootstrap**.
+2000 joint draws a month of: the panel slope and India's effect (country-block bootstrap, 300 draws per re-estimation), the IMF norm (its standard error), the trade elasticities (±50%), current-account measurement error (sd 0.2 pp of GDP) and the weighting scheme (equal, performance or inverse variance). Sep 2026: fair value 78.70–85.08 (misalignment +12.1% to +21.2%); 100% of draws say undervalued. End-to-end band: 76.96–87.51. Headline corridor: **bootstrap**.
 
 Coverage against the fair value as later re-estimated (Jan 2017–Dec 2025: final panel coefficients; the IMF's own norm for each year), nominal 80%:
 
 | Corridor | Months | Coverage | Ex-post below band | Ex-post above band | Median width |
 |---|---|---|---|---|---|
-| bootstrap | 108 | 75% | 25% | 0% | 10.7 pp |
-| end to end | 108 | 100% | 0% | 0% | 19.4 pp |
+| bootstrap | 108 | 66% | 33% | 1% | 10.6 pp |
+| end to end | 108 | 100% | 0% | 0% | 18.9 pp |
 
 Months overlap heavily (about one independent observation a year), so coverage is measured roughly. Misses below the band mean the real-time reading overstated undervaluation relative to the later estimate. The bootstrap corridor was made the headline after this test, as the one closer to nominal coverage.
 
@@ -230,16 +232,16 @@ Months overlap heavily (about one independent observation a year), so coverage i
 
 | h | β (Hodrick) | t (Hodrick 1B) | p | non-overlapping β median [min, max] | t median |
 |---|---|---|---|---|---|
-| 1 | -0.045 | -2.14 | 0.033 | -0.045 [-0.05, -0.05] | -2.05 |
-| 3 | -0.119 | -1.86 | 0.062 | -0.118 [-0.13, -0.12] | -1.49 |
-| 6 | -0.221 | -1.92 | 0.055 | -0.212 [-0.30, -0.13] | -1.34 |
-| 12 | -0.434 | -1.89 | 0.058 | -0.435 [-0.59, -0.29] | -1.26 |
+| 1 | -0.050 | -2.39 | 0.017 | -0.050 [-0.05, -0.05] | -2.27 |
+| 3 | -0.130 | -2.07 | 0.038 | -0.129 [-0.13, -0.13] | -1.67 |
+| 6 | -0.232 | -2.19 | 0.028 | -0.226 [-0.31, -0.12] | -1.44 |
+| 12 | -0.430 | -2.05 | 0.041 | -0.430 [-0.62, -0.25] | -1.26 |
 
-Regime-conditional (h=12, filtered P(stress)): α_calm -0.227 (p=0.435), α_stress -0.319 (p=0.370).
+Regime-conditional (h=12, filtered P(stress)): α_calm -0.247 (p=0.522), α_stress -0.269 (p=0.534).
 
 ## Current ECM forecast
 
-h=12m from 2026-09: ECT +0.132, α -0.434, const +0.071 → predicted Δlog INR +1.3% (drift alone +3.4%). Estimated on all realised targets; only as credible as the backtest above.
+h=12m from 2026-09: ECT +0.145, α -0.430, const +0.073 → predicted Δlog INR +1.1% (drift alone +3.4%). Estimated on all realised targets; only as credible as the backtest above.
 
 ## External benchmark: the IMF's assessments of India
 
@@ -247,28 +249,28 @@ IMF External Balance Assessment for each year (published with the following year
 
 | Year | IMF published | IMF CA gap (% GDP) | IMF CA model | IMF REER index | IMF REER level | Our FEER (year) | Our REER comp. (year) | Our composite (year) | Our composite (at publication) |
 |---|---|---|---|---|---|---|---|---|---|
-| 2017 | Jul 2018 | +0.9 | +5.0% | -10.9% | -8.8% | +12.3% | +1.1% | +6.6% | +5.9% |
-| 2018 | Jul 2019 | +0.9 | +5.0% | -5.4% | -2.5% | +10.1% | +6.4% | +8.2% | +8.4% |
-| 2019 | Aug 2020 | +1.6 | +10.7% | -13.4% | -10.2% | +9.5% | +5.9% | +7.6% | +12.4% |
-| 2020 | Aug 2021 | +1.7 | +10.0% | -10.9% | -6.6% | +20.0% | +4.8% | +12.1% | +14.1% |
-| 2021 | Jul 2022 | +0.3 | +1.9% | -10.1% | -8.5% | +26.4% | +4.4% | +14.9% | +4.8% |
-| 2022 | Jul 2023 | +1.5 | +7.9% | -12.5% | -10.6% | +8.7% | +1.8% | +5.2% | +5.1% |
-| 2023 | Jul 2024 | +1.7 | +9.4% | -5.9% | -5.2% | +4.3% | +4.1% | +4.2% | +5.8% |
-| 2024 | Jul 2025 | +1.4 | +7.8% | -5.4% | -4.1% | +10.4% | +2.0% | +6.1% | +8.8% |
-| 2025 | Jul 2026 | +1.6 | +8.9% | -0.8% | +5.6% | +9.6% | +6.8% | +8.2% | +14.3% |
+| 2017 | Jul 2018 | +0.9 | +5.0% | -10.9% | -8.8% | +15.9% | +1.1% | +8.3% | +6.0% |
+| 2018 | Jul 2019 | +0.9 | +5.0% | -5.4% | -2.5% | +10.1% | +6.4% | +8.2% | +7.8% |
+| 2019 | Aug 2020 | +1.6 | +10.7% | -13.4% | -10.2% | +8.2% | +5.9% | +7.0% | +10.5% |
+| 2020 | Aug 2021 | +1.7 | +10.0% | -10.9% | -6.6% | +14.0% | +4.8% | +9.3% | +11.6% |
+| 2021 | Jul 2022 | +0.3 | +1.9% | -10.1% | -8.5% | +18.8% | +4.4% | +11.4% | +3.6% |
+| 2022 | Jul 2023 | +1.5 | +7.9% | -12.5% | -10.6% | +7.7% | +1.8% | +4.7% | +6.3% |
+| 2023 | Jul 2024 | +1.7 | +9.4% | -5.9% | -5.2% | +5.8% | +4.1% | +4.9% | +8.2% |
+| 2024 | Jul 2025 | +1.4 | +7.8% | -5.4% | -4.1% | +15.0% | +2.0% | +8.3% | +10.6% |
+| 2025 | Jul 2026 | +1.6 | +8.9% | -0.8% | +5.6% | +13.3% | +6.8% | +10.0% | +15.8% |
 
 | Ours vs IMF | When | n | Same sign | Correlation | Mean difference (ours − IMF) | Mean absolute difference |
 |---|---|---|---|---|---|---|
-| FEER vs IMF CA model (CA gap / elasticity) | year average | 9 | 100% | -0.55 | +5.0 pp | 6.4 pp |
-| FEER vs IMF CA model (CA gap / elasticity) | at publication | 9 | 100% | +0.61 | +4.6 pp | 5.0 pp |
+| FEER vs IMF CA model (CA gap / elasticity) | year average | 9 | 100% | -0.61 | +4.7 pp | 6.1 pp |
+| FEER vs IMF CA model (CA gap / elasticity) | at publication | 9 | 100% | +0.85 | +4.7 pp | 4.7 pp |
 | REER component vs IMF REER-level model | year average | 9 | 11% | +0.55 | +9.8 pp | 9.8 pp |
 | REER component vs IMF REER-level model | at publication | 9 | 11% | +0.79 | +11.6 pp | 11.6 pp |
 | REER component vs IMF REER-index model | year average | 9 | 0% | +0.39 | +12.5 pp | 12.5 pp |
 | REER component vs IMF REER-index model | at publication | 9 | 0% | +0.65 | +14.3 pp | 14.3 pp |
-| Composite vs IMF CA model (CA gap / elasticity) | year average | 9 | 100% | -0.45 | +0.7 pp | 3.7 pp |
-| Composite vs IMF CA model (CA gap / elasticity) | at publication | 9 | 100% | +0.63 | +1.5 pp | 2.9 pp |
-| Composite vs IMF REER-level model | year average | 9 | 11% | -0.04 | +13.8 pp | 13.8 pp |
-| Composite vs IMF REER-level model | at publication | 9 | 11% | +0.49 | +14.5 pp | 14.5 pp |
+| Composite vs IMF CA model (CA gap / elasticity) | year average | 9 | 100% | -0.48 | +0.6 pp | 3.3 pp |
+| Composite vs IMF CA model (CA gap / elasticity) | at publication | 9 | 100% | +0.71 | +1.5 pp | 2.2 pp |
+| Composite vs IMF REER-level model | year average | 9 | 11% | +0.35 | +13.7 pp | 13.7 pp |
+| Composite vs IMF REER-level model | at publication | 9 | 11% | +0.71 | +14.6 pp | 14.6 pp |
 
 ## Peer currencies (panel REER anchor)
 
@@ -322,7 +324,7 @@ The panel anchor is a REER model; it agrees closely with the IMF's REER models. 
 
 The headline was re-run on the earlier RBI vintage (DBIE Excel files in data/raw, ending Oct 2025, Feb 2026, Mar 2026, Apr 2026), preferring it wherever both vintages have a value. Series revised beyond the 0.5% tolerance: bop.capital_account, bop.current_account, bop.fdi_bop, bop.loans, bop.merch_balance, fdi_usd_mn, fpi_usd_mn, imports_usd_mn, neer.
 
-Point-in-time composite readings changed in 30 of 267 months (Jul 2004–Sep 2026): mean absolute change 0.014 pp, largest 0.47 pp (Jun 2026); by component, REER 0.000 pp and FEER 0.024 pp on average. Latest common month Sep 2026: +14.59% on the earlier vintage, +14.14% now. This is a lower bound on the revision effect (the earlier files are themselves partly revised); `python -m inrfv.vintages run <git-rev>` re-runs any committed vintage.
+Point-in-time composite readings changed in 30 of 267 months (Jul 2004–Sep 2026): mean absolute change 0.014 pp, largest 0.48 pp (Jun 2026); by component, REER 0.000 pp and FEER 0.024 pp on average. Latest common month Sep 2026: +16.11% on the earlier vintage, +15.65% now. This is a lower bound on the revision effect (the earlier files are themselves partly revised); `python -m inrfv.vintages run <git-rev>` re-runs any committed vintage.
 
 US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised series the mean absolute difference is 0.035 pp (largest 0.22 pp).
 
@@ -338,7 +340,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T16:27:54+00:00, mirror loaded 2026-10-01T16:18:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T16:52:04+00:00, mirror loaded 2026-10-01T16:48:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

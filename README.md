@@ -113,7 +113,7 @@ Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
 | `results.json` | Every statistic in the report, machine-readable |
 | `manifest.json` | Code revision, full config, config hash, SHA-256 of every raw input |
 | `panel_reference_month.csv` / `panel_point_in_time.csv` | The data, by reference month and by publication month |
-| `model_*.csv`, `composite_ect.csv`, `oos_forecasts_*m.csv` | Model outputs and out-of-sample forecasts |
+| `model_*.csv` (incl. `model_flows.csv`), `composite_ect.csv`, `oos_forecasts_*m.csv` | Model outputs and out-of-sample forecasts |
 
 `outputs/latest.txt` names the most recent run. Runs are never overwritten.
 
@@ -246,6 +246,20 @@ so the BEER gap says where fundamentals would put the rupee, not a level it retu
 to. As a predictor, its gap has the right error-correction sign in every
 out-of-sample window (12-month Clark-West p = 0.10) but a higher RMSE than drift. It
 is reported, not used in the composite.
+
+**Flow attribution (v0.5).** The fair-value models say where the rupee should be;
+this asks what moved the spot rate. The monthly INR/USD % change is regressed on net
+portfolio (FPI) and direct investment (FDI) flows in US$ bn, and on dollar-index and
+Brent % changes (2011 onward, Newey-West errors). Each month's move is split into
+those contributions, trend depreciation (the constant) and a residual, summed over
+the last 3 and 12 months. Over 2011–2026, each US$1bn of net FPI outflow goes with
+about 0.13% rupee weakness (t −4.3). FDI and oil are not significant, and the dollar
+index is (+0.46% per 1%). Two checks: the coefficients are re-estimated without the
+months being explained, and lead-lag regressions test both directions. Flows predict
+next month's rupee move, and the rupee's move predicts next month's flows, so the
+contributions are associations, not causes. The analysis is ex post and by reference
+month (RBI publishes flows about two months later), so it explains past moves and
+does not enter the fair value. It appears in the report, the note and the dashboard.
 
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY

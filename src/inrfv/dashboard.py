@@ -16,6 +16,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .models.flows import LABELS as FLOW_LABELS
+
 
 def _num(x, nd=2):
     try:
@@ -113,7 +115,20 @@ def collect(r: dict) -> dict:
         "freshness": freshness, "warnings": r["warnings"],
         "norm": {"value": _num(fm.get("misalignment_pct_imf_path", pd.Series(dtype=float)).dropna().iloc[-1]
                                if "misalignment_pct_imf_path" in fm else None, 1)},
+        "flows": flows_block(r.get("flows_diag")),
     }
+
+
+def flows_block(fd: dict | None) -> dict | None:
+    if not fd:
+        return None
+    parts = [(k, FLOW_LABELS.get(k, k)) for k in fd["regressors"]] + [("drift", "Trend depreciation"),
+                                                                      ("residual", "Unexplained")]
+    wins = [{"months": w["months"], "start": w["start"], "end": w["end"], "actual": _num(w["actual"]),
+             "parts": [{"key": k, "label": lbl, "v": _num(w[k])} for k, lbl in parts],
+             "fpi_out_of_window": _num(w["out_of_window"]["fpi"])} for w in fd["windows"].values()]
+    return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
+            "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way")}
 
 
 def build_page(r: dict) -> str:
@@ -214,6 +229,14 @@ td .note { display: block; color: var(--ink-3); font-size: 12px; margin-top: 2px
 details { margin-top: 12px; }
 summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
 ul.warn { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; display: grid; gap: 4px; }
+.flows { display: grid; gap: 6px; margin-top: 14px; }
+.flows .row { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 12px; align-items: center; font-size: 13px; }
+.flows .row.total { font-weight: 600; border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin-bottom: 2px; }
+.flows .k { color: var(--ink-2); overflow-wrap: anywhere; }
+.flows svg { display: block; width: 100%; height: 22px; overflow: visible; }
+.flows .cell { position: relative; min-width: 0; }
+.flows .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 11.5px var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) { .flows .row { grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); } }
 footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -270,6 +293,17 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     <h2 style="font:600 1rem/1.3 var(--f-body);margin:0">Models</h2>
     <p class="sub">The composite averages the REER component and the FEER. The others are reported for context; a failed long-run test means the model describes where fundamentals point, not a level the rupee returns to.</p>
     <div class="tablewrap"><table id="tblModels"></table></div>
+  </section>
+
+  <section class="panel" id="flowPanel">
+    <div class="bar">
+      <h2>What moved the rupee</h2>
+      <div class="seg" role="group" aria-label="Attribution window" id="flowWin"></div>
+    </div>
+    <p class="sub" id="flowSub"></p>
+    <div class="legend"><span><i style="border-color:var(--accent);border-top-width:8px"></i>Pushed the rupee weaker</span><span><i style="border-color:var(--s1);border-top-width:8px"></i>Pushed it stronger</span><span><i style="border-color:var(--ink-3);border-top-width:8px"></i>Unexplained</span></div>
+    <div class="flows" id="flowBars" role="img"></div>
+    <p class="sub" id="flowNote" style="margin-top:14px"></p>
   </section>
 
   <div class="grid2">
@@ -441,6 +475,50 @@ $("tblFresh").innerHTML = `<thead><tr><th>Input</th><th class="n">Latest</th></t
   + D.freshness.map(f => `<tr><td>${f.series}</td><td class="n">${f.end}</td></tr>`).join("") + "</tbody>";
 $("warnSum").textContent = `${D.warnings.length} data and model notes from this run`;
 $("warnList").innerHTML = D.warnings.map(w => `<li>${w.replace(/</g, "&lt;")}</li>`).join("");
+// ---------- flow attribution
+const F = D.flows;
+let flowWin = null;
+function drawFlows() {
+  const w = F.windows.find(x => x.months === flowWin) || F.windows[0];
+  document.querySelectorAll("#flowWin button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.m === w.months)));
+  $("flowSub").textContent = `${monthName(w.start)} to ${monthName(w.end)}: INR/USD moved ${sgn(w.actual)}%. Each bar is that driver's share of the move, in percentage points; positive means it pushed the rupee weaker.`;
+  const rows = [{ label: "Actual move", v: w.actual, total: true }, ...w.parts.map(p => ({ label: p.label, v: p.v, resid: p.key === "residual" }))];
+  const m = Math.max(...rows.map(r => Math.abs(r.v || 0)), 0.5);
+  const host = $("flowBars"); host.innerHTML = "";
+  host.setAttribute("aria-label", rows.map(r => `${r.label} ${sgn(r.v)} points`).join("; "));
+  const W = 400, mid = W / 2, room = 70, scale = (mid - room) / m;
+  rows.forEach(r => {
+    const row = document.createElement("div"); row.className = "row" + (r.total ? " total" : "");
+    const k = document.createElement("div"); k.className = "k"; k.textContent = r.label; row.appendChild(k);
+    const svg = el("svg", { viewBox: `0 0 ${W} 22`, preserveAspectRatio: "none", "aria-hidden": "true" });
+    el("line", { x1: mid, x2: mid, y1: 0, y2: 22, stroke: css("--rule"), "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, svg);
+    const v = r.v || 0, len = Math.abs(v) * scale;
+    const fill = r.resid ? css("--ink-3") : r.total ? css("--ink") : v > 0 ? css("--accent") : css("--s1");
+    if (len > 0.5) {
+      const b = el("rect", { x: v > 0 ? mid : mid - len, y: 5, width: len, height: 12, rx: 2, fill }, svg);
+      el("title", {}, b).textContent = `${r.label}: ${sgn(v)} points`;
+    }
+    // The value label is HTML beside the bar end, so the stretched SVG does not distort it.
+    const cell = document.createElement("div"); cell.className = "cell";
+    const t = document.createElement("span"); t.className = "val"; t.textContent = sgn(v);
+    const off = `calc(50% + ${(len / W) * 100}% + 6px)`;
+    if (v >= 0) t.style.left = off; else t.style.right = off;
+    cell.append(svg, t); row.appendChild(cell);
+    host.appendChild(row);
+  });
+  const oow = w.fpi_out_of_window;
+  $("flowNote").textContent = `Monthly regression, ${monthName(F.sample[0])} to ${monthName(F.sample[1])} (R² ${fmt(F.r2)}): each US$1bn of net portfolio inflow goes with a ${fmt(Math.abs(F.coef_fpi))}% ${F.coef_fpi < 0 ? "stronger" : "weaker"} rupee that month (t ${sgn(F.t_fpi)}). `
+    + `Fitted without these months, portfolio flows account for ${sgn(oow)} points. `
+    + (F.two_way ? "Flows and the rupee feed each other (foreign investors also sell a falling currency), so these are associations, not causes. " : "")
+    + "Ex post and by reference month; this explains spot moves and does not change the fair value.";
+}
+if (F && F.windows.length) {
+  $("flowWin").innerHTML = F.windows.map(w => `<button type="button" data-m="${w.months}">${w.months}M</button>`).join("");
+  try { flowWin = +localStorage.getItem("inrfv-flowwin") || null; } catch (e) {}
+  document.querySelectorAll("#flowWin button").forEach(b => b.addEventListener("click", () => { flowWin = +b.dataset.m; try { localStorage.setItem("inrfv-flowwin", flowWin); } catch (e) {} drawFlows(); }));
+  drawFlows();
+} else { $("flowPanel").hidden = true; }
+
 $("foot").innerHTML = `Fair values use only data published by each month-end. The REER component is the <strong>${D.reer_component === "panel" ? "panel anchor" : D.reer_component}</strong>; the FEER uses the IMF's current-account norms for India as they were published. Positive misalignment means the rupee is weaker than fair value.`;
 
 render();

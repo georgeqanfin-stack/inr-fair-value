@@ -49,3 +49,16 @@ def test_note_numbers_match_the_run(run):
     assert f"{comp['fair_inr']:.2f}" in text and f"{abs(comp['misalignment_pct']):.1f}%" in text
     assert "monthly refresh" in text                      # plain runs do not claim a month-on-month comparison
     assert "[Dashboard](dashboard.html)" in text
+
+
+def test_flow_attribution_reaches_every_output(run):
+    r, out = run
+    fd = r["flows_diag"]
+    w = fd["windows"]["3"]
+    assert sum(w[k] for k in fd["regressors"] + ["drift", "residual"]) == pytest.approx(w["actual"])
+    assert "## Flow attribution" in (out / "report.md").read_text(encoding="utf-8")
+    note = (out / "note.md").read_text(encoding="utf-8")
+    assert "## What moved the rupee" in note and f"{abs(w['actual']):.1f}%" in note
+    assert (out / "model_flows.csv").exists()
+    html = (out / "dashboard.html").read_text(encoding="utf-8")
+    assert '"flows":{"windows"' in html and 'id="flowBars"' in html

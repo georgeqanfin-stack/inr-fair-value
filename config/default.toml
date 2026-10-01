@@ -243,6 +243,15 @@ core  = ["log_dxy", "rel_prod", "real_rate_diff"]
 dxy   = ["log_dxy"]
 oil   = ["log_dxy", "rel_prod", "real_rate_diff", "log_brent"]
 
+[models.flows]
+# Flow attribution (models/flows.py): monthly INR/USD % change on net FPI and FDI flows
+# (US$ bn), dollar index and Brent % changes; Newey-West errors. Ex post, by reference
+# month: explains spot moves, does not enter the fair value.
+regressors = ["fpi", "fdi", "dxy", "brent"]
+start      = "2011-01"      # RBI monthly FDI/FPI coverage on one basis
+hac_lags   = 3
+windows    = [3, 12]        # months summed in the attribution tables
+
 [models.regimes]
 min_obs     = 96
 refit_every = 12

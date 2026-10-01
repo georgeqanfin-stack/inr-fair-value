@@ -7,12 +7,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .models.flows import LABELS as FLOW_LABELS
+
 
 def _f(x, fmt="{:+.1f}", na="n/a"):
     try:
         return na if x is None or (isinstance(x, float) and np.isnan(x)) else fmt.format(x)
     except (TypeError, ValueError):
         return na
+
+
+def _mon(ym: str) -> str:
+    return pd.Timestamp(ym + "-01").strftime("%b %Y")
 
 
 def _last(s: pd.Series):
@@ -166,6 +172,32 @@ def build_report(r: dict) -> str:
              f"duration {g['stress']['expected_duration_m']:.1f}m.\n")
     q, qd = _last(r["regimes"]["oil_dxy_quadrant"])
     L.append(f"Oil × DXY quadrant (expanding medians): {q} ({qd}).\n")
+
+    fd = r["flows_diag"]
+    L.append("## Flow attribution (what moved the spot rate)\n")
+    L.append(f"Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent "
+             f"% changes, {fd['sample'][0]} to {fd['sample'][1]} (n = {fd['nobs']}, R² {fd['r2']:.2f}, "
+             "Newey-West t). Ex post, by reference month; it explains spot moves and does not enter the fair value. "
+             "Positive = rupee weaker.\n")
+    L.append("| Term | Coefficient | t | Meaning |")
+    L.append("|---|---|---|---|")
+    meaning = {"const": "average monthly depreciation (drift)", "fpi": "% per US$1bn of net FPI inflow",
+               "fdi": "% per US$1bn of net FDI inflow", "dxy": "% per 1% dollar-index rise",
+               "brent": "% per 1% Brent rise"}
+    for k in ["const"] + fd["regressors"]:
+        L.append(f"| {k} | {fd['coef'][k]:+.3f} | {fd['t'][k]:+.1f} | {meaning.get(k, '')} |")
+    L.append("\n| Window | Actual | " + " | ".join(FLOW_LABELS.get(k, k) for k in fd["regressors"]) + " | Drift | Residual | FPI, fitted without the window |")
+    L.append("|---|---|" + "---|" * (len(fd["regressors"]) + 3))
+    for w in fd["windows"].values():
+        o = w["out_of_window"]
+        L.append(f"| {_mon(w['start'])}–{_mon(w['end'])} | {w['actual']:+.1f}% | "
+                 + " | ".join(f"{w[k]:+.1f}" for k in fd["regressors"])
+                 + f" | {w['drift']:+.1f} | {w['residual']:+.1f} | {o['fpi']:+.1f} |")
+    dr = fd["direction"]
+    a, b = dr["fpi_predicts_next_inr"], dr["inr_predicts_next_fpi"]
+    L.append(f"\nDirection: FPI this month → INR next month t {a['t']:+.1f} (p {a['p']:.3f}); INR last month → "
+             f"FPI this month t {b['t']:+.1f} (p {b['p']:.3f}). Reading: {dr['reading']}. Flow data end "
+             f"{_mon(fd['latest_flows_month'])}.\n")
 
     L.append("## Out-of-sample backtest (ECM vs random walk with drift)\n")
     L.append("| h | OOS window | n | RMSE ratio | OOS R² | Clark-West p | DM p | hit ECM | hit naive 'depreciate' | hit vs drift | α range |")

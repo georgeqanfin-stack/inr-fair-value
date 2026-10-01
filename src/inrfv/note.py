@@ -92,6 +92,27 @@ def data_lines(diffs: dict) -> list[str]:
     return out
 
 
+def flow_paragraph(fd: dict) -> list[str]:
+    """What moved the spot rate over the shortest attribution window, in words."""
+    w = fd["windows"][min(fd["windows"], key=int)]
+    span = f"{_month(w['start'])} to {_month(w['end'])}"
+    move = "weakened" if w["actual"] > 0 else "strengthened"
+    parts = {"portfolio flows": w["fpi"], "direct investment": w["fdi"], "the dollar": w["dxy"],
+             "oil": w["brent"], "trend depreciation": w["drift"]}
+    big = sorted(((k, v) for k, v in parts.items() if abs(v) >= 0.25), key=lambda kv: -abs(kv[1]))
+    lead = ", ".join(f"{k} {v:+.1f}" for k, v in big) if big else "no single driver above 0.25 points"
+    fpi_sig = fd["p"]["fpi"] < 0.05
+    two_way = fd["direction"]["reading"].startswith("two-way")
+    L = ["## What moved the rupee\n",
+         f"From {span} the rupee {move} {abs(w['actual']):.1f}%. Split by a monthly regression on flows and "
+         f"global drivers (points of the move, positive = weaker): {lead}; unexplained {w['residual']:+.1f}."
+         + (f" Each US$1bn of net portfolio outflow goes with about {abs(fd['coef']['fpi']):.2f}% rupee weakness."
+            if fpi_sig else " Portfolio flows are not a significant driver over the sample.")
+         + (" Flows and the rupee feed each other (foreign investors also sell a falling currency), so read "
+            "these as associations, not causes." if two_way else "") + "\n"]
+    return L
+
+
 def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
                gate_warnings: list[str] | None = None, links: dict | None = None) -> str:
     comp, ds, cfg = r["composite"], r["dataset"], r["config"]
@@ -153,6 +174,9 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
              f"{g['p_stress_forecast'].get(12, g['p_stress_forecast'].get('12', np.nan)) * 100:.0f}%. "
              f"In stress months the rupee's monthly moves are about {g['stress']['sd_pct'] / g['calm']['sd_pct']:.0f} "
              f"times as large as in calm ones ({g['stress']['sd_pct']:.1f}% vs {g['calm']['sd_pct']:.1f}% standard deviation).\n")
+
+    if "flows_diag" in r:
+        L += flow_paragraph(r["flows_diag"])
 
     L.append("## How far to trust it\n")
     o = r["backtest"].get(r["headline_h"], {}).get("oos", {})

@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import beer, composite, feer, panel_anchor, reer_anchor, regimes, structural
+from .models import beer, composite, feer, flows, panel_anchor, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -53,6 +53,8 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     h = cfg["backtest"]["headline_horizon"]
     cur = backtest.current_forecast(comp, h)
 
+    flow_out, flow_diag = flows.run(ds.panel, cfg)
+
     panel = ds.panel
     johansen = {
         "PPP [log INR, log CPI India, log CPI US]": johansen_rank(
@@ -73,7 +75,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     return {"dataset": ds, "reer": reer, "feer_q": feer_q, "feer_m": feer_m, "beer": beer_out,
             "beer_diag": beer_diag, "anchor": anchor, "anchor_diag": anchor_diag,
             "panel": panel_out, "panel_diag": panel_diag, "regimes": reg_out, "regime_summary": reg_summary,
-            "composite": comp, "backtest": bt, "forecasts": fcs, "current_forecast": cur,
+            "flows": flow_out, "flows_diag": flow_diag, "composite": comp, "backtest": bt, "forecasts": fcs, "current_forecast": cur,
             "johansen": johansen, "warnings": warnings, "headline_h": h, "config": cfg,
             "run_id": run_dir.name if run_dir else "adhoc"}
 
@@ -93,11 +95,12 @@ def save(r: dict, run_dir) -> None:
     r["feer_m"].to_csv(run_dir / "model_feer_monthly.csv")
     r["beer"].to_csv(run_dir / "model_beer.csv")
     r["regimes"].to_csv(run_dir / "model_regimes.csv")
+    r["flows"].to_csv(run_dir / "model_flows.csv")
     r["composite"].to_csv(run_dir / "composite_ect.csv")
     for h, fc in r["forecasts"].items():
         fc.to_csv(run_dir / f"oos_forecasts_{h}m.csv")
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
-               "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "johansen": r["johansen"],
+               "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "johansen": r["johansen"],
                "data_meta": ds.meta, "warnings": r["warnings"]}
     (run_dir / "results.json").write_text(json.dumps(results, indent=2, default=_json), encoding="utf-8")
     charts = report.charts(r, run_dir)

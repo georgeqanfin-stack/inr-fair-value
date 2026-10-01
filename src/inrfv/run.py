@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, peers, weights, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, peers, uncertainty, weights, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -46,8 +46,10 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     reg_out, reg_summary = regimes.run(ds.pit, cfg)
     anchor, anchor_diag = reer_anchor.run(ds, cfg)
     pdata = panel_data.load(cfg, refresh=refresh)
-    panel_out, panel_diag = panel_anchor.run(ds, pdata, cfg)
+    ucfg = cfg.get("uncertainty", {})
+    panel_out, panel_diag = panel_anchor.run(ds, pdata, cfg, boot_draws=ucfg.get("panel_boot_draws", 0))
     peer_gaps = panel_diag.pop("peer_gaps")
+    gap_draws = panel_diag.pop("gap_draws", None)
     reer_component = {"hp": reer, "anchor": anchor, "panel": panel_out}[cfg["composite"].get("reer_component", "hp")]
     comp = composite.run(ds.pit, reer_component, feer_m, cfg)
     bt, fcs = backtest.run(comp, reg_out, cfg)
@@ -85,6 +87,9 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     r["peer_gaps"] = peer_gaps
     r["peers"] = peers.run(peer_gaps, cfg)
     r["weights"] = weights.run(comp, reer_component, feer_m, cfg)
+    r["uncertainty"] = uncertainty.run(r, pdata, cfg, gap_draws) if ucfg else None
+    if r["uncertainty"] and ucfg.get("headline_corridor") == "bootstrap":
+        uncertainty.apply_corridor(comp, r["uncertainty"]["series"])
     return r
 
 
@@ -104,6 +109,8 @@ def save(r: dict, run_dir) -> None:
     r["beer"].to_csv(run_dir / "model_beer.csv")
     r["regimes"].to_csv(run_dir / "model_regimes.csv")
     r["flows"].to_csv(run_dir / "model_flows.csv")
+    if r.get("uncertainty"):
+        r["uncertainty"]["series"].join(r["uncertainty"]["expost"], how="left").to_csv(run_dir / "composite_bootstrap.csv")
     if r.get("weights"):
         r["weights"]["weights"].to_csv(run_dir / "composite_weight_schemes.csv")
     if r.get("peer_gaps") is not None:
@@ -117,6 +124,7 @@ def save(r: dict, run_dir) -> None:
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
                "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"],
                "benchmark": r.get("benchmark"), "peers": r.get("peers"),
+               "uncertainty": {k: v for k, v in (r.get("uncertainty") or {}).items() if k not in ("series", "expost")} or None,
                "weights": {k: v for k, v in (r.get("weights") or {}).items() if k != "weights"} or None,
                "revisions": {k: v for k, v in (r.get("revisions") or {}).items() if k != "series"} or None,
                "johansen": r["johansen"],

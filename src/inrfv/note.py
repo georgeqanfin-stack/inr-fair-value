@@ -230,6 +230,18 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append("the India-only REER model fails its long-run test")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
+    un = r.get("uncertainty")
+    if un and un["latest"].get("p_undervalued") is not None:
+        cb = un["coverage"].get("bootstrap", {})
+        s = (f"Drawing all the uncertainties together (model parameters, the IMF norm, elasticities, data errors and "
+             f"model weights), {un['latest']['p_undervalued']:.0%} of {un['draws']:,} draws say the rupee is undervalued.")
+        if cb.get("coverage") is not None:
+            s += (f" Looking back, this 80% range contained the later re-estimated fair value in {cb['coverage']:.0%} of "
+                  "months" + ("; when it missed, the real-time reading had overstated the undervaluation"
+                              if cb["below"] > 0 and cb["above"] == 0 else
+                              "; when it missed, the real-time reading had understated the undervaluation"
+                              if cb["above"] > 0 and cb["below"] == 0 else "") + ".")
+        L.append(s + "\n")
     wt = r.get("weights")
     if wt:
         sc = wt["schemes"]

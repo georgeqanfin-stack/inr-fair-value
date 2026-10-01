@@ -131,3 +131,14 @@ def test_composite_weights_are_tested_and_reported(run):
     assert wt["rule_choice"] == "equal" and wt["configured"] == "equal"     # data support the configured weights
     assert "### Composite weights" in (out / "report.md").read_text(encoding="utf-8")
     assert (out / "composite_weight_schemes.csv").exists()
+
+
+def test_joint_uncertainty_corridor(run):
+    r, out = run
+    un = r["uncertainty"]
+    assert un and un["coverage"]["bootstrap"]["n"] > 50
+    comp = r["composite"]
+    last = comp.dropna(subset=["ect"]).iloc[-1]
+    assert last["fair_inr_strong"] < last["fair_inr"] < last["fair_inr_weak"]
+    assert "### Joint uncertainty" in (out / "report.md").read_text(encoding="utf-8")
+    assert (out / "composite_bootstrap.csv").exists()

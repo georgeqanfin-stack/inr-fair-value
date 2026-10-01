@@ -99,6 +99,50 @@ def estimate(panel: pd.DataFrame, regs: list[str], k: int) -> dict:
             "t": (b / np.sqrt(np.diag(V))).to_dict()}
 
 
+def bootstrap_fit(panel: pd.DataFrame, regs: list[str], k: int, draws: int, rng, focus: str = FOCUS,
+                  block: int = 3) -> tuple[np.ndarray, np.ndarray] | None:
+    """Country-block bootstrap of the pooled DOLS slope, and the focus country's effect.
+
+    Countries are drawn with replacement (each keeps its whole time series, so serial and
+    within-country correlation are preserved) and the slope is re-estimated by OLS on the
+    within-country demeaned DOLS regressors. The focus country's effect is recomputed from
+    each slope, plus a moving-block bootstrap of the mean of its own residuals. Returns
+    (slope draws: draws x len(regs), focus effect draws: draws), or None.
+    """
+    df = panel[["log_reer"] + regs].dropna().copy()
+    g = df.groupby(level="country")
+    dcols = []
+    for c in regs:
+        d = g[c].diff()
+        for j in range(-k, k + 1):
+            name = f"d_{c}_{j:+d}"
+            df[name] = d.groupby(level="country").shift(-j)
+            dcols.append(name)
+    df = df.dropna()
+    df = df[df.groupby(level="country")["log_reer"].transform("size") >= 2 * k + 3]
+    if focus not in df.index.get_level_values("country"):
+        return None
+    cols = regs + dcols
+    dm = df[["log_reer"] + cols] - df.groupby(level="country")[["log_reer"] + cols].transform("mean")
+    blocks = {c: (b[cols].to_numpy(), b["log_reer"].to_numpy()) for c, b in dm.groupby(level="country")}
+    names = list(blocks)
+    f_lev_y = df.xs(focus, level="country")["log_reer"].to_numpy()
+    f_lev_x = df.xs(focus, level="country")[regs].to_numpy()
+    n_f = len(f_lev_y)
+    b_out, a_out = np.empty((draws, len(regs))), np.empty(draws)
+    for i in range(draws):
+        pick = rng.choice(len(names), len(names), replace=True)
+        X = np.vstack([blocks[names[j]][0] for j in pick])
+        y = np.concatenate([blocks[names[j]][1] for j in pick])
+        beta = np.linalg.lstsq(X, y, rcond=None)[0][:len(regs)]
+        lev = f_lev_y - f_lev_x @ beta
+        res = lev - lev.mean()
+        starts = rng.integers(0, max(n_f - block + 1, 1), int(np.ceil(n_f / block)))
+        boot = np.concatenate([res[s:s + block] for s in starts])[:n_f]
+        b_out[i], a_out[i] = beta, lev.mean() + boot.mean()
+    return b_out, a_out
+
+
 def panel_cointegration(resid: pd.Series, n_regs: int) -> dict:
     """Per-country ADF on pooled residuals, Engle-Granger p-values, Fisher combination."""
     pvals = {}
@@ -123,7 +167,9 @@ def latest_x(panel: pd.DataFrame, regs: list[str], country: str = FOCUS) -> pd.S
 
 # --------------------------------------------------------------------------- run
 
-def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
+def run(ds, pdata, cfg: dict, boot_draws: int = 0) -> tuple[pd.DataFrame, dict]:
+    """``boot_draws`` > 0 also returns, in diag["gap_draws"], bootstrap draws of India's
+    log gap for every month (rows months, columns draws; see bootstrap_fit)."""
     p = cfg["models"]["panel_anchor"]
     regs = p["specs"][p["central_spec"]]
     rng = np.random.default_rng(p["seed"])
@@ -134,6 +180,8 @@ def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
                        columns=["reer_bis", "reer_star", "gap_log", "gap_log_lo", "gap_log_hi"])
     fit, signature, history = None, None, []
     peers = {}                                        # month -> {country: misalignment %}
+    boot, gap_draws = None, {}
+    brng = np.random.default_rng(p["seed"] + 1)
     for t in ds.pit.index:
         known = reer_in[reer_in.index + MS(p["reer_lag"]) <= t].dropna()
         if known.empty:
@@ -146,6 +194,8 @@ def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
             years = usable.index.get_level_values("year").nunique() if len(usable) else 0
             if years >= p["min_years"]:
                 fit = estimate(panel, regs, p["dols_k"])
+                if boot_draws:
+                    boot = bootstrap_fit(panel, regs, p["dols_k"], boot_draws, brng)
                 history.append({"date": t.strftime("%Y-%m"), **fit["b"].to_dict(), "nobs": fit["nobs"]})
         if fit is not None:
             peers[t] = peer_gaps(pdata, panel, fit, regs, t, p["reer_lag"])
@@ -164,10 +214,14 @@ def run(ds, pdata, cfg: dict) -> tuple[pd.DataFrame, dict]:
         lr = np.log(known.iloc[-1])
         out.loc[t] = [known.iloc[-1], np.exp(star), star - lr,
                       np.percentile(draws, lo_p) - lr, np.percentile(draws, hi_p) - lr]
+        if boot is not None:
+            gap_draws[t] = boot[1] + boot[0] @ x.to_numpy() - lr
     out["misalignment_pct"] = (np.exp(out["gap_log"]) - 1) * 100
     out["fair_inr"] = ds.pit["inr_usd"] * np.exp(-out["gap_log"])
     diag = diagnostics(pdata, cfg, ds.pit.index[-1], history)
     diag["peer_gaps"] = pd.DataFrame.from_dict(peers, orient="index").sort_index()
+    if boot_draws:
+        diag["gap_draws"] = pd.DataFrame.from_dict(gap_draws, orient="index").sort_index()
     return out, diag
 
 

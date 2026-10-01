@@ -283,6 +283,18 @@ windows    = [3, 12]        # months summed in the attribution tables
 # Forward premia (models/market.py): implied forwards, UIP test, spread over the policy gap.
 hac_lags = 6
 
+[uncertainty]
+# Joint bootstrap corridor for the composite (models/uncertainty.py).
+panel_boot_draws  = 300      # country-block bootstrap draws per panel re-estimation
+draws             = 2000     # joint draws per month
+ca_measurement_sd = 0.2      # current-account measurement/revision error, % of GDP (4-quarter sum)
+weight_schemes    = ["equal", "performance", "inverse_variance"]
+# Headline corridor: "bootstrap" (joint draws; ex-post coverage 75% vs nominal 80%, 2017-25)
+# or "end_to_end" (the component bands joined end to end; coverage 100%, about twice as
+# wide). Chosen after the coverage test, as the one closer to nominal; see README.
+headline_corridor = "bootstrap"
+seed              = 23
+
 [models.regimes]
 min_obs     = 96
 refit_every = 12

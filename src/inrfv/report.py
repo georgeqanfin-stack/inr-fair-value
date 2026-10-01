@@ -73,8 +73,9 @@ def build_report(r: dict) -> str:
     L.append("")
     if "fair_inr_strong" in comp:
         s_, w_ = _last(comp["fair_inr_strong"])[0], _last(comp["fair_inr_weak"])[0]
-        L.append(f"**Fair-value corridor ({min(fp['band_percentiles'])}th–{max(fp['band_percentiles'])}th percentile "
-                 f"of FEER norm and elasticity uncertainty): {_f(s_, '{:.2f}')} – {_f(w_, '{:.2f}')}** "
+        what = ("joint bootstrap of panel parameters, FEER norm, elasticities, CA measurement and model weights"
+                if comp.attrs.get("corridor") == "joint bootstrap" else "component bands joined end to end")
+        L.append(f"**Fair-value corridor (10th–90th percentile; {what}): {_f(s_, '{:.2f}')} – {_f(w_, '{:.2f}')}** "
                  f"(central {_f(_last(comp['fair_inr'])[0], '{:.2f}')}, spot {spot:.2f}).\n")
 
     # FEER decomposition for the latest quarter, and a cross-check against the IMF.
@@ -280,6 +281,32 @@ def build_report(r: dict) -> str:
                      f"{v['misalignment_last']:+.1f}% | {cells} |")
         L.append("")
 
+    un = r.get("uncertainty")
+    if un:
+        lt = un["latest"]
+        L.append("### Joint uncertainty (bootstrap corridor)\n")
+        L.append(f"{un['draws']} joint draws a month of: the panel slope and India's effect (country-block bootstrap, "
+                 f"{un['panel_boot_draws']} draws per re-estimation), the IMF norm (its standard error), the trade "
+                 f"elasticities (±{r['config']['models']['feer']['eta_uncertainty']:.0%}), current-account measurement error "
+                 f"(sd {r['config']['uncertainty']['ca_measurement_sd']} pp of GDP) and the weighting scheme (equal, performance "
+                 f"or inverse variance). {_mon(lt['month'])}: fair value {lt['fair_strong']:.2f}–{lt['fair_weak']:.2f} "
+                 f"(misalignment {lt['mis_lo']:+.1f}% to {lt['mis_hi']:+.1f}%); {lt['p_undervalued']:.0%} of draws say "
+                 f"undervalued. End-to-end band: {lt['old_strong']:.2f}–{lt['old_weak']:.2f}. Headline corridor: "
+                 f"**{un['headline'].replace('_', ' ')}**.\n")
+        if un["expost_window"]:
+            L.append(f"Coverage against the fair value as later re-estimated ({_mon(un['expost_window'][0])}–"
+                     f"{_mon(un['expost_window'][1])}: final panel coefficients; the IMF's own norm for each year), "
+                     "nominal 80%:\n")
+            L.append("| Corridor | Months | Coverage | Ex-post below band | Ex-post above band | Median width |")
+            L.append("|---|---|---|---|---|---|")
+            for name, c in un["coverage"].items():
+                L.append(f"| {name.replace('_', ' ')} | {c['n']} | {c['coverage']:.0%} | {c['below']:.0%} | "
+                         f"{c['above']:.0%} | {c['median_width_pct']:.1f} pp |")
+            L.append("\nMonths overlap heavily (about one independent observation a year), so coverage is measured "
+                     "roughly. Misses below the band mean the real-time reading overstated undervaluation relative to the "
+                     "later estimate. The bootstrap corridor was made the headline after this test, as the one closer to "
+                     "nominal coverage.\n")
+
     L.append("### Full-sample predictive regressions\n")
     L.append("| h | β (Hodrick) | t (Hodrick 1B) | p | non-overlapping β median [min, max] | t median |")
     L.append("|---|---|---|---|---|---|")
@@ -472,7 +499,7 @@ def charts(r: dict, out_dir: Path) -> list[str]:
     ax[0].plot(comp.index, comp["fair_inr"], label="Composite fair (point-in-time)", ls="--")
     if "fair_inr_strong" in comp:
         ax[0].fill_between(comp.index, comp["fair_inr_strong"], comp["fair_inr_weak"], alpha=0.2,
-                           label="Fair-value corridor (FEER uncertainty)")
+                           label=f"Fair-value corridor ({comp.attrs.get('corridor', 'component bands')})")
     ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (current)", ls=":", alpha=0.8)
     ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title(
         f"INR/USD vs point-in-time fair values (REER component: {r['config']['composite'].get('reer_component', 'hp')})")

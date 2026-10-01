@@ -18,8 +18,8 @@ until the backtest looks better.
 | 12 | External benchmark: IMF External Sector Report track record | **Done (v0.10)** |
 | 13 | Peer currencies: panel anchor for all 19 | **Done (v0.11)** |
 | 5 | Composite weights tested, not assumed | **Done (v0.12)** |
-| 6 | Joint uncertainty: whole-pipeline bootstrap | Next |
-| 7 | Nonlinear and time-varying adjustment, structural breaks | Planned |
+| 6 | Joint uncertainty: whole-pipeline bootstrap | **Done (v0.13)** |
+| 7 | Nonlinear and time-varying adjustment, structural breaks | Next |
 | 9 | Formal panel cointegration tests, multiple-testing adjustment | Planned |
 | 8 | Regime model with time-varying transition probabilities | Planned |
 | 10 | FEER: cyclical adjustment and income balance | Planned |
@@ -103,7 +103,10 @@ component's band) and out-of-sample-performance weights, using the same backtest
 Keep equal weights unless another scheme is better out of sample; report the
 headline's sensitivity either way.
 
-**6. Joint uncertainty.** Block bootstrap of the whole pipeline (data residuals,
+**6. Joint uncertainty (done).** Joint bootstrap corridor (Sep 2026: 79.9–86.4; all
+draws undervalued). Ex-post coverage 2017–2025: bootstrap 75% (misses one-sided:
+real-time overstated undervaluation), end-to-end 100% at twice the width. The
+bootstrap is now the headline corridor. Original plan: block bootstrap of the whole pipeline (data residuals,
 parameters, norm, elasticities) to produce one corridor that includes model
 uncertainty. Compare its coverage with the current corridor.
 

@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.12.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.13.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.13 | Joint bootstrap corridor (panel, norm, elasticities, CA error, weights) with ex-post coverage check |
 | 0.12 | Composite weights tested: equal vs performance vs inverse-variance; equal kept by a pre-set rule |
 | 0.11 | Peer currencies: gaps for all 19, India's rank, crisis episodes, cross-section vs the IMF |
 | 0.10 | IMF track record: EBA assessments 2017–2025 vs this model; ALFRED US CPI live |
@@ -144,9 +145,10 @@ Spot INR/USD 95.41 (Sep 2026 average of RBI's daily reference rates).
 | BEER, total (permanent fundamentals) | +21.5% | 78.54 | Fundamentals at their one-sided HP trends |
 | **Composite (panel anchor + FEER)** | **+14.1%** | **83.59** | Positive = INR weaker than fair |
 
-**Fair-value corridor: 78.3 – 88.5** (10th–90th percentile, combining the panel
-anchor's parameter band with the FEER norm and elasticity band), against a spot
-rate of 95.41. The reading rose from +12.4% (August, previous data) mainly through
+**Fair-value corridor: 79.9 – 86.4** (10th–90th percentile of a joint bootstrap
+of the panel parameters, the FEER norm and elasticities, current-account
+measurement error and the model weights), against a spot rate of 95.41. All 2,000
+draws say the rupee is undervalued. The reading rose from +12.4% (August, previous data) mainly through
 the FEER: the Jan–Mar 2026 quarter (a US$6.5 bn current-account surplus) and the
 IMF's 2026 norm (−2.3% of GDP, from −2.0%) both enter from July 2026.
 
@@ -432,6 +434,31 @@ ratio by at least 0.01 and has a lower Clark-West p.
 Weights learned from each component's track record settle at 50/50, so equal weights
 stay. Neither component beats the random walk alone, but the combination does. The
 headline ranges from +12.9% to +14.4% across the combination schemes.
+
+**Joint uncertainty (v0.13).** The corridor used to join the panel anchor's and the
+FEER's 10th–90th percentile bands end to end. Now one bootstrap draws everything
+together each month, point in time:
+- the panel slope and India's country effect (country-block bootstrap, re-run at
+  every re-estimation);
+- the IMF norm (its published standard error) and the trade elasticities (±50%);
+- current-account measurement error (sd 0.2 pp of GDP);
+- the weighting scheme (equal, performance or inverse variance).
+
+To test calibration, every month of 2017–2025 is compared with the fair value as
+later re-estimated, using the final panel coefficients and the IMF's own norm for
+that year.
+
+| Corridor (nominal 80%) | Coverage, 108 months | Median width |
+|---|---|---|
+| Joint bootstrap (now the headline) | 75% (all misses below) | 10.7 pp |
+| End to end (before) | 100% | 19.4 pp |
+
+The old corridor was about twice as wide as needed. The bootstrap is close to nominal,
+but its misses are one-sided: the real-time reading has tended to overstate
+undervaluation relative to the later estimate (by about 2 pp on average). The
+bootstrap was made the headline after this test, as the one closer to nominal.
+Months overlap heavily, so coverage is measured roughly (about nine independent
+years). `[uncertainty] headline_corridor = "end_to_end"` restores the old band.
 
 **India CPI (v0.4).** The official MOSPI CPI-Combined, replacing the OECD series:
 

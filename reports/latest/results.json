@@ -1128,6 +1128,47 @@
       "t_given_dxy": -1.1787667431052626
     }
   },
+  "revisions": {
+    "months": [
+      "2004-07",
+      "2026-08"
+    ],
+    "n_months": 266,
+    "n_changed": 11,
+    "mean_abs_pp": 0.0051245071904762905,
+    "max_abs_pp": 0.16842059142965127,
+    "max_month": "2026-06",
+    "last": {
+      "month": "2026-08",
+      "current": 12.393263991752956,
+      "early": 12.560100759610782,
+      "diff": -0.1668367678578253
+    },
+    "by_component_mean_abs_pp": {
+      "reer": 0.0,
+      "feer": 0.009156027485421218
+    },
+    "older_vintage": {
+      "source": "DBIE Excel files in data/raw",
+      "ends": [
+        "2025-10",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "series_revised_beyond_tolerance": [
+        "bop.capital_account",
+        "bop.current_account",
+        "bop.fdi_bop",
+        "bop.loans",
+        "bop.merch_balance",
+        "fdi_usd_mn",
+        "fpi_usd_mn",
+        "imports_usd_mn",
+        "neer"
+      ]
+    }
+  },
   "johansen": {
     "PPP [log INR, log CPI India, log CPI US]": {
       "rank": 0,
@@ -1149,11 +1190,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T06:44:43+00:00",
+      "fetched_at": "2026-10-01T07:01:22+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T06:38:30.261208207Z",
+        "registry_loaded_at": "2026-10-01T06:58:30.264028413Z",
         "status": "ok",
         "tables": 1049
       }
@@ -1611,6 +1652,7 @@
         "2014-03"
       ]
     },
+    "cpi_us_vintage": "revised series with a fixed lag (ALFRED needs FRED_API_KEY; see data/alfred.py)",
     "series_end": {
       "inr_usd": "2026-08",
       "reer": "2026-07",

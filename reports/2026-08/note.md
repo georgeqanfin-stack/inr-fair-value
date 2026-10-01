@@ -1,6 +1,6 @@
 # INR/USD fair value note, August 2026
 
-Data to August 2026 · run `20261001-121531` · written 01 Oct 2026
+Data to August 2026 · run `20261001-123212` · written 01 Oct 2026
 
 ## The reading
 
@@ -31,6 +31,8 @@ Over the same months the RBI sold a net US$14.7 bn, counting forwards. Valued at
 Out of sample (Jun 2010 to Aug 2025), the misalignment signal has a slightly lower forecast error than a random walk with drift at a 12-month horizon (forecast error ratio 0.977, Clark-West p = 0.13), but the difference is not statistically significant. Read the misalignment as a valuation gauge, not a timing signal.
 
 Also: the market-based BEER (+25.8%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test.
+
+Data revisions matter little: re-run on the earlier vintage of RBI data, the reading changes by at most 0.2 points in any month (Jun 2026).
 
 ## To do
 

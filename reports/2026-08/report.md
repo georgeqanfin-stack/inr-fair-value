@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.7.0 · run `20261001-121531` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
+inrfv 0.8.0 · run `20261001-123212` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -149,6 +149,14 @@ Regime-conditional (h=12, filtered P(stress)): α_calm -0.230 (p=0.429), α_stre
 
 h=12m from 2026-08: ECT +0.117, α -0.435, const +0.071 → predicted Δlog INR +2.0% (drift alone +3.4%). Estimated on all realised targets; only as credible as the backtest above.
 
+## Data revisions
+
+The headline was re-run on the earlier RBI vintage (DBIE Excel files in data/raw, ending Oct 2025, Feb 2026, Mar 2026, Apr 2026), preferring it wherever both vintages have a value. Series revised beyond the 0.5% tolerance: bop.capital_account, bop.current_account, bop.fdi_bop, bop.loans, bop.merch_balance, fdi_usd_mn, fpi_usd_mn, imports_usd_mn, neer.
+
+Point-in-time composite readings changed in 11 of 266 months (Jul 2004–Aug 2026): mean absolute change 0.005 pp, largest 0.17 pp (Jun 2026); by component, REER 0.000 pp and FEER 0.009 pp on average. Latest common month Aug 2026: +12.56% on the earlier vintage, +12.39% now. This is a lower bound on the revision effect (the earlier files are themselves partly revised); `python -m inrfv.vintages run <git-rev>` re-runs any committed vintage.
+
+US CPI inflation: revised series with a fixed lag (ALFRED needs FRED_API_KEY; see data/alfred.py).
+
 ## Diagnostics
 
 - BEER Engle-Granger (4 vars, n=307): stat -1.22, 5% critical -4.13, p = 0.980.
@@ -161,7 +169,7 @@ h=12m from 2026-08: ECT +0.117, α -0.435, const +0.071 → predicted Δlog INR 
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T06:44:43+00:00, mirror loaded 2026-10-01T06:38:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T07:01:22+00:00, mirror loaded 2026-10-01T06:58:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

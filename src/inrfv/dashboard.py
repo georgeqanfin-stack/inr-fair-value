@@ -124,9 +124,9 @@ def flows_block(fd: dict | None) -> dict | None:
         return None
     parts = [(k, FLOW_LABELS.get(k, k)) for k in fd["regressors"]] + [("drift", "Trend depreciation"),
                                                                       ("residual", "Unexplained")]
-    wins = [{"months": w["months"], "start": w["start"], "end": w["end"], "actual": _num(w["actual"]),
-             "parts": [{"key": k, "label": lbl, "v": _num(w[k])} for k, lbl in parts],
-             "fpi_out_of_window": _num(w["out_of_window"]["fpi"])} for w in fd["windows"].values()]
+    wins = [{"months": w["months"], "start": w["start"], "end": w["end"], "actual": _num(w["actual"], 3),
+             "parts": [{"key": k, "label": lbl, "v": _num(w[k], 3)} for k, lbl in parts],
+             "fpi_out_of_window": _num(w["out_of_window"]["fpi"], 3)} for w in fd["windows"].values()]
     return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
             "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way")}
 

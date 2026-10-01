@@ -62,3 +62,12 @@ def test_flow_attribution_reaches_every_output(run):
     assert (out / "model_flows.csv").exists()
     html = (out / "dashboard.html").read_text(encoding="utf-8")
     assert '"flows":{"windows"' in html and 'id="flowBars"' in html
+
+
+def test_dashboard_flow_values_round_like_the_note(run):
+    r, out = run
+    html = (out / "dashboard.html").read_text(encoding="utf-8")
+    data = json.loads(re.search(r"const D = (\{.*?\});\n", html, re.S).group(1))
+    w = r["flows_diag"]["windows"]["3"]
+    for p in data["flows"]["windows"][0]["parts"]:
+        assert f"{p['v']:+.1f}" == f"{w[p['key']]:+.1f}"

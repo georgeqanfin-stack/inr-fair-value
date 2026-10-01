@@ -40,3 +40,12 @@ def test_dashboard_data_matches_the_run(run):
     assert len(data["series"]) == r["composite"]["ect"].notna().sum()
     assert {m["role"] for m in data["models"]} >= {"headline", "composite", "reported"}
     assert all(len(row) == 9 for row in data["series"])
+
+
+def test_note_numbers_match_the_run(run):
+    r, out = run
+    text = (out / "note.md").read_text(encoding="utf-8")
+    comp = r["composite"].dropna(subset=["ect"]).iloc[-1]
+    assert f"{comp['fair_inr']:.2f}" in text and f"{abs(comp['misalignment_pct']):.1f}%" in text
+    assert "monthly refresh" in text                      # plain runs do not claim a month-on-month comparison
+    assert "[Dashboard](dashboard.html)" in text

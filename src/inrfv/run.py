@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-from . import backtest, dashboard, report
+from . import backtest, dashboard, note, report
 from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
@@ -78,6 +78,9 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
             "run_id": run_dir.name if run_dir else "adhoc"}
 
 
+NOTE_LINKS = {"Dashboard": "dashboard.html", "Full report": "report.md"}
+
+
 def save(r: dict, run_dir) -> None:
     ds = r["dataset"]
     ds.panel.to_csv(run_dir / "panel_reference_month.csv")
@@ -103,6 +106,7 @@ def save(r: dict, run_dir) -> None:
         md += "\n## Charts\n\n" + "\n".join(f"![{c}]({c})" for c in charts) + "\n"
     (run_dir / "report.md").write_text(md, encoding="utf-8")
     dashboard.write(r, run_dir)
+    (run_dir / "note.md").write_text(note.build_note(r, links=NOTE_LINKS), encoding="utf-8")
 
 
 def _json(o):

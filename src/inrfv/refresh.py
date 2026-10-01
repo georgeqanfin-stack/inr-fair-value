@@ -39,7 +39,8 @@ from .config import load_config, path
 from .data import panel as panel_data
 from .data.build import build_dataset
 from .io import new_run_dir, write_manifest, write_raw_manifest
-from .run import run_pipeline, save
+from .note import build_note
+from .run import NOTE_LINKS, run_pipeline, save
 
 CORE_SERIES = {"inr_usd": 0.15, "reer": 0.15, "dxy": 0.10}   # max plausible |monthly log change| in new data
 
@@ -236,7 +237,7 @@ def publish_reports(run_dir: Path, root: Path, asof: str) -> list[Path]:
         if t.exists():
             shutil.rmtree(t)
         t.mkdir(parents=True)
-        for f in ["report.md", "refresh_summary.md", "results.json", "manifest.json", "composite_ect.csv", "dashboard.html"] + \
+        for f in ["report.md", "refresh_summary.md", "results.json", "manifest.json", "composite_ect.csv", "dashboard.html", "note.md"] + \
                  [p.name for p in run_dir.glob("*.png")]:
             if (run_dir / f).exists():
                 shutil.copy2(run_dir / f, t / f)
@@ -296,6 +297,9 @@ def refresh(cfg: dict, commit: bool = False, today: date | None = None) -> int:
         change = headline_change(prev_copy, r["composite"], cfg)
         md = summary_md(diffs, failures, warnings + r["warnings"], change, run_dir.name, asof)
         (run_dir / "refresh_summary.md").write_text(md, encoding="utf-8")
+        links = {**NOTE_LINKS, "What changed": "refresh_summary.md"}
+        (run_dir / "note.md").write_text(build_note(r, change=change, diffs=diffs, gate_warnings=warnings,
+                                                    links=links), encoding="utf-8")
         write_manifest(run_dir, cfg, {"asof": asof, "warnings": r["warnings"],
                                       "refresh": {"data_changes": diffs, "gate_warnings": warnings}})
         targets = publish_reports(run_dir, root, asof)

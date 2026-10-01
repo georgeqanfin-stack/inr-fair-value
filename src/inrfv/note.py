@@ -1,0 +1,190 @@
+"""Monthly note: a one-page plain-language summary of a run.
+
+The text is assembled from the run's numbers with fixed rules, so every figure in
+the note traces back to results.json and the same inputs always give the same note.
+``build_note(r)`` works for any run; the refresh passes ``change`` (the headline
+move since the last published report), ``diffs`` (new and revised data) and
+``gate_warnings`` so the note can say what changed this month.
+"""
+
+from __future__ import annotations
+
+from datetime import date
+
+import numpy as np
+import pandas as pd
+
+GROUPS = {  # cached-file prefix -> what a reader calls it
+    "dbie/inr_usd": "RBI reference rate", "dbie/reer": "RBI REER", "dbie/neer": "RBI NEER",
+    "dbie/fx_reserves": "FX reserves", "dbie/exports": "trade", "dbie/imports": "trade",
+    "dbie/fdi": "foreign investment flows", "dbie/fpi": "foreign investment flows",
+    "dbie/bop.": "balance of payments", "dbie/bopx.": "balance of payments", "dbie/cpi.": "India CPI",
+    "dbie/oil_": "oil trade", "dbie/wacr": "call money rate",
+    "fred/RB": "BIS panel REERs", "fred/": "US and market data (FRED)",
+    "worldbank_panel/": "World Bank panel", "wb_": "World Bank annual data",
+}
+
+
+def _last(s):
+    s = s.dropna() if s is not None else pd.Series(dtype=float)
+    return (float(s.iloc[-1]), s.index[-1]) if len(s) else (np.nan, None)
+
+
+def _signed(v, nd=1, unit="%"):
+    return "n/a" if v is None or np.isnan(v) else f"{v:+.{nd}f}{unit}"
+
+
+def _month(ym: str) -> str:
+    try:
+        return pd.Timestamp(ym + "-01").strftime("%b %Y")
+    except ValueError:
+        return ym
+
+
+def size_word(m: float) -> str:
+    a = abs(m)
+    if a < 2:
+        return "close to"
+    if a < 5:
+        return "modestly"
+    if a < 10:
+        return "moderately"
+    return "substantially"
+
+
+def verdict_sentence(spot, fair, mis, lo, hi) -> str:
+    if abs(mis) < 2:
+        core = f"At {spot:.2f} per dollar, the rupee is close to its composite fair value of {fair:.2f} ({mis:+.1f}%)."
+    else:
+        side = "weaker" if mis > 0 else "stronger"
+        label = "undervalued" if mis > 0 else "overvalued"
+        core = (f"At {spot:.2f} per dollar, the rupee is {size_word(mis)} {label}: "
+                f"{abs(mis):.1f}% {side} than its composite fair value of {fair:.2f}.")
+    if np.isnan(lo) or np.isnan(hi):
+        return core
+    where = "above the whole range" if spot > hi else "below the whole range" if spot < lo else "inside that range"
+    return core + f" Allowing for model uncertainty, fair value lies between {lo:.2f} and {hi:.2f}, and the spot rate is {where}."
+
+
+def data_lines(diffs: dict) -> list[str]:
+    seen: dict[str, dict] = {}
+    for name, d in (diffs or {}).items():
+        label = next((v for k, v in GROUPS.items() if name.startswith(k)), name)
+        g = seen.setdefault(label, {"new": 0, "revised": 0, "to": None, "big": None})
+        g["new"] += d.get("new", 0)
+        g["revised"] += d.get("revised", 0)
+        if "new_range" in d and d["new_range"][1][:2] in ("19", "20"):
+            g["to"] = max(g["to"] or "", d["new_range"][1])
+        mr = d.get("max_revision")
+        if mr and (g["big"] is None or mr["pct"] > g["big"]["pct"]):
+            g["big"] = mr
+    out = []
+    for label, g in sorted(seen.items(), key=lambda kv: -kv[1]["new"]):
+        if not g["new"] and not g["revised"]:
+            continue
+        bits = []
+        if g["new"]:
+            bits.append(f"{g['new']} new observation{'s' if g['new'] != 1 else ''}" + (f", now to {_month(g['to'])}" if g["to"] else ""))
+        if g["revised"]:
+            r = g["big"]
+            bits.append(f"{g['revised']} revised" + (f" (largest {r['pct']:.1f}% at {_month(r['at']) if r['at'][:2] in ('19', '20') else r['at']})" if r and r["pct"] >= 1 else ""))
+        out.append(f"- **{label}**: " + "; ".join(bits) + ".")
+    return out
+
+
+def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
+               gate_warnings: list[str] | None = None, links: dict | None = None) -> str:
+    comp, ds, cfg = r["composite"], r["dataset"], r["config"]
+    spot, asof = _last(comp["inr_usd"])
+    fair, _ = _last(comp["fair_inr"])
+    mis, _ = _last(comp["misalignment_pct"])
+    lo, _ = _last(comp.get("fair_inr_strong", pd.Series(dtype=float)))
+    hi, _ = _last(comp.get("fair_inr_weak", pd.Series(dtype=float)))
+    month = asof.strftime("%B %Y") if asof is not None else "n/a"
+    L = [f"# INR/USD fair value note, {month}\n",
+         f"Data to {month} · run `{r['run_id']}` · written {date.today():%d %b %Y}\n"]
+
+    L.append("## The reading\n")
+    L.append(verdict_sentence(spot, fair, mis, lo, hi) + "\n")
+    fm, pnl = r["feer_m"], r["panel"]
+    feer_v, _ = _last(fm["misalignment_pct"])
+    reer_key = cfg["composite"].get("reer_component", "hp")
+    reer_v, _ = _last({"panel": pnl, "anchor": r["anchor"], "hp": r["reer"]}[reer_key]["misalignment_pct"])
+    reer_name = {"panel": "productivity-based REER anchor", "anchor": "India-only REER anchor",
+                 "hp": "REER trend gap"}[reer_key]
+    agree = np.sign(feer_v) == np.sign(reer_v)
+    L.append(f"The two components {'agree' if agree else 'disagree'}: the {reer_name} puts the rupee "
+             f"{_signed(reer_v)} from fair value, and the external-balance model (FEER) {_signed(feer_v)}. "
+             "Positive means weaker than fair.\n")
+
+    L.append("## Since the last note\n")
+    if change:
+        m0, m1 = change["misalignment_pct"]
+        s0, s1 = change["spot"]
+        f0, f1 = change["fair"]
+        c = change["contribution_pp"]
+        if change["previous_asof"] == change["asof"] and abs(m1 - m0) < 0.05:
+            L.append(f"No new month of exchange-rate data since the last note ({_month(change['previous_asof'])}); "
+                     f"the reading is unchanged at {m1:+.1f}%.\n")
+        else:
+            move = "weakened" if s1 > s0 else "strengthened" if s1 < s0 else "was unchanged"
+            L.append(f"From {_month(change['previous_asof'])} to {_month(change['asof'])} the rupee {move} from {s0:.2f} to {s1:.2f} "
+                     f"per dollar, and composite fair value moved from {f0:.2f} to {f1:.2f}. Misalignment went from "
+                     f"{m0:+.1f}% to {m1:+.1f}%: the REER component contributed {c['REER component']:+.1f} points "
+                     f"and the FEER {c['FEER']:+.1f}.\n")
+    elif diffs is None:
+        L.append("Month-on-month changes are added when the note is produced by the monthly refresh "
+                 "(`python -m inrfv.refresh`).\n")
+    else:
+        L.append("There is no earlier published reading to compare with yet.\n")
+    dl = data_lines(diffs)
+    if diffs is not None:
+        L.append("New and revised data this month:\n" if dl else "No source published new or revised data since the last refresh.\n")
+        L += dl
+        if dl:
+            L.append("")
+
+    L.append("## Risk regime\n")
+    g = r["regime_summary"]
+    state = "stress" if g["p_stress_now"] > 0.5 else "calm"
+    L.append(f"The regime model reads **{state}**: the probability of the high-volatility stress state is "
+             f"{g['p_stress_now'] * 100:.0f}% ({_month(g['p_stress_now_date'])}), against a long-run average of "
+             f"{g['p_stress_steady_state'] * 100:.0f}%. Twelve months ahead it puts the odds at "
+             f"{g['p_stress_forecast'].get(12, g['p_stress_forecast'].get('12', np.nan)) * 100:.0f}%. "
+             f"In stress months the rupee's monthly moves are about {g['stress']['sd_pct'] / g['calm']['sd_pct']:.0f} "
+             f"times as large as in calm ones ({g['stress']['sd_pct']:.1f}% vs {g['calm']['sd_pct']:.1f}% standard deviation).\n")
+
+    L.append("## How far to trust it\n")
+    o = r["backtest"].get(r["headline_h"], {}).get("oos", {})
+    if "rmse_ecm" in o:
+        ratio, p = o["rmse_ratio_ecm_vs_drift"], o["clark_west"]["pvalue_one_sided"]
+        if ratio < 1 and p < 0.05:
+            verdict, sig = "beats a random walk with drift", "and the gain is statistically significant"
+        elif ratio < 1:
+            verdict = "has a slightly lower forecast error than a random walk with drift"
+            sig = "but the difference is not statistically significant"
+        else:
+            verdict, sig = "does not beat a random walk with drift", "so it adds no forecasting value at this horizon"
+        L.append(f"Out of sample ({_month(o['oos_window'][0])} to {_month(o['oos_window'][1])}), the misalignment signal {verdict} "
+                 f"at a {r['headline_h']}-month horizon (forecast error ratio {ratio:.3f}, Clark-West p = {p:.2f}), {sig}. "
+                 "Read the misalignment as a valuation gauge, not a timing signal.\n")
+    caveats = []
+    if not r["beer_diag"]["engle_granger"]["cointegrated_5pct"]:
+        b, _ = _last(r["beer"]["misalignment_pct"])
+        caveats.append(f"the market-based BEER ({_signed(b)}) fails its long-run test, so it is shown for context only")
+    if not r["anchor_diag"]["engle_granger"]["cointegrated_5pct"]:
+        caveats.append("the India-only REER model fails its long-run test")
+    if caveats:
+        L.append("Also: " + "; ".join(caveats) + ".\n")
+
+    todo = [w for w in (gate_warnings or []) if "MOSPI" in w or "IMF CA norm" in w]
+    stale = [w for w in r["warnings"] if w.startswith("Latest BoP quarter") or w.startswith("RBI INR/USD ends")]
+    if todo or stale:
+        L.append("## To do\n")
+        L += [f"- {w}" for w in todo + stale]
+        L.append("")
+
+    if links:
+        L.append("---\n")
+        L.append(" · ".join(f"[{k}]({v})" for k, v in links.items()) + "\n")
+    return "\n".join(L)

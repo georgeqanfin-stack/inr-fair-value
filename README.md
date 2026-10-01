@@ -42,6 +42,23 @@ load from the internet. It shows:
 
 It follows the viewer's light or dark theme.
 
+## Monthly note
+
+`note.md` is a one-page summary written for a reader who wants the conclusion,
+not the method. It is generated from the run's numbers with fixed wording rules
+(no free text), so every figure traces back to `results.json`. It covers:
+
+- **The reading**: misalignment, fair value and its range, and whether the two
+  components agree
+- **Since the last note** (refresh only): spot, fair value and misalignment,
+  with REER and FEER contributions, plus new and revised data grouped by source
+- **Risk regime**: current and 12-month stress probability
+- **How far to trust it**: the out-of-sample record, and which models fail their
+  long-run tests
+- **To do**: manual inputs or sources that are overdue
+
+The refresh publishes it as `reports/latest/note.md` and `reports/<YYYY-MM>/note.md`.
+
 ## Monthly refresh
 
 `python -m inrfv.refresh` (add `--commit` to commit the result):
@@ -81,6 +98,7 @@ Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
 |---|---|
 | `report.md` | Current reading, regimes, backtest, diagnostics, data warnings, charts |
 | `dashboard.html` | Interactive one-page monitor (self-contained; open in any browser) |
+| `note.md` | One-page plain-language summary: the reading, what changed, regime risk, reliability, to-dos |
 | `results.json` | Every statistic in the report, machine-readable |
 | `manifest.json` | Code revision, full config, config hash, SHA-256 of every raw input |
 | `panel_reference_month.csv` / `panel_point_in_time.csv` | The data, by reference month and by publication month |

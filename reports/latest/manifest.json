@@ -1,10 +1,10 @@
 {
-  "run_id": "20261001-113326",
-  "created": "2026-10-01T11:34:17",
-  "inrfv_version": "0.3.0",
-  "git_revision": "fb04522-dirty",
+  "run_id": "20261001-120315",
+  "created": "2026-10-01T12:04:00",
+  "inrfv_version": "0.6.0",
+  "git_revision": "0bf14d3-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
-  "config_hash": "9342b12df6b7",
+  "config_hash": "17a34679d48c",
   "config": {
     "paths": {
       "raw": "data/raw",
@@ -115,6 +115,7 @@
       "imports_usd_mn": 1,
       "fpi_usd_mn": 2,
       "fdi_usd_mn": 2,
+      "rbi_intervention": 2,
       "bop_quarterly": 6,
       "annual_worldbank": 7
     },
@@ -319,7 +320,7 @@
   "python": "3.12.4",
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
-    "dbie/_fetch.json": "2a80bdd990e0cf303f516e8dfd23bea36512722e0ab8c6be4973c64c2c470f5a",
+    "dbie/_fetch.json": "a345e3ff3afcf2aebf9c9724643a7a692393234399da86131b3c403f13360f0f",
     "dbie/bop.banking_capital.csv": "a1931a588f9a6765c2bceeceb75479ec1dc98cad57313f65b8920c5eafa4c0ca",
     "dbie/bop.capital_account.csv": "52d9518620aaaef9182600ede61437dee674db4968089c668d39cc10c04a82c2",
     "dbie/bop.current_account.csv": "5333f7fac1a64a5e447f33d34c90572346e4e23bd301194aa9f516e8bda6d74b",
@@ -348,6 +349,7 @@
     "dbie/neer.csv": "28bbef7c2c512be40596a929bcc1e19b53dfce1d2dbd2b709b8ee39207507f1f",
     "dbie/oil_exports_usd_mn.csv": "fbd9e54ce21fb4b855a113cec53711a3d0328d81fc9a3e572a377df2e013c435",
     "dbie/oil_imports_usd_mn.csv": "f3dfa1519de30aaeef72248b2092fa19257e453d5a8708a016b0678040983be7",
+    "dbie/rbi_intervention.csv": "1a17df3e9151a9e2de48af36e21c6adec7fa793103fc2981854effd3129ca442",
     "dbie/reer.csv": "9b9fcf9f6504240065d617852d0779bf9d155487ec6e53c67d7b8d23448848e5",
     "dbie/wacr.csv": "664ec95fafde563e01fe783e8520cede70e86ffd1b21d8cd1d0fc4d59ffc5b60",
     "ewn/EWN-dataset-year-end-2024_4.9.26.xlsx": "616c3544225a08bb12441df602d08206d159e9db672a5dddc7a70e91c970f589",

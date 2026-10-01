@@ -976,6 +976,51 @@
       "reading": "two-way: flows and the rupee feed each other, so contributions are associations"
     },
     "latest_flows_month": "2026-06",
+    "rbi": {
+      "price_pct_per_bn": 0.13046143577929958,
+      "price_source": "FPI coefficient",
+      "reaction": {
+        "coef": {
+          "const": -0.5785003719815629,
+          "inr": -0.714292953065276,
+          "fpi": 1.2036838437531652
+        },
+        "t": {
+          "const": -0.5623242952053785,
+          "inr": -1.6476154346726166,
+          "fpi": 4.777840397846327
+        },
+        "r2": 0.3079669684798837,
+        "nobs": 184
+      },
+      "naive_coef": 0.002070059148096645,
+      "naive_t": 0.16909852885352808,
+      "windows": {
+        "3": {
+          "start": "2026-04",
+          "end": "2026-06",
+          "net_sold_bn": 14.748999999999999,
+          "actual": 2.3532152077311075,
+          "absorbed": 1.924175716308889,
+          "pressure": 4.277390924039995,
+          "absorbed_share": 0.4498479915629281
+        },
+        "12": {
+          "start": "2025-07",
+          "end": "2026-06",
+          "net_sold_bn": 106.99799999999999,
+          "actual": 10.033249556722712,
+          "absorbed": 13.959112705513496,
+          "pressure": 23.992362262236213,
+          "absorbed_share": 0.5818148522825961
+        }
+      },
+      "fwd_book_bn": -136.768,
+      "fwd_book_month": "2026-07",
+      "fwd_book_pct_reserves": -19.739459228646915,
+      "latest_month": "2026-07",
+      "latest_bn": -14.79
+    },
     "units": "INR/USD % change (log x 100; positive = rupee weaker); flows in US$ bn, positive = inflow"
   },
   "johansen": {
@@ -999,11 +1044,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T06:02:37+00:00",
+      "fetched_at": "2026-10-01T06:32:25+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T05:58:30.262113678Z",
+        "registry_loaded_at": "2026-10-01T06:28:30.262299923Z",
         "status": "ok",
         "tables": 1049
       }
@@ -1451,6 +1496,16 @@
     },
     "india_policy_rate_source": "FRED IRSTCI01INM156N (overnight call rate)",
     "fpi_seam": "2011-03",
+    "rbi_intervention": {
+      "source": "RBI Bulletin Table 4 via the RBIH Data API",
+      "range": [
+        "1995-06",
+        "2026-07"
+      ],
+      "gross_legs_rebuilt": [
+        "2014-03"
+      ]
+    },
     "series_end": {
       "inr_usd": "2026-08",
       "reer": "2026-07",
@@ -1472,7 +1527,10 @@
       "cpi_india_yoy": "2026-08",
       "india_policy_rate": "2026-07",
       "india_repo_rate": "2026-09",
-      "india_wacr": "2026-03"
+      "india_wacr": "2026-03",
+      "rbi_net_purchase_usd_mn": "2026-07",
+      "rbi_fwd_book_usd_mn": "2026-07",
+      "rbi_intervention_usd_mn": "2026-07"
     },
     "asof": "2026-08"
   },

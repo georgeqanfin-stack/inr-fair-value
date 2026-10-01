@@ -1,6 +1,6 @@
 # INR/USD fair value note, August 2026
 
-Data to August 2026 · run `20261001-113326` · written 01 Oct 2026
+Data to August 2026 · run `20261001-120315` · written 01 Oct 2026
 
 ## The reading
 
@@ -21,6 +21,8 @@ The regime model reads **calm**: the probability of the high-volatility stress s
 ## What moved the rupee
 
 From Apr 2026 to Jun 2026 the rupee weakened 2.4%. Split by a monthly regression on flows and global drivers (points of the move, positive = weaker): trend depreciation +1.6, portfolio flows +1.2, direct investment -0.3; unexplained -0.3. Each US$1bn of net portfolio outflow goes with about 0.13% rupee weakness. Flows and the rupee feed each other (foreign investors also sell a falling currency), so read these as associations, not causes.
+
+Over the same months the RBI sold a net US$14.7 bn, counting forwards. Valued at the market's price of a dollar, that held the rupee about 1.9 points stronger: without it the rupee would have weakened about 4.3% instead of 2.4%, so the RBI absorbed roughly 45% of the pressure (a lower bound). Its net forward sales outstanding stand at US$137 bn, 20% of reserves (Jul 2026).
 
 ## How far to trust it
 

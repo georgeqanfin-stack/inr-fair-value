@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-Run `20261001-113326` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
+inrfv 0.6.0 · run `20261001-120315` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -96,6 +96,19 @@ Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-ind
 
 Direction: FPI this month → INR next month t -2.6 (p 0.009); INR last month → FPI this month t -2.0 (p 0.050). Reading: two-way: flows and the rupee feed each other, so contributions are associations. Flow data end Jun 2026.
 
+### RBI intervention
+
+RBI Bulletin Table 4: spot net purchases plus the change in the outstanding forward book (US$ bn; negative = net dollar sales). Intervention is not a regressor: the RBI sells because the rupee is under pressure, and a direct regression finds +0.002% per US$1bn (t +0.2). Reaction function: the RBI buys +1.20 bn per US$1bn of net FPI inflow (t +4.8) and -0.71 bn per 1% rupee depreciation (t -1.6); R² 0.31.
+
+Absorbed pressure values each dollar the RBI sold at the market price implied by the FPI coefficient (0.130% per US$1bn). That coefficient is net of the RBI's usual response, so the absorbed share is a lower bound; it scales linearly with the price.
+
+| Window | RBI net sales | Actual move | Held stronger by | Move without RBI | Share absorbed |
+|---|---|---|---|---|---|
+| Apr 2026–Jun 2026 | US$14.7 bn | +2.4% | +1.9 pts | +4.3% | 45% |
+| Jul 2025–Jun 2026 | US$107.0 bn | +10.0% | +14.0 pts | +24.0% | 58% |
+
+Outstanding net forward position, Jul 2026: US$-136.8 bn (-20% of FX reserves). Latest month of intervention data: Jul 2026 (US$-14.8 bn).
+
 ## Out-of-sample backtest (ECM vs random walk with drift)
 
 | h | OOS window | n | RMSE ratio | OOS R² | Clark-West p | DM p | hit ECM | hit naive 'depreciate' | hit vs drift | α range |
@@ -134,7 +147,7 @@ h=12m from 2026-08: ECT +0.117, α -0.435, const +0.071 → predicted Δlog INR 
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T06:02:37+00:00, mirror loaded 2026-10-01T05:58:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T06:32:25+00:00, mirror loaded 2026-10-01T06:28:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|
@@ -168,7 +181,7 @@ INR/USD patched with rescaled FRED EXINUS: filled ['2026-05'], extended ['2026-0
 
 ## Series end dates (reference month)
 
-inr_usd 2026-08, reer 2026-07, neer 2026-07, fx_reserves_usd_mn 2026-08, exports_usd_mn 2026-06, imports_usd_mn 2026-06, fdi_usd_mn 2026-06, fpi_usd_mn 2026-06, dxy 2026-09, cpi_us 2026-08, fed_funds_rate 2026-08, vix 2026-09, us_10y_yield 2026-08, brent 2026-09, fed_balance_sheet 2026-09, india_stir 2026-07, cpi_india 2026-08, cpi_india_yoy 2026-08, india_policy_rate 2026-07, india_repo_rate 2026-09, india_wacr 2026-03
+inr_usd 2026-08, reer 2026-07, neer 2026-07, fx_reserves_usd_mn 2026-08, exports_usd_mn 2026-06, imports_usd_mn 2026-06, fdi_usd_mn 2026-06, fpi_usd_mn 2026-06, dxy 2026-09, cpi_us 2026-08, fed_funds_rate 2026-08, vix 2026-09, us_10y_yield 2026-08, brent 2026-09, fed_balance_sheet 2026-09, india_stir 2026-07, cpi_india 2026-08, cpi_india_yoy 2026-08, india_policy_rate 2026-07, india_repo_rate 2026-09, india_wacr 2026-03, rbi_net_purchase_usd_mn 2026-07, rbi_fwd_book_usd_mn 2026-07, rbi_intervention_usd_mn 2026-07
 
 ## Charts
 

@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-10-01T06:02:37+00:00",
+  "fetched_at": "2026-10-01T06:32:25+00:00",
   "base": "https://data-api.dbie.rbihub.in",
   "api_health": {
     "catalogue_entries": 1430,
-    "registry_loaded_at": "2026-10-01T05:58:30.262113678Z",
+    "registry_loaded_at": "2026-10-01T06:28:30.262299923Z",
     "status": "ok",
     "tables": 1049
   }

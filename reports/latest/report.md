@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.10.0 · run `20261001-150835` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.11.0 · run `20261001-152928` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -178,6 +178,54 @@ IMF External Balance Assessment for each year (published with the following year
 | Composite vs IMF REER-level model | year average | 9 | 11% | -0.04 | +13.8 pp | 13.8 pp |
 | Composite vs IMF REER-level model | at publication | 9 | 11% | +0.49 | +14.5 pp | 14.5 pp |
 
+## Peer currencies (panel REER anchor)
+
+Every panel currency's REER misalignment from the same pooled fit, Sep 2026 (+ = undervalued; relative to each currency's own history, so rankings and movements matter more than levels). India ranks **3 of 19** (1 = most undervalued); median -5.2%.
+
+| Rank | Currency | Misalignment |
+|---|---|---|
+| 1 | TUR | +29.6% |
+| 2 | KOR | +21.6% |
+| 3 | IND **(India)** | +18.4% |
+| 4 | IDN | +16.0% |
+| 5 | CHN | +11.3% |
+| 6 | CHL | +9.4% |
+| 7 | MYS | +7.5% |
+| 8 | BRA | +2.8% |
+| 9 | ZAF | -3.2% |
+| 10 | PHL | -5.2% |
+| 11 | THA | -7.8% |
+| 12 | POL | -12.6% |
+| 13 | PER | -13.8% |
+| 14 | HUN | -14.6% |
+| 15 | ROU | -16.3% |
+| 16 | MEX | -16.4% |
+| 17 | ISR | -19.7% |
+| 18 | COL | -20.3% |
+| 19 | CZE | -31.4% |
+
+Known episodes (fixed in the config before looking at results): 6 of 7 move the expected way.
+
+| Currency | Episode | Before | After | Expected | Result |
+|---|---|---|---|---|---|
+| TUR | 2018 lira crisis | -13.3% (2010-01–2013-12) | +45.4% (2018-08–2019-12) | weaker | as expected |
+| BRA | 2015 recession and real sell-off | -20.0% (2011-01–2014-06) | +10.1% (2015-06–2016-06) | weaker | as expected |
+| ZAF | Dec 2015 rand sell-off | -3.9% (2011-01–2012-12) | +29.6% (2015-12–2016-12) | weaker | as expected |
+| MEX | Nov 2016 peso fall | -2.8% (2013-01–2014-12) | +27.2% (2016-11–2017-06) | weaker | as expected |
+| MEX | 2023-24 'super peso' rally | +27.2% (2016-11–2017-06) | -15.8% (2023-06–2024-06) | stronger | as expected |
+| CHN | Aug 2015 renminbi devaluation | -3.6% (2014-07–2015-07) | -4.5% (2015-09–2016-12) | weaker | not as expected |
+| IND | 2013 taper tantrum | +8.4% (2012-01–2013-04) | +17.1% (2013-08–2013-12) | weaker | as expected |
+
+Against the IMF's EBA assessments of 11 panel currencies (2017–2025; IMF signs flipped to + = undervalued):
+
+| IMF measure | n | Pooled correlation | Same sign | Rank correlation within a year (mean, min) | Correlation within a country over time |
+|---|---|---|---|---|---|
+| IMF REER-index model | 99 | +0.80 | 78% | +0.83, +0.74 | +0.86 |
+| IMF REER-level model | 99 | +0.71 | 64% | +0.58, +0.39 | +0.83 |
+| IMF CA model (CA gap / elasticity) | 99 | -0.20 | 55% | -0.12, -0.54 | +0.14 |
+
+The panel anchor is a REER model; it agrees closely with the IMF's REER models. The IMF's CA model and its REER models disagree with each other across countries, so no REER model matches both.
+
 ## Data revisions
 
 The headline was re-run on the earlier RBI vintage (DBIE Excel files in data/raw, ending Oct 2025, Feb 2026, Mar 2026, Apr 2026), preferring it wherever both vintages have a value. Series revised beyond the 0.5% tolerance: bop.capital_account, bop.current_account, bop.fdi_bop, bop.loans, bop.merch_balance, fdi_usd_mn, fpi_usd_mn, imports_usd_mn, neer.
@@ -198,7 +246,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T09:37:43+00:00, mirror loaded 2026-10-01T09:28:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T09:58:34+00:00, mirror loaded 2026-10-01T09:58:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

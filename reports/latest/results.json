@@ -1439,6 +1439,282 @@
     "n_years": 9,
     "reer_component": "panel"
   },
+  "peers": {
+    "month": "2026-09",
+    "latest": {
+      "TUR": 29.620818143780923,
+      "KOR": 21.5934282324151,
+      "IND": 18.409870609539027,
+      "IDN": 15.959274992189831,
+      "CHN": 11.308686508878907,
+      "CHL": 9.447132941447833,
+      "MYS": 7.521112052521883,
+      "BRA": 2.7763518430933276,
+      "ZAF": -3.184093885219197,
+      "PHL": -5.246957178957857,
+      "THA": -7.816042853847738,
+      "POL": -12.55003725444077,
+      "PER": -13.800548002614143,
+      "HUN": -14.632125484979241,
+      "ROU": -16.349934392179776,
+      "MEX": -16.376033666434797,
+      "ISR": -19.73813356226617,
+      "COL": -20.29993954997279,
+      "CZE": -31.359407459561005
+    },
+    "focus": "IND",
+    "focus_rank": 3,
+    "n": 19,
+    "median": -5.246957178957857,
+    "episodes": [
+      {
+        "country": "TUR",
+        "label": "2018 lira crisis",
+        "before": [
+          "2010-01",
+          "2013-12"
+        ],
+        "after": [
+          "2018-08",
+          "2019-12"
+        ],
+        "expect": "weaker",
+        "before_mean": -13.295124886783121,
+        "after_mean": 45.406415345716816,
+        "change": 58.70154023249994,
+        "pass": true
+      },
+      {
+        "country": "BRA",
+        "label": "2015 recession and real sell-off",
+        "before": [
+          "2011-01",
+          "2014-06"
+        ],
+        "after": [
+          "2015-06",
+          "2016-06"
+        ],
+        "expect": "weaker",
+        "before_mean": -19.974038075646078,
+        "after_mean": 10.13707331960304,
+        "change": 30.111111395249118,
+        "pass": true
+      },
+      {
+        "country": "ZAF",
+        "label": "Dec 2015 rand sell-off",
+        "before": [
+          "2011-01",
+          "2012-12"
+        ],
+        "after": [
+          "2015-12",
+          "2016-12"
+        ],
+        "expect": "weaker",
+        "before_mean": -3.902786946446818,
+        "after_mean": 29.55120724650932,
+        "change": 33.45399419295614,
+        "pass": true
+      },
+      {
+        "country": "MEX",
+        "label": "Nov 2016 peso fall",
+        "before": [
+          "2013-01",
+          "2014-12"
+        ],
+        "after": [
+          "2016-11",
+          "2017-06"
+        ],
+        "expect": "weaker",
+        "before_mean": -2.815496542833138,
+        "after_mean": 27.230814831234603,
+        "change": 30.04631137406774,
+        "pass": true
+      },
+      {
+        "country": "MEX",
+        "label": "2023-24 'super peso' rally",
+        "before": [
+          "2016-11",
+          "2017-06"
+        ],
+        "after": [
+          "2023-06",
+          "2024-06"
+        ],
+        "expect": "stronger",
+        "before_mean": 27.230814831234603,
+        "after_mean": -15.822296285388859,
+        "change": -43.05311111662346,
+        "pass": true
+      },
+      {
+        "country": "CHN",
+        "label": "Aug 2015 renminbi devaluation",
+        "before": [
+          "2014-07",
+          "2015-07"
+        ],
+        "after": [
+          "2015-09",
+          "2016-12"
+        ],
+        "expect": "weaker",
+        "before_mean": -3.5771021095869986,
+        "after_mean": -4.5072408716207875,
+        "change": -0.9301387620337889,
+        "pass": false
+      },
+      {
+        "country": "IND",
+        "label": "2013 taper tantrum",
+        "before": [
+          "2012-01",
+          "2013-04"
+        ],
+        "after": [
+          "2013-08",
+          "2013-12"
+        ],
+        "expect": "weaker",
+        "before_mean": 8.350873537464157,
+        "after_mean": 17.126590793386786,
+        "change": 8.775717255922629,
+        "pass": true
+      }
+    ],
+    "imf": {
+      "countries": [
+        "BRA",
+        "CHN",
+        "IDN",
+        "IND",
+        "KOR",
+        "MEX",
+        "MYS",
+        "POL",
+        "THA",
+        "TUR",
+        "ZAF"
+      ],
+      "years": [
+        2017,
+        2025
+      ],
+      "stats": {
+        "imf_reer_index": {
+          "label": "IMF REER-index model",
+          "n": 99,
+          "pooled_corr": 0.7991889436505154,
+          "same_sign": 0.7777777777777778,
+          "mean_rank_corr": 0.8256671624656255,
+          "min_rank_corr": 0.7363636363636363,
+          "within_country_corr": 0.8640969578218184
+        },
+        "imf_reer_level": {
+          "label": "IMF REER-level model",
+          "n": 99,
+          "pooled_corr": 0.7064051826063891,
+          "same_sign": 0.6363636363636364,
+          "mean_rank_corr": 0.5779574539034545,
+          "min_rank_corr": 0.39090909090909093,
+          "within_country_corr": 0.8285522320145899
+        },
+        "imf_ca": {
+          "label": "IMF CA model (CA gap / elasticity)",
+          "n": 99,
+          "pooled_corr": -0.19961440707700753,
+          "same_sign": 0.5454545454545454,
+          "mean_rank_corr": -0.12424242424242427,
+          "min_rank_corr": -0.5363636363636364,
+          "within_country_corr": 0.13907309594955877
+        }
+      },
+      "latest": [
+        {
+          "country": "BRA",
+          "ours": 13.370361718813626,
+          "imf_reer_index": 30.4,
+          "imf_reer_level": 21.3,
+          "imf_ca": -11.538461538461538
+        },
+        {
+          "country": "CHN",
+          "ours": 16.815215430302235,
+          "imf_reer_index": -0.5,
+          "imf_reer_level": 2.7,
+          "imf_ca": 21.428571428571427
+        },
+        {
+          "country": "IDN",
+          "ours": 5.273941837174857,
+          "imf_reer_index": 5.8,
+          "imf_reer_level": 22.9,
+          "imf_ca": 1.25
+        },
+        {
+          "country": "IND",
+          "ours": 6.820007814362722,
+          "imf_reer_index": -0.8,
+          "imf_reer_level": 5.6,
+          "imf_ca": 8.88888888888889
+        },
+        {
+          "country": "KOR",
+          "ours": 16.109336834176663,
+          "imf_reer_index": 5.8,
+          "imf_reer_level": 9.8,
+          "imf_ca": 9.393939393939394
+        },
+        {
+          "country": "MEX",
+          "ours": -7.651767069383593,
+          "imf_reer_index": -4.8,
+          "imf_reer_level": -20.2,
+          "imf_ca": 0.32258064516129037
+        },
+        {
+          "country": "MYS",
+          "ours": 13.012710560786878,
+          "imf_reer_index": 20.4,
+          "imf_reer_level": 26.8,
+          "imf_ca": 2.941176470588235
+        },
+        {
+          "country": "POL",
+          "ours": -14.5965555109429,
+          "imf_reer_index": -21.8,
+          "imf_reer_level": 9.7,
+          "imf_ca": -1.0526315789473684
+        },
+        {
+          "country": "THA",
+          "ours": -10.082864781740517,
+          "imf_reer_index": -11.5,
+          "imf_reer_level": 3.5,
+          "imf_ca": 4.0
+        },
+        {
+          "country": "TUR",
+          "ours": 41.25084239061852,
+          "imf_reer_index": 24.6,
+          "imf_reer_level": 34.6,
+          "imf_ca": -12.083333333333334
+        },
+        {
+          "country": "ZAF",
+          "ours": 8.816436012196853,
+          "imf_reer_index": 19.0,
+          "imf_reer_level": 8.8,
+          "imf_ca": -1.25
+        }
+      ]
+    }
+  },
   "revisions": {
     "months": [
       "2004-07",
@@ -1501,11 +1777,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T09:37:43+00:00",
+      "fetched_at": "2026-10-01T09:58:34+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T09:28:30.259962967Z",
+        "registry_loaded_at": "2026-10-01T09:58:30.262160701Z",
         "status": "ok",
         "tables": 1049
       }

@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from conftest import ROOT
+from conftest import ROOT, requires_git
 
 from inrfv import vintages
 from inrfv.data import alfred, dbie
@@ -27,6 +27,7 @@ def test_compare_measures_point_in_time_differences():
     assert out["last"]["diff"] == pytest.approx(-0.5)
 
 
+@requires_git
 def test_materialize_and_vintage_config(tmp_path, cfg):
     raw = vintages.materialize("HEAD", ROOT, tmp_path)
     assert (raw / "MANIFEST.sha256").exists() and (raw / "manual").is_dir()

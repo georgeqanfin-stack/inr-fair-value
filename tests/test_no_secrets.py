@@ -3,17 +3,19 @@
 import re
 import subprocess
 
-from conftest import ROOT
+from conftest import ROOT, requires_git
 
 KEYLIKE = re.compile(r"(?i)(api[_-]?key|token|secret)\s*[=:]\s*['\"]?([0-9a-f]{32}|[A-Za-z0-9_\-]{30,})")
 
 
+@requires_git
 def test_env_example_has_no_values():
     for line in (ROOT / ".env.example").read_text(encoding="utf-8").splitlines():
         if "=" in line and not line.lstrip().startswith("#"):
             assert line.split("=", 1)[1].strip() == "", f".env.example must not hold a value: {line.split('=')[0]}"
 
 
+@requires_git
 def test_no_tracked_file_contains_a_key():
     files = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
     hits = []

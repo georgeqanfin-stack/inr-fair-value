@@ -343,6 +343,10 @@ def main(argv=None) -> int:
     ap.add_argument("--config", help="path to a TOML config (default config/default.toml)")
     ap.add_argument("--commit", action="store_true", help="commit data/raw and reports/ to git afterwards")
     args = ap.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):     # a console without UTF-8 must not fail the refresh
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(errors="replace")
     load_dotenv()
     return refresh(load_config(args.config), commit=args.commit)
 

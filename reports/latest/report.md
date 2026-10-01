@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-Run `20261001-113018` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
+Run `20261001-113326` · as of **Aug 2026** (latest month with RBI INR/USD) · spot **95.44**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -134,7 +134,7 @@ h=12m from 2026-08: ECT +0.117, α -0.435, const +0.071 → predicted Δlog INR 
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T05:59:23+00:00, mirror loaded 2026-10-01T05:58:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T06:02:37+00:00, mirror loaded 2026-10-01T05:58:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

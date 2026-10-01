@@ -41,11 +41,11 @@ def inverse_variance(reer: pd.DataFrame, feer_m: pd.DataFrame) -> pd.Series:
     return w.where(np.isfinite(w))
 
 
-def performance(comp: pd.DataFrame, h: int, min_train: int, min_errors: int = 24) -> pd.Series:
+def performance(comp: pd.DataFrame, h: int, min_train: int, min_errors: int = 24, window: int | None = None) -> pd.Series:
     """Bates-Granger weight on the REER component from past squared forecast errors."""
     err = {}
     for k in ("gap_reer", "gap_feer"):
-        fc = backtest.forecasts(_comp(comp, comp[k]), h, min_train).dropna(subset=["y"])
+        fc = backtest.forecasts(_comp(comp, comp[k]), h, min_train, window).dropna(subset=["y"])
         e2 = (fc["y"] - fc["f_ecm"]) ** 2
         e2.index = e2.index + pd.DateOffset(months=h)            # known once the target is realised
         err[k] = e2
@@ -65,7 +65,7 @@ def schemes(comp: pd.DataFrame, reer: pd.DataFrame, feer_m: pd.DataFrame, cfg: d
     out = {"equal": ones * 0.5, "reer_only": ones, "feer_only": ones * 0.0}
     if {"gap_log_lo", "gap_log_hi"} <= set(reer.columns) and {"gap_log_lo", "gap_log_hi"} <= set(feer_m.columns):
         out["inverse_variance"] = inverse_variance(reer, feer_m).reindex(comp.index)
-    out["performance"] = performance(comp, h, mt)
+    out["performance"] = performance(comp, h, mt, window=cfg["backtest"].get("window_months"))
     return out
 
 
@@ -79,7 +79,8 @@ def run(comp: pd.DataFrame, reer: pd.DataFrame, feer_m: pd.DataFrame, cfg: dict)
     res, weights = {}, {}
     for name, w in schemes(comp, reer, feer_m, cfg).items():
         ect = w * comp["gap_reer"] + (1 - w) * comp["gap_feer"]
-        evals = {k: backtest.evaluate(backtest.forecasts(_comp(comp, ect), k, b["min_train"]), k) for k in b["horizons"]}
+        evals = {k: backtest.evaluate(backtest.forecasts(_comp(comp, ect), k, b["min_train"], b.get("window_months")), k)
+                 for k in b["horizons"]}
         last_w = w.dropna()
         res[name] = {"label": LABELS[name], "weight_reer_last": float(last_w.iloc[-1]) if len(last_w) else None,
                      "weight_reer_mean": float(last_w.mean()) if len(last_w) else None,

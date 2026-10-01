@@ -281,6 +281,45 @@ def build_report(r: dict) -> str:
                      f"{v['misalignment_last']:+.1f}% | {cells} |")
         L.append("")
 
+    nl = r.get("nonlinear")
+    if nl:
+        hh = nl["horizon"]
+        L.append("### Nonlinear and time-varying adjustment\n")
+        L.append(f"Each variant is re-estimated point in time like the headline ECM and scored the same way. Rule set "
+                 f"before testing: replace the linear ECM only if a variant lowers the {hh}-month RMSE ratio by at least "
+                 f"{nl['rule']['min_rmse_gain']} and has a lower Clark-West p.\n")
+        hs = list(nl["variants"]["linear"]["by_horizon"])
+        L.append("| Variant | " + " | ".join(f"{k}m RMSE ratio (CW p)" for k in hs) + " |")
+        L.append("|---|" + "---|" * len(hs))
+        for v in nl["variants"].values():
+            L.append(f"| {v['label']} | " + " | ".join(
+                f"{x['rmse_ratio']:.3f} ({x['cw_p']:.2f})" if x["rmse_ratio"] is not None else "n/a"
+                for x in v["by_horizon"].values()) + " |")
+        lp = nl["last_params"]
+        th, cu = lp.get("threshold", {}), lp.get("cubic", {})
+        L.append(f"\nLatest fits: threshold |gap| {th.get('c', float('nan')):.3f} log points, slope inside "
+                 f"{th.get('b_in', float('nan')):+.2f} and outside {th.get('b_out', float('nan')):+.2f}; cubic term "
+                 f"{cu.get('g', float('nan')):+.2f} (negative would mean faster reversion of large gaps).\n")
+        rb = nl["rolling_robustness"]
+        L.append(f"Rolling window, {hh}-month ratio by window length: "
+                 + ", ".join(f"{w} months {v['rmse_ratio']:.3f} (p {v['cw_p']:.2f})" for w, v in rb.items())
+                 + f"; median {nl['rolling_median_ratio']:.3f}. The rule's choice: **{nl['choice']}**. Adopted: "
+                 f"**{nl['adopted']}**"
+                 + ("" if nl["adopted"] == nl["choice"] else
+                    " (the rolling window passes at its pre-set length but not at the median of nearby lengths; this "
+                    "robustness requirement was added after the first results)")
+                 + ". `[backtest] window_months` switches the headline ECM to a rolling window.\n")
+        L.append("Structural breaks (sup-Wald, 15% trimming, block-bootstrap p; a second break is tested on the larger "
+                 "segment when the first is significant):\n")
+        L.append("| Series | Sample | Break | sup-F | p | Before | After |")
+        L.append("|---|---|---|---|---|---|---|")
+        for v in nl["breaks"].values():
+            for t in v["tests"]:
+                fmt_ = lambda xs: ", ".join(f"{x:+.3f}" if abs(x) < 1 else f"{x:+.1f}" for x in xs)
+                L.append(f"| {v['label']} | {t['sample'][0]}–{t['sample'][1]} | {_mon(t['date'])} | {t['stat']:.1f} | "
+                         f"{t['p']:.3f} | {fmt_(t['before'])} | {fmt_(t['after'])} |")
+        L.append("")
+
     un = r.get("uncertainty")
     if un:
         lt = un["latest"]

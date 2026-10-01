@@ -19,8 +19,8 @@ until the backtest looks better.
 | 13 | Peer currencies: panel anchor for all 19 | **Done (v0.11)** |
 | 5 | Composite weights tested, not assumed | **Done (v0.12)** |
 | 6 | Joint uncertainty: whole-pipeline bootstrap | **Done (v0.13)** |
-| 7 | Nonlinear and time-varying adjustment, structural breaks | Next |
-| 9 | Formal panel cointegration tests, multiple-testing adjustment | Planned |
+| 7 | Nonlinear and time-varying adjustment, structural breaks | **Done (v0.14)** |
+| 9 | Formal panel cointegration tests, multiple-testing adjustment | Next |
 | 8 | Regime model with time-varying transition probabilities | Planned |
 | 10 | FEER: cyclical adjustment and income balance | Planned |
 | 11 | Flow identification beyond contemporaneous OLS | Planned |
@@ -110,7 +110,11 @@ bootstrap is now the headline corridor. Original plan: block bootstrap of the wh
 parameters, norm, elasticities) to produce one corridor that includes model
 uncertainty. Compare its coverage with the current corridor.
 
-**7. Nonlinear and time-varying adjustment.** Threshold ECM and ESTAR (large gaps
+**7. Nonlinear and time-varying adjustment (done).** Threshold, cubic and TVP ECMs
+forecast worse than linear (12m 1.30–1.42); a rolling 10-year ECM is better (0.944,
+p 0.08) but not robustly across window lengths (median 0.970), so the linear ECM stays.
+No break in the ECM; mean breaks in the composite and FEER around 2009 (the backcast
+norm years). Original plan: threshold ECM and ESTAR (large gaps
 revert faster), time-varying-parameter ECM (Kalman), Bai-Perron break tests on the
 ECM and the anchors. Evaluate out of sample with the same tests as the linear model.
 

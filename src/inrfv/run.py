@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import benchmark, beer, composite, feer, flows, market, panel_anchor, peers, uncertainty, weights, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flows, market, nonlinear, panel_anchor, peers, uncertainty, weights, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -54,7 +54,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     comp = composite.run(ds.pit, reer_component, feer_m, cfg)
     bt, fcs = backtest.run(comp, reg_out, cfg)
     h = cfg["backtest"]["headline_horizon"]
-    cur = backtest.current_forecast(comp, h)
+    cur = backtest.current_forecast(comp, h, cfg["backtest"].get("window_months"))
 
     flow_out, flow_diag = flows.run(ds.panel, cfg)
     market_diag = market.run(ds.pit, ds.panel, cfg)
@@ -88,6 +88,10 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     r["peers"] = peers.run(peer_gaps, cfg)
     r["weights"] = weights.run(comp, reer_component, feer_m, cfg)
     r["uncertainty"] = uncertainty.run(r, pdata, cfg, gap_draws) if ucfg else None
+    r["nonlinear"] = (nonlinear.run(comp, {"composite": comp["misalignment_pct"],
+                                           "REER component": reer_component["misalignment_pct"],
+                                           "FEER": feer_m["misalignment_pct"]}, cfg)
+                      if cfg["models"].get("nonlinear", {}).get("enabled", True) else None)
     if r["uncertainty"] and ucfg.get("headline_corridor") == "bootstrap":
         uncertainty.apply_corridor(comp, r["uncertainty"]["series"])
     return r
@@ -109,6 +113,9 @@ def save(r: dict, run_dir) -> None:
     r["beer"].to_csv(run_dir / "model_beer.csv")
     r["regimes"].to_csv(run_dir / "model_regimes.csv")
     r["flows"].to_csv(run_dir / "model_flows.csv")
+    nl = r.get("nonlinear")
+    if nl and nl.get("threshold_path") is not None:
+        nl["threshold_path"].assign(tvp_slope=nl["tvp_slope"]).to_csv(run_dir / "ecm_nonlinear_params.csv")
     if r.get("uncertainty"):
         r["uncertainty"]["series"].join(r["uncertainty"]["expost"], how="left").to_csv(run_dir / "composite_bootstrap.csv")
     if r.get("weights"):
@@ -124,6 +131,7 @@ def save(r: dict, run_dir) -> None:
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
                "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"],
                "benchmark": r.get("benchmark"), "peers": r.get("peers"),
+               "nonlinear": {k: v for k, v in (r.get("nonlinear") or {}).items() if k not in ("tvp_slope", "threshold_path")} or None,
                "uncertainty": {k: v for k, v in (r.get("uncertainty") or {}).items() if k not in ("series", "expost")} or None,
                "weights": {k: v for k, v in (r.get("weights") or {}).items() if k != "weights"} or None,
                "revisions": {k: v for k, v in (r.get("revisions") or {}).items() if k != "series"} or None,

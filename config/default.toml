@@ -295,6 +295,17 @@ weight_schemes    = ["equal", "performance", "inverse_variance"]
 headline_corridor = "bootstrap"
 seed              = 23
 
+[models.nonlinear]
+enabled        = true
+# Nonlinear / time-varying ECM variants and break tests (models/nonlinear.py).
+rolling_months = 120      # training window of the rolling ECM
+min_rmse_gain  = 0.01     # rule: replace the linear ECM forecast only if a variant lowers the
+                          # headline RMSE ratio by this much AND has a lower Clark-West p
+robustness_windows = [72, 96, 120, 144, 180]
+break_reps     = 199      # block-bootstrap replications for break-test p-values
+break_block    = 12       # block length (months)
+seed           = 29
+
 [models.regimes]
 min_obs     = 96
 refit_every = 12
@@ -318,3 +329,5 @@ weight_rule = {min_rmse_gain = 0.01}
 horizons         = [1, 3, 6, 12]
 min_train        = 60      # realised target observations before the first OOS forecast
 headline_horizon = 12
+# window_months = 120     # rolling ECM estimation window; unset = expanding (see README, item 7:
+                          # the rolling window beats expanding at 120 months but not robustly)

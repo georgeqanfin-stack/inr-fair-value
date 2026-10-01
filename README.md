@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.13.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.14.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.14 | Nonlinear/time-varying ECM variants and break tests; linear ECM kept (rolling not robust) |
 | 0.13 | Joint bootstrap corridor (panel, norm, elasticities, CA error, weights) with ex-post coverage check |
 | 0.12 | Composite weights tested: equal vs performance vs inverse-variance; equal kept by a pre-set rule |
 | 0.11 | Peer currencies: gaps for all 19, India's rank, crisis episodes, cross-section vs the IMF |
@@ -459,6 +460,32 @@ undervaluation relative to the later estimate (by about 2 pp on average). The
 bootstrap was made the headline after this test, as the one closer to nominal.
 Months overlap heavily, so coverage is measured roughly (about nine independent
 years). `[uncertainty] headline_corridor = "end_to_end"` restores the old band.
+
+**Nonlinear and time-varying adjustment, breaks (v0.14).** Four variants of the ECM
+are re-estimated point in time and scored like the headline. The rule was set before
+testing: replace the linear ECM only if a variant lowers the 12-month RMSE ratio by
+at least 0.01 and has a lower Clark-West p.
+
+| Variant | 12-month RMSE ratio | Clark-West p |
+|---|---|---|
+| Linear ECM, expanding window (headline) | 0.977 | 0.13 |
+| Threshold ECM (faster reversion outside a band) | 1.340 | 0.55 |
+| Cubic, ESTAR approximation | 1.416 | 0.15 |
+| Rolling 10-year window | 0.944 | 0.08 |
+| Time-varying parameters (Kalman) | 1.299 | 0.52 |
+
+Nonlinear adjustment does not help out of sample. The latest threshold fit has the
+textbook shape (gaps beyond ±10% revert, smaller ones do not), but its forecasts are
+worse; the cubic term has the wrong sign. The rolling window passes the rule at its
+pre-set 120 months. It is not robust, though: across 72–180-month windows the 12-month
+ratio runs 0.944–0.983, a median gain of only 0.007. So the linear ECM stays. That
+robustness requirement was added after the first results. `[backtest] window_months`
+switches to a rolling ECM.
+
+Break tests use sup-Wald with 15% trimming and block-bootstrap p-values. There is no
+break in the 12-month ECM (p 0.69) or in the REER component's mean (p 0.30). The
+composite's mean breaks in Oct 2009 (14% to 7%, p 0.01), as does the FEER's (2005 and
+2009). Both fall in the years the FEER uses the backcast norm (see limitations).
 
 **India CPI (v0.4).** The official MOSPI CPI-Combined, replacing the OECD series:
 

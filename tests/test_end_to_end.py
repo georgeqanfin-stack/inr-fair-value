@@ -142,3 +142,13 @@ def test_joint_uncertainty_corridor(run):
     assert last["fair_inr_strong"] < last["fair_inr"] < last["fair_inr_weak"]
     assert "### Joint uncertainty" in (out / "report.md").read_text(encoding="utf-8")
     assert (out / "composite_bootstrap.csv").exists()
+
+
+def test_nonlinear_variants_and_breaks_reported(run):
+    r, out = run
+    nl = r["nonlinear"]
+    assert set(nl["variants"]) == {"linear", "threshold", "cubic", "rolling", "tvp"}
+    assert nl["adopted"] in nl["variants"]
+    lin = nl["variants"]["linear"]["by_horizon"][12]["rmse_ratio"]
+    assert lin == pytest.approx(r["backtest"][12]["oos"]["rmse_ratio_ecm_vs_drift"])    # same as the headline
+    assert "### Nonlinear and time-varying adjustment" in (out / "report.md").read_text(encoding="utf-8")

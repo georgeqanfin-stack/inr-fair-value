@@ -22,7 +22,9 @@ from .stats.forecast_eval import (clark_west, diebold_mariano, hodrick_1b,
                                   non_overlapping_betas, oos_r2)
 
 
-def forecasts(comp: pd.DataFrame, h: int, min_train: int) -> pd.DataFrame:
+def forecasts(comp: pd.DataFrame, h: int, min_train: int, window: int | None = None) -> pd.DataFrame:
+    """Point-in-time ECM forecasts. ``window``: estimate on the last ``window`` realised
+    targets only (rolling); the drift benchmark always uses the whole history."""
     df = comp[["log_inr", "ect"]].copy()
     df["y"] = df["log_inr"].shift(-h) - df["log_inr"]
     idx = df.index
@@ -36,7 +38,8 @@ def forecasts(comp: pd.DataFrame, h: int, min_train: int) -> pd.DataFrame:
         tr = df.iloc[: cut + 1].dropna(subset=["y", "ect"])
         if len(tr) < min_train:
             continue
-        a, b = np.linalg.lstsq(np.column_stack([np.ones(len(tr)), tr["ect"]]), tr["y"].to_numpy(), rcond=None)[0]
+        est = tr.iloc[-window:] if window else tr
+        a, b = np.linalg.lstsq(np.column_stack([np.ones(len(est)), est["ect"]]), est["y"].to_numpy(), rcond=None)[0]
         rows.append({"date": t, "ect": df["ect"].iloc[i], "y": df["y"].iloc[i],
                      "f_drift": tr["y"].mean(), "f_ecm": a + b * df["ect"].iloc[i],
                      "alpha": b, "const": a, "n_train": len(tr)})
@@ -91,21 +94,24 @@ def run(comp: pd.DataFrame, regimes: pd.DataFrame, cfg: dict) -> tuple[dict, dic
     b = cfg["backtest"]
     results, fcs = {}, {}
     for h in b["horizons"]:
-        fc = forecasts(comp, h, b["min_train"])
+        fc = forecasts(comp, h, b["min_train"], b.get("window_months"))
         fcs[h] = fc
         results[h] = {"oos": evaluate(fc, h),
                       "in_sample": in_sample(comp, h, regimes["p_stress_filtered"])}
     return results, fcs
 
 
-def current_forecast(comp: pd.DataFrame, h: int) -> dict:
-    """Forecast from the latest ECT, estimated on every fully realised target."""
+def current_forecast(comp: pd.DataFrame, h: int, window: int | None = None) -> dict:
+    """Forecast from the latest ECT, estimated on every fully realised target (or the last ``window``)."""
     df = comp[["log_inr", "ect"]].copy()
     df["y"] = df["log_inr"].shift(-h) - df["log_inr"]
     tr = df.dropna()
+    drift = float(tr["y"].mean())
+    if window:
+        tr = tr.iloc[-window:]
     a, b = np.linalg.lstsq(np.column_stack([np.ones(len(tr)), tr["ect"]]), tr["y"].to_numpy(), rcond=None)[0]
     last = df["ect"].dropna()
     e = float(last.iloc[-1])
     return {"asof": last.index[-1].strftime("%Y-%m"), "h": h, "ect": e, "const": float(a), "alpha": float(b),
-            "forecast_log_change": float(a + b * e), "drift_only": float(tr["y"].mean()),
+            "forecast_log_change": float(a + b * e), "drift_only": drift,
             "train_window": [tr.index[0].strftime("%Y-%m"), tr.index[-1].strftime("%Y-%m")]}

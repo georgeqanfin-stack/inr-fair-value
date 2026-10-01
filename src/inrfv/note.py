@@ -230,6 +230,19 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append("the India-only REER model fails its long-run test")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
+    nl = r.get("nonlinear")
+    if nl:
+        h = nl["horizon"]
+        others = {k: v["by_horizon"][h]["rmse_ratio"] for k, v in nl["variants"].items() if k not in ("linear", "rolling")}
+        lin = nl["variants"]["linear"]["by_horizon"][h]["rmse_ratio"]
+        if others and all(v > lin for v in others.values()):
+            s = ("Letting large gaps revert faster, or letting the adjustment drift, did not forecast better out of sample")
+        else:
+            s = "Nonlinear and time-varying versions of the forecast were also tested"
+        s += (f"; a rolling 10-year estimate did ({nl['variants']['rolling']['by_horizon'][h]['rmse_ratio']:.3f}), "
+              "but not robustly across window lengths, so the linear version stays."
+              if nl["adopted"] == "linear" and nl["choice"] == "rolling" else ".")
+        L.append(s + "\n")
     un = r.get("uncertainty")
     if un and un["latest"].get("p_undervalued") is not None:
         cb = un["coverage"].get("bootstrap", {})

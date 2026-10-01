@@ -1,10 +1,10 @@
 # INR/USD fair value note, September 2026
 
-Data to September 2026 · run `20261001-233510` · written 01 Oct 2026
+Data to September 2026 · run `20261002-001918` · written 02 Oct 2026
 
 ## The reading
 
-At 95.41 per dollar, the rupee is substantially undervalued: 15.7% weaker than its composite fair value of 82.50. Allowing for model uncertainty, fair value lies between 78.70 and 85.08, and the spot rate is above the whole range.
+At 95.41 per dollar, the rupee is substantially undervalued: 15.7% weaker than its composite fair value of 82.50. Allowing for model uncertainty, fair value lies between 77.90 and 85.77, and the spot rate is above the whole range.
 
 The two components agree: the productivity-based REER anchor puts the rupee +18.4% from fair value, and the external-balance model (FEER) +13.0%. Positive means weaker than fair.
 
@@ -36,7 +36,7 @@ Also: the market-based BEER (+25.1%) fails its long-run test, so it is shown for
 
 Letting large gaps revert faster, or letting the adjustment drift, did not forecast better out of sample.
 
-Drawing all the uncertainties together (model parameters, the IMF norm, elasticities, data errors and model weights), 100% of 2,000 draws say the rupee is undervalued. Looking back, this 80% range contained the later re-estimated fair value in 66% of months.
+Drawing all the uncertainties together (model parameters, the IMF norm, elasticities, data errors and model weights), 100% of 2,000 draws say the rupee is undervalued. Looking back, this 80% range contained the later re-estimated fair value in 66% of months. The range is therefore widened by a factor of 1.23, learned from those misses; tested on years left out of the fit, coverage becomes 78% (applied in real time since Aug 2020 it would have covered 95%, wider than needed).
 
 The equal weighting of the two components was tested against weights learned from each one's track record and from their uncertainty bands; none did clearly better, so the weights stay equal. On their own, neither component beats a random walk at 12 months (ratios 1.23 and 1.03); combined they do (0.964). The headline ranges from +15.1% to +15.8% across weighting schemes.
 

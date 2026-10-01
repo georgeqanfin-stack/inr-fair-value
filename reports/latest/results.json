@@ -2699,16 +2699,93 @@
   "uncertainty": {
     "latest": {
       "month": "2026-09",
-      "fair_strong": 78.69575676712422,
+      "fair_strong": 77.8992124045909,
       "fair_mid": 82.20071693630004,
-      "fair_weak": 85.08371224543123,
-      "mis_lo": 12.132989979452713,
-      "mis_hi": 21.235139536993163,
+      "fair_weak": 85.77123530892896,
+      "mis_lo": 11.234156978946675,
+      "mis_hi": 22.474807615247585,
       "p_undervalued": 1.0,
+      "fair_strong_raw": 78.69575676712422,
+      "fair_weak_raw": 85.08371224543123,
+      "p_undervalued_raw": 1.0,
       "old_strong": 76.963391695517,
       "old_weak": 87.51305966981374
     },
     "headline": "bootstrap",
+    "recalibration": {
+      "loyo": {
+        "raw": {
+          "n": 108,
+          "coverage": 0.6574074074074074,
+          "below": 0.3333333333333333,
+          "above": 0.009259259259259259,
+          "median_width_pct": 10.628797542603074
+        },
+        "scale": {
+          "n": 108,
+          "coverage": 0.7777777777777778,
+          "below": 0.2222222222222222,
+          "above": 0.0,
+          "median_width_pct": 12.291847550172486
+        },
+        "shift_scale": {
+          "n": 108,
+          "coverage": 0.6944444444444444,
+          "below": 0.19444444444444445,
+          "above": 0.1111111111111111,
+          "median_width_pct": 8.206390558852195
+        }
+      },
+      "realtime": {
+        "raw": {
+          "n": 65,
+          "coverage": 0.7692307692307693,
+          "below": 0.2153846153846154,
+          "above": 0.015384615384615385,
+          "median_width_pct": 8.967894514171082
+        },
+        "scale": {
+          "n": 65,
+          "coverage": 0.9538461538461539,
+          "below": 0.046153846153846156,
+          "above": 0.0,
+          "median_width_pct": 13.418736711643664
+        },
+        "shift_scale": {
+          "n": 65,
+          "coverage": 0.6307692307692307,
+          "below": 0.0,
+          "above": 0.36923076923076925,
+          "median_width_pct": 6.486079523312238
+        }
+      },
+      "params": {
+        "scale": {
+          "shift": 0.0,
+          "k": 1.2334697597915127,
+          "years": [
+            2017,
+            2025
+          ]
+        },
+        "shift_scale": {
+          "shift": -0.025157308643385643,
+          "k": 0.9087453732533296,
+          "years": [
+            2017,
+            2025
+          ]
+        }
+      },
+      "choice": "scale",
+      "nominal": 0.8,
+      "realtime_from": "2020-08",
+      "years": [
+        2017,
+        2025
+      ],
+      "n_years": 9
+    },
     "coverage": {
       "bootstrap": {
         "n": 108,
@@ -2723,6 +2800,13 @@
         "below": 0.0,
         "above": 0.0,
         "median_width_pct": 18.920431972417095
+      },
+      "recalibrated": {
+        "n": 65,
+        "coverage": 0.9538461538461539,
+        "below": 0.046153846153846156,
+        "above": 0.0,
+        "median_width_pct": 13.418736711643664
       }
     },
     "draws": 2000,
@@ -2948,11 +3032,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T18:04:13+00:00",
+      "fetched_at": "2026-10-01T18:48:25+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T17:58:30.258425566Z",
+        "registry_loaded_at": "2026-10-01T18:38:30.259435671Z",
         "status": "ok",
         "tables": 1049
       }

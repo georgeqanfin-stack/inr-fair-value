@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 1.0.0 · run `20261001-233510` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 1.1.0 · run `20261002-001918` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -20,7 +20,7 @@ All figures are point-in-time: each value uses only data published by that month
 | BEER, total (permanent fundamentals) | Sep 2026 | +21.4% | 78.56 | fundamentals at one-sided HP trend |
 | Composite (REER+FEER) | Sep 2026 | +15.7% | 82.50 | drives the ECM |
 
-**Fair-value corridor (10th–90th percentile; joint bootstrap of panel parameters, FEER norm, elasticities, CA measurement and model weights): 78.70 – 85.08** (central 82.50, spot 95.41).
+**Fair-value corridor (10th–90th percentile; joint bootstrap of panel parameters, FEER norm, elasticities, CA measurement and model weights): 77.90 – 85.77** (central 82.50, spot 95.41).
 
 ### FEER, latest quarter
 
@@ -230,7 +230,7 @@ Structural breaks (sup-Wald, 15% trimming, block-bootstrap p; a second break is 
 
 ### Joint uncertainty (bootstrap corridor)
 
-2000 joint draws a month of: the panel slope and India's effect (country-block bootstrap, 300 draws per re-estimation), the IMF norm (its standard error), the trade elasticities (±50%), current-account measurement error (sd 0.2 pp of GDP) and the weighting scheme (equal, performance or inverse variance). Sep 2026: fair value 78.70–85.08 (misalignment +12.1% to +21.2%); 100% of draws say undervalued. End-to-end band: 76.96–87.51. Headline corridor: **bootstrap**.
+2000 joint draws a month of: the panel slope and India's effect (country-block bootstrap, 300 draws per re-estimation), the IMF norm (its standard error), the trade elasticities (±50%), current-account measurement error (sd 0.2 pp of GDP) and the weighting scheme (equal, performance or inverse variance). Sep 2026: fair value 77.90–85.77 (misalignment +11.2% to +22.5%); 100% of draws say undervalued. End-to-end band: 76.96–87.51. Headline corridor: **bootstrap**.
 
 Coverage against the fair value as later re-estimated (Jan 2017–Dec 2025: final panel coefficients; the IMF's own norm for each year), nominal 80%:
 
@@ -238,8 +238,21 @@ Coverage against the fair value as later re-estimated (Jan 2017–Dec 2025: fina
 |---|---|---|---|---|---|
 | bootstrap | 108 | 66% | 33% | 1% | 10.6 pp |
 | end to end | 108 | 100% | 0% | 0% | 18.9 pp |
+| recalibrated | 65 | 95% | 5% | 0% | 13.4 pp |
 
 Months overlap heavily (about one independent observation a year), so coverage is measured roughly. Misses below the band mean the real-time reading overstated undervaluation relative to the later estimate. The bootstrap corridor was made the headline after this test, as the one closer to nominal coverage.
+
+#### Recalibration
+
+Conformal recalibration against the corridor's own ex-post misses (2017–2025, 9 assessed years). *Scale* widens both sides by one factor k; *shift and scale* also moves the centre by the mean past miss. Leave-one-year-out: each year judged with k fitted on the other years. Real time (from Aug 2020): each month uses only years whose IMF assessment was published by then. Rule, set before computing: keep the raw corridor unless a candidate is closer to nominal out of year; prefer scale unless shift and scale is closer by more than 5 pp.
+
+| Corridor | Shift | k | Leave-one-year-out coverage | below | above | Real-time coverage | below | above | Median width (real time) |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | +0.0 pp | 1.00 | 66% | 33% | 1% | 77% | 22% | 2% | 9.0 pp |
+| scale | +0.0 pp | 1.23 | 78% | 22% | 0% | 95% | 5% | 0% | 13.4 pp |
+| shift and scale | -2.5 pp | 0.91 | 69% | 19% | 11% | 63% | 0% | 37% | 6.5 pp |
+
+Adopted: **scale**. Sep 2026 corridor 77.90–85.77 (raw 78.70–85.08). The misses cluster in 2017–21; since 2022 the raw corridor has covered, so a correction learned from the early years over-covers in real time (and a shift learned then over-corrects). Nine years is a small calibration set: k is re-fitted every year as assessments are published.
 
 ### Full-sample predictive regressions
 
@@ -353,7 +366,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T18:04:13+00:00, mirror loaded 2026-10-01T17:58:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T18:48:25+00:00, mirror loaded 2026-10-01T18:38:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

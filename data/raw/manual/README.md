@@ -1,9 +1,16 @@
 # Manually sourced inputs
 
-Files here cannot be fetched programmatically. Each must state its source.
+Files here cannot be fetched programmatically, or are kept as an independent check
+on an automatic source. Each must state its source.
 
 ## `mospi_cpi_2024base.csv`
 All-India CPI (General, Combined), base 2024 = 100, Jan 2025 – Aug 2026.
+
+**Since v0.9 this file is a cross-check and fallback, not the primary source.** The
+pipeline reads the same series from the RBI Bulletin CPI table ("CPI - 2024=100 (All
+India)", via the RBIH Data API, cached in `data/raw/dbie/cpi_2024base.csv`). It warns
+if the two differ by more than 0.015 in any month, and uses this file only for months
+the API does not have yet. The two matched in all 20 months when the switch was made.
 
 Source: MOSPI, *Press Release of CPI for August 2026* (14 Sep 2026), Annexure IV
 "All India Combined (General) level index and inflation", cross-checked against the
@@ -53,7 +60,9 @@ Each row was checked against the table's own arithmetic (cyclically adjusted CA 
 norm = total gap). The vintage assessing 2016 (published 2017) is not online.
 Publication months are the External Sector Report release months (July; Aug in
 2020 and 2021) and the Article IV publication months. Add a row each year when the
-new External Sector Report comes out.
+new External Sector Report comes out. The 2026 row (−2.3, s.e. 0.6, FY2025/26) is from
+the 2026 External Sector Report, published 30 Jul 2026, Chapter 2, Table 2.11
+(India). The refresh warns from each August until that year's row is added.
 
 ## Legacy FII flows (`../parsed_fpi_inr.csv`)
 Monthly net FII investment in INR crore, Jan 2000 – Jun 2025, parsed by the legacy

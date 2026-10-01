@@ -82,7 +82,8 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     xl_monthly = {col: (xl[k] if c is None else xl[k][c]).rename(col) for col, (k, c) in MONTHLY_PAIRS.items()}
     if mode == "xlsx":
         meta["rbi_source"] = "DBIE Excel files only"
-        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None, "extra": {}, "intervention": None}
+        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None, "extra": {}, "intervention": None,
+                "cpi_2024": None}
 
     api = dbie.fetch_all(path(cfg, "dbie_cache"), refresh=refresh, base=dcfg.get("base_url", dbie.DEFAULT_BASE))
     fetch_meta = path(cfg, "dbie_cache") / "_fetch.json"
@@ -100,6 +101,27 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
         a, xs = api[f"bop.{name}"], xl["bop"][name]
         recon[f"bop.{name}"] = dbie.reconcile(a, xs, tol, window)
         bop_cols[name] = MERGERS[mode](a, xs) if mode in MERGERS else a
+    extra = {k: api[k] for k in dbie.EXTRA}
+    # RBI Bulletin BPM6 table: often a quarter or two ahead of the typed BoP series, and the
+    # later vintage of recent quarters. It is used only for the revision window and beyond:
+    # older quarters keep the overall-BoP presentation, whose classification differs from
+    # BPM6 in places (portfolio, capital account), so history is not rewritten.
+    base = dcfg.get("base_url", dbie.DEFAULT_BASE)
+    bpm6 = dbie.fetch_bop_bpm6(path(cfg, "dbie_cache"), refresh=refresh, base=base)
+    merge = MERGERS.get(mode, dbie.merge)
+    for name in bpm6.columns:
+        key = name if name in bop_cols else f"bopx.{name}"
+        cur = bop_cols[name] if name in bop_cols else extra[key]
+        start = cur.last_valid_index() - pd.DateOffset(months=window) if cur.notna().any() else None
+        recent = bpm6[name] if start is None else bpm6[name][bpm6.index > start]
+        meta.setdefault("bpm6_vs_overall_bop", {})[name] = dbie.reconcile(bpm6[name], cur, tol, window)
+        merged = merge(recent, cur)
+        if name in bop_cols:
+            bop_cols[name] = merged
+        else:
+            extra[key] = merged
+    meta["bop_bpm6"] = {"range": [bpm6.index.min().strftime("%Y-%m"), bpm6.index.max().strftime("%Y-%m")],
+                        "source": "RBI Bulletin, BoP standard presentation (BPM6), via the RBIH Data API"}
     bop = pd.DataFrame(bop_cols).sort_index()
     bop.index.name = "date"
 
@@ -112,10 +134,30 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
                           "merge_early": "RBIH Data API merged with DBIE Excel (earlier vintage preferred; revision check)",
                           "api": "RBIH Data API only"}[mode]
     meta["rbi_reconciliation"] = recon
-    intervention = dbie.fetch_intervention(path(cfg, "dbie_cache"), refresh=refresh,
-                                           base=dcfg.get("base_url", dbie.DEFAULT_BASE))
-    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr"),
-            "extra": {k: api[k] for k in dbie.EXTRA}, "intervention": intervention}
+    intervention = dbie.fetch_intervention(path(cfg, "dbie_cache"), refresh=refresh, base=base)
+    cpi_2024 = dbie.fetch_cpi_2024(path(cfg, "dbie_cache"), refresh=refresh, base=base)
+    # INR/USD: months missing from RBI's monthly table (and months after it) come from the
+    # average of RBI's own daily reference rates, which match the monthly table to 0.04%.
+    daily = dbie.fetch_inr_daily(path(cfg, "dbie_cache"), refresh=refresh, base=base)["mean"]
+    inr = monthly["inr_usd"]
+    fill = daily[~daily.index.isin(inr.dropna().index)]
+    fill = fill[fill.index > inr.first_valid_index()]
+    monthly["inr_usd"] = inr.combine_first(fill).sort_index()
+    meta["inr_usd_from_daily"] = list(fill.index.strftime("%Y-%m"))
+    # FX reserves: months missing inside the monthly (end-month) series take the last weekly
+    # figure of that month (median gap to the monthly figure 0.2%); no extension past it.
+    wk = dbie.fetch_reserves_weekly(path(cfg, "dbie_cache"), refresh=refresh, base=base).resample("MS").last()
+    monthly["fx_reserves_usd_mn"], filled = fill_inside(monthly["fx_reserves_usd_mn"], wk)
+    meta["fx_reserves_from_weekly"] = filled
+    return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr"), "extra": extra,
+            "intervention": intervention, "cpi_2024": cpi_2024}
+
+
+def fill_inside(monthly: pd.Series, other: pd.Series) -> tuple[pd.Series, list[str]]:
+    """Fill months missing strictly inside ``monthly``'s range from ``other``; never extend it."""
+    s = monthly.dropna()
+    inside = other[(other.index > s.index.min()) & (other.index < s.index.max()) & ~other.index.isin(s.index)].dropna()
+    return monthly.combine_first(inside).sort_index(), list(inside.index.strftime("%Y-%m"))
 
 
 def dbie_gaps(monthly: dict[str, pd.Series], start: pd.Timestamp) -> dict[str, list[str]]:
@@ -176,6 +218,29 @@ def splice_cpi_india(oecd: pd.Series, mospi: pd.Series) -> tuple[pd.Series, dict
     spliced = pd.concat([oecd[oecd.index <= end], ext]).sort_index().rename("cpi_india")
     return spliced, {"ratio": ratio, "ratio_std": float(ratios.std(ddof=0)),
                      "overlap": [d.strftime("%Y-%m") for d in both.index], "oecd_end": end.strftime("%Y-%m")}
+
+
+def cpi_2024_series(api: pd.DataFrame | None, manual_file: Path, warnings: list[str], meta: dict) -> pd.Series:
+    """CPI 2024 = 100: the RBI Bulletin table via the RBIH API, with the hand-entered MOSPI file
+    as a cross-check and a fallback for months the API does not have yet."""
+    manual = pd.read_csv(manual_file, parse_dates=["date"]).set_index("date").iloc[:, 0]
+    if api is None or api.empty:
+        meta["cpi_2024_source"] = "manual MOSPI file"
+        return manual
+    a = api["index"].rename(manual.name)
+    both = pd.concat([a, manual], axis=1, keys=["api", "manual"]).dropna()
+    bad = both[(both["api"] - both["manual"]).abs() > 0.015]
+    if len(bad):
+        warnings.append(f"CPI 2024=100: RBI API and the manual MOSPI file differ in {len(bad)} months "
+                        f"({', '.join(bad.index.strftime('%Y-%m')[:4])}); the API value is used.")
+    out = a.combine_first(manual).sort_index()
+    meta["cpi_2024_source"] = {
+        "source": "RBI Bulletin CPI table (2024=100) via the RBIH Data API; manual MOSPI file as check/fallback",
+        "api_range": [a.index.min().strftime("%Y-%m"), a.index.max().strftime("%Y-%m")],
+        "manual_range": [manual.index.min().strftime("%Y-%m"), manual.index.max().strftime("%Y-%m")],
+        "months_compared": int(len(both)), "months_differing": int(len(bad)),
+        "latest_provisional": bool(api["provisional"].iloc[-1])}
+    return out
 
 
 def official_cpi_india(extra: dict[str, pd.Series], mospi_2024: pd.Series,
@@ -329,7 +394,7 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     meta["dxy_seam"] = {"month": seam.strftime("%Y-%m"), "log_change_pct": round(100 * jump, 2)}
 
     # India CPI.
-    mospi = pd.read_csv(manual / "mospi_cpi_2024base.csv", parse_dates=["date"]).set_index("date").iloc[:, 0]
+    mospi = cpi_2024_series(src.get("cpi_2024"), manual / "mospi_cpi_2024base.csv", warnings, meta)
     cpi_oecd, oecd_meta = splice_cpi_india(f["cpi_india_oecd"], mospi)
     extra = src.get("extra", {})
     if cfg.get("cpi_india", {}).get("source", "oecd") == "official" and "cpi.combined_2012" in extra:

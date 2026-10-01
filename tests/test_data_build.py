@@ -79,3 +79,27 @@ def test_build_pit_applies_publication_lags(cfg):
     ref = t - pd.offsets.MonthBegin(lag["cpi_india"])
     expected = (panel.loc[ref, "cpi_india"] / panel.loc[ref - pd.offsets.MonthBegin(12), "cpi_india"] - 1) * 100
     assert pit.loc[t, "cpi_india_yoy"] == pytest.approx(expected)
+
+
+def test_fill_inside_never_extends():
+    from inrfv.data.build import fill_inside
+    idx = pd.date_range("2026-01-01", periods=6, freq="MS")
+    m = pd.Series([1.0, 2.0, None, 4.0, None, None], idx)            # gap in Mar; ends Apr
+    other = pd.Series([9.0] * 6, idx)
+    out, filled = fill_inside(m, other)
+    assert filled == ["2026-03"] and out.loc["2026-03-01"] == 9.0
+    assert out.loc["2026-05-01":].isna().all()
+
+
+def test_cpi_2024_api_preferred_manual_checks(tmp_path):
+    from inrfv.data.build import cpi_2024_series
+    f = tmp_path / "m.csv"
+    pd.DataFrame({"date": ["2026-07-01", "2026-08-01"], "cpi": [107.95, 108.80]}).to_csv(f, index=False)
+    api = pd.DataFrame({"index": [107.95], "inflation": [4.45], "provisional": [False]},
+                       index=pd.DatetimeIndex(["2026-07-01"], name="date"))
+    warnings, meta = [], {}
+    s = cpi_2024_series(api, f, warnings, meta)
+    assert s.loc["2026-08-01"] == 108.80 and not warnings                # manual fills the month the API lacks
+    api.loc["2026-07-01", "index"] = 108.5
+    cpi_2024_series(api, f, warnings, meta)
+    assert warnings and "differ" in warnings[0]

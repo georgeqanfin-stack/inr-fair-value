@@ -142,17 +142,25 @@ def quality_gates(cfg: dict, diffs: dict, ds, today: date) -> tuple[list[str], l
                             "plausibility limit; check the source before accepting.")
     # Manual inputs.
     manual = path(cfg, "manual")
+    # CPI 2024=100 arrives automatically from the RBI Bulletin table; the manual MOSPI file is
+    # only a fallback, so warn only when neither has the month that should be out.
     mospi = pd.read_csv(manual / "mospi_cpi_2024base.csv", parse_dates=["date"])["date"].max()
+    api_cpi = path(cfg, "dbie_cache") / "cpi_2024base.csv"
+    if api_cpi.exists():
+        mospi = max(mospi, pd.read_csv(api_cpi, parse_dates=["date"])["date"].max())
     exp = expected_mospi_month(today)
     if mospi < exp:
-        warnings.append(f"MOSPI CPI (data/raw/manual/mospi_cpi_2024base.csv) ends {mospi:%b %Y}; "
-                        f"{exp:%b %Y} should be out. Add it from "
+        warnings.append(f"MOSPI CPI ends {mospi:%b %Y} in both the RBI API and data/raw/manual/mospi_cpi_2024base.csv; "
+                        f"{exp:%b %Y} should be out. If the API lags, add it from "
                         "https://www.mospi.gov.in/themes/product/9-consumer-price-index-cpi (Annexure IV).")
     norms = pd.read_csv(manual / cfg["models"]["feer"]["norm_path_file"])
     last_norm = pd.Timestamp(norms["available"].max() + "-01")
-    if (pd.Timestamp(today) - last_norm).days > 400:
-        warnings.append(f"Latest IMF CA norm for India is from {last_norm:%b %Y}; the IMF publishes a new "
-                        "External Sector Report each July. Add a row to imf_ca_norm_india.csv.")
+    t = pd.Timestamp(today)
+    esr_due = pd.Timestamp(t.year if t.month >= 8 else t.year - 1, 7, 1)    # ESR each July
+    if last_norm < esr_due:
+        warnings.append(f"Latest IMF CA norm for India is from {last_norm:%b %Y}; the {esr_due.year} External Sector "
+                        "Report (July) should have a newer one (India table, 'EBA Norm'). Add a row to "
+                        "data/raw/manual/imf_ca_norm_india.csv.")
     for k, v in ds.meta.get("rbi_reconciliation", {}).items():
         if v.get("n_unexpected"):
             warnings.append(f"RBI sources disagree on {k} outside the revision window ({v['n_unexpected']} periods).")

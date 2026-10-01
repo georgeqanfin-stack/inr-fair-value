@@ -147,3 +147,56 @@ def test_parse_intervention_fails_on_layout_change():
     rows.loc[0, "c9"] = "something else"
     with pytest.raises(dbie.DbieError, match="layout"):
         dbie.parse_intervention(rows)
+
+
+def _bpm6_rows():
+    head = ["Item", "Jan-Mar 2026 (P)", None, None, "Oct-Dec 2025 (P)", None, None]
+    sub = [None, "Credit", "Debit", "Net", "Credit", "Debit", "Net"]
+    items = {"1 Current Account": (280, 274, 6), "1.A.a Goods": (113, 197, -84), "1.A.b Services": (111, 51, 60),
+             "1.C.1 Financial corporations": (44, 3, 41), "2 Capital Account": (0, 0, 0.07),
+             "3 Financial Account": (250, 257, -7), "3.1 Direct Investment": (23, 19, 4),
+             "3.2 Portfolio Investment": (125, 138, -13), "3.5 Reserve assets": ("-", 7, -7)}
+    rows = [["Standard Presentation of India's Balance of Payments As Per BPM6- Quarterly - US Dollar"] + [None] * 6,
+            head, sub, ["", "2", "3", "4", "5", "6", "7"]]
+    for lab, (c, d, n) in items.items():
+        rows.append([lab, str(c), str(d), str(n), str(c), str(d), "1,00,000" if lab.startswith("1 ") else str(n)])
+    df = pd.DataFrame(rows, columns=[f"c{i}" for i in range(1, 8)])
+    df.insert(0, "row_no", range(1, len(df) + 1))
+    return df
+
+
+def test_parse_bop_bpm6_maps_items_and_quarters():
+    out = dbie.parse_bop_bpm6(_bpm6_rows())
+    assert list(out.index.strftime("%Y-%m")) == ["2025-10", "2026-01"]
+    q = out.loc["2026-01-01"]
+    assert q["current_account"] == 6 and q["merch_balance"] == -84 and q["goods_debit"] == 197
+    assert q["reserve_change"] == -7
+    assert q["capital_account"] == pytest.approx(0.07 + -7 - -7)          # 2 + 3 - 3.5
+    assert out.loc["2025-10-01", "current_account"] == 100000             # Indian digit grouping
+
+
+def test_parse_bop_bpm6_fails_on_missing_item():
+    rows = _bpm6_rows()
+    rows = rows[~rows["c1"].astype(str).str.startswith("3.1 ")]
+    with pytest.raises(dbie.DbieError, match="3.1"):
+        dbie.parse_bop_bpm6(rows)
+
+
+def test_parse_cpi_2024_reads_general_index_and_flags():
+    rows = pd.DataFrame([
+        {"tab": "CPI - 2024=100 (All India)", "c1": "Base : 2024 = 100"},
+        {"tab": "CPI - 2024=100 (All India)", "c1": "AUG-2026", "c2": "A) General Index", "c3": "Provisional", "c8": "108.74", "c9": "4.82"},
+        {"tab": "CPI - 2024=100 (All India)", "c1": "AUG-2026", "c2": "01 Food and beverages", "c3": "Provisional", "c8": "110.37", "c9": "5.66"},
+        {"tab": "CPI - 2024=100 (All India)", "c1": "DEC-2025", "c2": "A) General Index", "c3": "Final", "c8": "104.10", "c9": ""},
+        {"tab": "CPI - 2012=100 (All India)", "c1": "AUG-2026", "c2": "A) General Index", "c3": "Final", "c8": "999", "c9": "1"},
+    ])
+    out = dbie.parse_cpi_2024(rows)
+    assert list(out.index.strftime("%Y-%m")) == ["2025-12", "2026-08"]
+    assert out.loc["2026-08-01", "index"] == 108.74 and out.loc["2026-08-01", "provisional"]
+    assert pd.isna(out.loc["2025-12-01", "inflation"])
+
+
+def test_monthly_from_daily_drops_the_unfinished_month():
+    d = pd.Series(1.0, index=pd.date_range("2026-08-03", "2026-10-02", freq="B"))
+    out = dbie.monthly_from_daily(d, today=pd.Timestamp("2026-10-02"))
+    assert list(out.index.strftime("%Y-%m")) == ["2026-08", "2026-09"]

@@ -14,8 +14,8 @@ until the backtest looks better.
 | 14 | Version number consistent everywhere | **Done (v0.6)** |
 | 3 | Market inputs: forward premium, implied rate differential | **Done (v0.7)** |
 | 2 | Real-time data vintages | **Done (v0.8)**; ALFRED activates with a FRED key |
-| 4 | Automate manual and stale inputs | Next |
-| 12 | External benchmark: IMF External Sector Report track record | Planned |
+| 4 | Automate manual and stale inputs | **Done (v0.9)** |
+| 12 | External benchmark: IMF External Sector Report track record | Next |
 | 13 | Peer currencies: panel anchor for all 19 | Planned |
 | 5 | Composite weights tested, not assumed | Planned |
 | 6 | Joint uncertainty: whole-pipeline bootstrap | Planned |
@@ -58,7 +58,15 @@ the overlap between archived vintages.
 *Done when:* the pipeline can run "as of vintage V", and the report states the
 revision effect.
 
-**4. Manual and stale inputs.** Replace the hand-entered MOSPI CPI file with an
+**4. Manual and stale inputs (done).** CPI 2024=100 now comes from the RBI Bulletin
+CPI table (the manual MOSPI file is a check and fallback; 20/20 months match); the
+BPM6 BoP table brings Jan–Mar 2026 (the overdue quarter) and later revisions, used
+for the revision window only; INR/USD gaps and Sep 2026 come from RBI's daily
+reference rates (FRED patch no longer needed); reserves gaps from weekly data. The
+2026 IMF norm (−2.3, ESR Table 2.11) was added; the norm gate now fires each August
+until the new ESR row is in. No automatic source exists for the IMF norm. Found and
+fixed on the way: the conditional FEER used a zero norm when loans were missing.
+Original plan: replace the hand-entered MOSPI CPI file with an
 automatic source where one exists (RBIH, MOSPI API), keep the manual file as a check,
 and flag any divergence. Automate the IMF norm lookup if a stable source exists;
 otherwise keep it manual with a freshness gate. Make the BoP nowcast explicit when a

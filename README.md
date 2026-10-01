@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.8.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.9.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.9 | Automatic inputs: CPI 2024=100 and BPM6 BoP from RBI Bulletin tables, INR/USD from RBI daily rates, reserves gaps from weekly data; 2026 IMF norm; smarter gates |
 
 ## Quick start
 
@@ -107,8 +108,8 @@ change), catches up at the next logon if the PC was off, logs to
 
 | File | When | Source |
 |---|---|---|
-| `data/raw/manual/mospi_cpi_2024base.csv` | monthly, after MOSPI's release (~12th) | MOSPI CPI press release, Annexure IV |
-| `data/raw/manual/imf_ca_norm_india.csv` | yearly, after the IMF External Sector Report (July) | IMF EBA estimates, Table 1 |
+| `data/raw/manual/mospi_cpi_2024base.csv` | only if the RBI API lags MOSPI's release (~12th) | MOSPI CPI press release, Annexure IV; otherwise automatic from the RBI Bulletin CPI table |
+| `data/raw/manual/imf_ca_norm_india.csv` | yearly, after the IMF External Sector Report (July; the refresh warns from August) | ESR individual economy assessment for India, "EBA Norm" |
 | `data/raw/rbi_*.xlsx` | optional | RBI DBIE downloads; merged with the API data |
 
 Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
@@ -125,26 +126,26 @@ Each run writes to `outputs/runs/<YYYYMMDD-HHMMSS>/`:
 
 `outputs/latest.txt` names the most recent run. Runs are never overwritten.
 
-## Current reading (run of 1 Oct 2026, data as of Aug 2026)
+## Current reading (run of 1 Oct 2026, data as of Sep 2026)
 
-Spot INR/USD 95.44 (Aug 2026; RBI data to Jun 2026, Jul–Aug from rescaled FRED EXINUS).
+Spot INR/USD 95.41 (Sep 2026 average of RBI's daily reference rates).
 
 | Model | Misalignment | Fair INR/USD | Status |
 |---|---|---|---|
-| REER panel anchor (19 EMs) | +18.4% | 80.60 | **REER component of the composite**; productivity-based, panel-cointegrated (p = 0.025) |
-| REER gap (one-sided HP) | +5.4% | 90.55 | Cyclical gauge |
-| REER fundamentals anchor (India only) | +10.1% | 86.64 | Not cointegrated (p = 0.85): reported only |
-| FEER, IMF norm path (central; latest −2.0%) | +6.7% | 89.46 | Latest BoP quarter Oct–Dec 2025; 10th–90th percentile +1.2% to +13.6% |
-| FEER, NIIP-stabilising norm (−0.4%) | −3.4% | | Alternative norm |
-| BEER, current (real INR/USD, DOLS) | +25.8% | 75.89 | Not cointegrated (p = 0.98): descriptive only |
-| BEER, total (permanent fundamentals) | +21.5% | 78.55 | Fundamentals at their one-sided HP trends |
-| **Composite (panel anchor + FEER)** | **+12.4%** | **84.91** | Positive = INR weaker than fair |
+| REER panel anchor (19 EMs) | +18.4% | 80.57 | **REER component of the composite**; productivity-based, panel-cointegrated (p = 0.025) |
+| REER gap (one-sided HP) | +4.8% | 91.06 | Cyclical gauge |
+| REER fundamentals anchor (India only) | +10.1% | 86.62 | Not cointegrated (p = 0.85): reported only |
+| FEER, IMF norm path (central; latest −2.3%) | +10.0% | 86.71 | Latest BoP quarter Jan–Mar 2026; 10th–90th percentile +5.2% to +16.8% |
+| FEER, NIIP-stabilising norm | −1.6% | | Alternative norm |
+| BEER, current (real INR/USD, DOLS) | +25.2% | 76.23 | Not cointegrated (p = 0.98): descriptive only |
+| BEER, total (permanent fundamentals) | +21.5% | 78.54 | Fundamentals at their one-sided HP trends |
+| **Composite (panel anchor + FEER)** | **+14.1%** | **83.59** | Positive = INR weaker than fair |
 
-**Fair-value corridor: 79.5 – 90.1** (10th–90th percentile, combining the panel
+**Fair-value corridor: 78.3 – 88.5** (10th–90th percentile, combining the panel
 anchor's parameter band with the FEER norm and elasticity band), against a spot
-rate of 95.44. The panel anchor's gap for full-year 2025 was +8.8%; it widened
-because the REER fell about 13% during 2026 while the productivity-implied level kept rising.
-Filtered P(stress) = 0.14; 12-month-ahead P(stress) = 0.34 (steady state).
+rate of 95.41. The reading rose from +12.4% (August, previous data) mainly through
+the FEER: the Jan–Mar 2026 quarter (a US$6.5 bn current-account surplus) and the
+IMF's 2026 norm (−2.3% of GDP, from −2.0%) both enter from July 2026.
 
 **The ECM is close to the benchmark but not significantly better.** Out of sample
 (2010–2025), at 12 months the composite's RMSE is 2.3% below a random walk with
@@ -404,7 +405,9 @@ against a random walk with drift.
 | RBI Bulletin Table 4 (via the RBIH Data API) | RBI spot net dollar purchases and sales, outstanding net forward position | Automatic, cached in `data/raw/dbie/rbi_intervention.csv` |
 | External Wealth of Nations (Lane & Milesi-Ferretti, Brookings) | Net IIP / GDP for the 19 panel countries | Automatic (latest workbook found on the Brookings page); compact cache `data/raw/ewn/ewn_nfa.csv` |
 | MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |
-| MOSPI | CPI-Combined, 2024 = 100 (from Jan 2025) | Manual, verified: `data/raw/manual/mospi_cpi_2024base.csv` |
+| MOSPI via RBI Bulletin (RBIH Data API) | CPI-Combined, 2024 = 100 (from Jan 2025), with the provisional flag | Automatic, cached in `data/raw/dbie/cpi_2024base.csv`; `data/raw/manual/mospi_cpi_2024base.csv` is the check and fallback |
+| RBI Bulletin (RBIH Data API) | BoP, BPM6 standard presentation (often a quarter ahead of the typed series) | Automatic, cached in `data/raw/dbie/bop_bpm6.csv`; used for the latest quarters only |
+| RBI (RBIH Data API) | Daily INR/USD reference rate, weekly FX reserves | Automatic; monthly averages fill gaps in, and extend, the monthly INR/USD series; weekly reserves fill gaps only |
 
 **RBI data.** DBIE itself has no public API. The pipeline reads DBIE's series from
 the [Reserve Bank Innovation Hub](https://github.com/Reserve-Bank-Innovation-Hub/dbie.rbihub.in)'s

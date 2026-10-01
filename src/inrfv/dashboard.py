@@ -126,9 +126,9 @@ def flows_block(fd: dict | None) -> dict | None:
         return None
     parts = [(k, FLOW_LABELS.get(k, k)) for k in fd["regressors"]] + [("drift", "Trend depreciation"),
                                                                       ("residual", "Unexplained")]
-    wins = [{"months": w["months"], "start": w["start"], "end": w["end"], "actual": _num(w["actual"], 3),
-             "parts": [{"key": k, "label": lbl, "v": _num(w[k], 3)} for k, lbl in parts],
-             "fpi_out_of_window": _num(w["out_of_window"]["fpi"], 3)} for w in fd["windows"].values()]
+    wins = [{"months": w["months"], "start": w["start"], "end": w["end"], "actual": _num(w["actual"], 9),
+             "parts": [{"key": k, "label": lbl, "v": _num(w[k], 9)} for k, lbl in parts],
+             "fpi_out_of_window": _num(w["out_of_window"]["fpi"], 9)} for w in fd["windows"].values()]
     return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
             "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way"),
             "rbi": rbi_block(fd.get("rbi"))}
@@ -148,9 +148,9 @@ def rbi_block(iv: dict | None) -> dict | None:
     return {"price": _num(iv["price_pct_per_bn"], 3), "fwd_bn": _num(iv["fwd_book_bn"], 1),
             "fwd_pct": _num(iv["fwd_book_pct_reserves"], 1) if iv["fwd_book_pct_reserves"] is not None else None,
             "fwd_month": iv["fwd_book_month"], "latest_month": iv["latest_month"], "latest_bn": _num(iv["latest_bn"], 1),
-            "windows": {k: {"start": w["start"], "end": w["end"], "sold": _num(w["net_sold_bn"], 1), "absorbed": _num(w["absorbed"], 3),
-                            "pressure": _num(w["pressure"], 3), "actual": _num(w["actual"], 3),
-                            "share": _num(w["absorbed_share"], 3) if w["absorbed_share"] is not None else None}
+            "windows": {k: {"start": w["start"], "end": w["end"], "sold": _num(w["net_sold_bn"], 1), "absorbed": _num(w["absorbed"], 9),
+                            "pressure": _num(w["pressure"], 9), "actual": _num(w["actual"], 9),
+                            "share": _num(w["absorbed_share"], 9) if w["absorbed_share"] is not None else None}
                         for k, w in iv["windows"].items()}}
 
 

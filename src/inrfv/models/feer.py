@@ -134,7 +134,8 @@ def build_quarters(bop: pd.DataFrame, pit: pd.DataFrame, p: dict, norm_path: pd.
     if {"fdi_bop", "loans"} <= set(q.columns):
         stable = _roll(q["fdi_bop"] + q["loans"], w) / gdp4 * 100
         q["stable_financing_pct_gdp"] = stable
-        q["cad_norm_conditional"] = np.where(stable > 0, -stable, 0.0)
+        # Missing financing data (e.g. loans not yet published) leave the norm missing, not zero.
+        q["cad_norm_conditional"] = np.where(stable.isna(), np.nan, np.where(stable > 0, -stable, 0.0))
         q["misalignment_pct_conditional"] = -(q["cad_underlying"] - q["cad_norm_conditional"]) / q["semi_elasticity"]
     return q
 

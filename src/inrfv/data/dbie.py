@@ -17,6 +17,7 @@ the two, preferring the API where both have a value and reporting disagreements.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -285,3 +286,162 @@ def fetch_intervention(cache_dir: Path, refresh: bool = False, base: str = DEFAU
     cache_dir.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, date_format="%Y-%m-%d")
     return out
+
+
+# --------------------------------------------------------------------------- BoP (BPM6 standard presentation)
+
+BOP_BPM6_TABLE = "external_sector/r143_standard_presentation_of_india_s_balance_of_payments_as_pe"
+QUARTERS = {"Jan-Mar": 1, "Apr-Jun": 4, "Jul-Sep": 7, "Oct-Dec": 10}
+# Pipeline BoP item -> (BPM6 code(s), column). Checked against RBI's overall-BoP series over
+# 59 common quarters (identical up to revisions). Loans and banking capital are classified
+# differently under BPM6 and are deliberately not mapped.
+BPM6_MAP = {
+    "current_account": (["1"], "net"),
+    "merch_balance": (["1.A.a"], "net"),
+    "private_transfers": (["1.C.1"], "net"),
+    "capital_account": (["2", "3", "-3.5"], "net"),
+    "fdi_bop": (["3.1"], "net"),
+    "portfolio_bop": (["3.2"], "net"),
+    "reserve_change": (["3.5"], "net"),
+    "goods_credit": (["1.A.a"], "credit"),
+    "goods_debit": (["1.A.a"], "debit"),
+    "services_credit": (["1.A.b"], "credit"),
+    "services_debit": (["1.A.b"], "debit"),
+}
+
+
+def parse_bop_bpm6(rows: pd.DataFrame) -> pd.DataFrame:
+    """RBI Bulletin BPM6 standard presentation (sheet layout) -> quarterly US$ mn at quarter start."""
+    t = rows.copy()
+    t["row_no"] = t["row_no"].astype(int)
+    t = t.sort_values("row_no").reset_index(drop=True)
+    cols = [c for c in t.columns if c[:1] == "c" and c[1:].isdigit()]
+    title = " ".join(t["c1"].dropna().astype(str).head(6))
+    head_i = t.index[t["c1"].astype("string").str.strip() == "Item"]
+    if "Standard Presentation" not in title or not len(head_i):
+        raise DbieError("BPM6 BoP table layout changed (title or header not found)")
+    hdr = t.loc[head_i[0]]
+    qcols = {}
+    for i, c in enumerate(cols):
+        m = re.match(r"(Jan-Mar|Apr-Jun|Jul-Sep|Oct-Dec)\s+(\d{4})", str(hdr[c]).strip())
+        if m:
+            qcols[pd.Timestamp(int(m.group(2)), QUARTERS[m.group(1)], 1)] = cols[i:i + 3]
+    body = t.loc[head_i[0] + 3:]
+    codes = body["c1"].astype("string").str.strip().str.split(" ", n=1).str[0]
+    out = {}
+    for q, (cc, cd, cn) in qcols.items():
+        vals = {"credit": _num(body[cc]), "debit": _num(body[cd]), "net": _num(body[cn])}
+        rec = {}
+        for item, (parts, col) in BPM6_MAP.items():
+            total = 0.0
+            for p in parts:
+                sign, code = (-1, p[1:]) if p.startswith("-") else (1, p)
+                hit = vals[col][(codes == code).to_numpy()]
+                if hit.empty:
+                    raise DbieError(f"BPM6 BoP: item {code} not found")
+                total += sign * float(hit.iloc[0])
+            rec[item] = total
+        out[q] = rec
+    df = pd.DataFrame.from_dict(out, orient="index").sort_index()
+    df.index.name = "date"
+    return df
+
+
+def fetch_bop_bpm6(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE,
+                   session: requests.Session | None = None) -> pd.DataFrame:
+    cache = cache_dir / "bop_bpm6.csv"
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
+    out = parse_bop_bpm6(_get_rows(base, Spec(BOP_BPM6_TABLE, order="row_no"), session or requests.Session()))
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out.to_csv(cache, date_format="%Y-%m-%d")
+    return out
+
+
+# --------------------------------------------------------------------------- CPI 2024 = 100
+
+CPI_TABLE = "real_sector/r45_consumer_price_index"
+CPI_2024_TAB = "CPI - 2024=100 (All India)"
+MON3 = {m.upper()[:3]: i for m, i in MONTHS.items()}
+
+
+def parse_cpi_2024(rows: pd.DataFrame) -> pd.DataFrame:
+    """RBI Bulletin CPI table, 2024 = 100 sheet -> monthly All-India General Index (combined).
+
+    Columns: index (combined), inflation (combined, % y/y as published; blank before 2026),
+    provisional (True for the latest, provisional print).
+    """
+    t = rows[rows["tab"].astype("string").str.strip() == CPI_2024_TAB].copy()
+    if t.empty or not t.astype("string").apply(lambda c: c.str.contains("2024 = 100", na=False)).any().any():
+        raise DbieError("CPI 2024=100 sheet not found or base changed")
+    t = t[t["c2"].astype("string").str.strip().str.startswith("A) General Index")]
+    m = t["c1"].astype("string").str.strip().str.extract(r"^([A-Z]{3})-(\d{4})$")
+    t = t[m[0].notna().to_numpy()]
+    m = m.dropna()
+    idx = pd.to_datetime({"year": m[1].astype(int), "month": m[0].map(MON3), "day": 1})
+    out = pd.DataFrame({"index": _num(t["c8"]).to_numpy(), "inflation": pd.to_numeric(
+        t["c9"].astype("string").str.strip().replace("", None), errors="coerce").to_numpy(),
+        "provisional": t["c3"].astype("string").str.strip().str.lower().eq("provisional").to_numpy()},
+        index=pd.DatetimeIndex(idx.to_numpy(), name="date")).sort_index()
+    return out[~out.index.duplicated(keep="first")]
+
+
+def fetch_cpi_2024(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE,
+                   session: requests.Session | None = None) -> pd.DataFrame:
+    cache = cache_dir / "cpi_2024base.csv"
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
+    out = parse_cpi_2024(_get_rows(base, Spec(CPI_TABLE, order="row_no"), session or requests.Session()))
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out.to_csv(cache, date_format="%Y-%m-%d")
+    return out
+
+
+# --------------------------------------------------------------------------- INR/USD from daily reference rates
+
+DAILY_RATE = Spec("financial_markets/forex_rate_d_rn", {"currency": "USD"})
+
+
+def monthly_from_daily(daily: pd.Series, today: pd.Timestamp | None = None) -> pd.DataFrame:
+    """Monthly mean of RBI's daily INR/USD reference rate; the current (unfinished) month is dropped."""
+    today = pd.Timestamp.today().normalize() if today is None else today
+    m = daily.resample("MS").agg(["mean", "count"])
+    m = m[m["count"] > 0]
+    return m[m.index < today.to_period("M").to_timestamp()]
+
+
+def fetch_inr_daily(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE,
+                    session: requests.Session | None = None) -> pd.DataFrame:
+    """Monthly averages of the daily reference rate (columns mean, count), cached."""
+    cache = cache_dir / "inr_usd_daily_avg.csv"
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
+    rows = _get_rows(base, DAILY_RATE, session or requests.Session())
+    daily = pd.Series(pd.to_numeric(rows["obs_value"], errors="coerce").to_numpy(),
+                      index=pd.to_datetime(rows["time_period"])).dropna().sort_index()
+    out = monthly_from_daily(daily)
+    out.index.name = "date"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out.to_csv(cache, date_format="%Y-%m-%d")
+    return out
+
+
+# --------------------------------------------------------------------------- reserves, weekly
+
+WEEKLY_RESERVES = Spec("external_sector/fr_exg_resv_rn", {"typ_maj_fr_exc_res_rn": "FER_TTL", "unit_measure": "USD"}, _MN)
+
+
+def fetch_reserves_weekly(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE,
+                          session: requests.Session | None = None) -> pd.Series:
+    """Total FX reserves, US$ mn, weekly (Friday dates), cached."""
+    cache = cache_dir / "fx_reserves_weekly.csv"
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, parse_dates=["date"]).set_index("date")["value"]
+    rows = _get_rows(base, WEEKLY_RESERVES, session or requests.Session())
+    s = pd.Series(pd.to_numeric(rows["obs_value"], errors="coerce").to_numpy() * _MN,
+                  index=pd.DatetimeIndex(pd.to_datetime(rows["time_period"]), name="date"), name="value")
+    s = s.dropna().sort_index()
+    s = s[~s.index.duplicated(keep="last")]
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    s.to_frame().to_csv(cache, date_format="%Y-%m-%d")
+    return s

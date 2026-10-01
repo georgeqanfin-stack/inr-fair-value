@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-
 from conftest import ROOT
 
 from inrfv import vintages

@@ -15,7 +15,7 @@ def fetch_annual(country: str, indicator: str, cache: Path, refresh: bool = Fals
     if cache.exists() and not refresh:
         return read_cached(cache)
     r = requests.get(WB_URL.format(country=country, indicator=indicator),
-                     params={"format": "json", "per_page": 1000}, timeout=60)
+                     params={"format": "json", "per_page": "1000"}, timeout=60)
     r.raise_for_status()
     rows = {int(d["date"]): d["value"] for d in r.json()[1] if d["value"] is not None}
     s = pd.Series(rows, dtype=float).sort_index()
@@ -34,7 +34,7 @@ def fetch_panel(countries: list[str], indicator: str, cache: Path, refresh: bool
     if cache.exists() and not refresh:
         return pd.read_csv(cache)
     r = requests.get(WB_URL.format(country=";".join(countries), indicator=indicator),
-                     params={"format": "json", "per_page": 20000}, timeout=120)
+                     params={"format": "json", "per_page": "20000"}, timeout=120)
     r.raise_for_status()
     payload = r.json()
     if len(payload) < 2 or payload[1] is None:

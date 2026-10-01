@@ -271,7 +271,8 @@ def build_report(r: dict) -> str:
                "brent": "% per 1% Brent rise"}
     for k in ["const"] + fd["regressors"]:
         L.append(f"| {k} | {fd['coef'][k]:+.3f} | {fd['t'][k]:+.1f} | {meaning.get(k, '')} |")
-    L.append("\n| Window | Actual | " + " | ".join(FLOW_LABELS.get(k, k) for k in fd["regressors"]) + " | Drift | Residual | FPI, fitted without the window |")
+    labels = " | ".join(FLOW_LABELS.get(k, k) for k in fd["regressors"])
+    L.append(f"\n| Window | Actual | {labels} | Drift | Residual | FPI, fitted without the window |")
     L.append("|---|---|" + "---|" * (len(fd["regressors"]) + 3))
     for w in fd["windows"].values():
         o = w["out_of_window"]
@@ -547,7 +548,8 @@ def build_report(r: dict) -> str:
     for name, j in r["johansen"].items():
         L.append(f"- Johansen {name}: rank {j['rank']} of {j['n_vars']} (sequential trace, 5%, k_ar_diff={j['k_ar_diff']}, n={j['nobs']}).")
     m = ds.meta
-    L.append(f"- DXY splice: ratio {m['dxy_splice_ratio']:.4f}; log change at seam {m['dxy_seam']['month']}: {m['dxy_seam']['log_change_pct']:+.2f}%.")
+    seam = m["dxy_seam"]
+    L.append(f"- DXY splice: ratio {m['dxy_splice_ratio']:.4f}; log change at seam {seam['month']}: {seam['log_change_pct']:+.2f}%.")
     s = m["cpi_india_splice"]
     if s.get("method") == "official":
         seg = "; ".join(f"{k} {v[0]}–{v[1]}" for k, v in s["segments"].items())

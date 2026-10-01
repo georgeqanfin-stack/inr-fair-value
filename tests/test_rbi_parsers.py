@@ -2,9 +2,9 @@ from datetime import datetime
 
 import openpyxl
 import pytest
+from conftest import RAW
 
 from inrfv.data import rbi
-from conftest import RAW
 
 
 def _write(tmp_path, rows, name="f.xlsx"):

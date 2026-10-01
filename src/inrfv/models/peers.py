@@ -56,7 +56,7 @@ def imf_check(gaps: pd.DataFrame, file: Path) -> dict | None:
     m = imf.merge(ours, on=["analysis_year", "country"])
     stats = {}
     for k, label in IMF_MEASURES.items():
-        rank = m.groupby("analysis_year").apply(lambda g: g["ours"].corr(g[k], method="spearman"),
+        rank = m.groupby("analysis_year").apply(lambda g, k=k: g["ours"].corr(g[k], method="spearman"),
                                                 include_groups=False)
         dm_o = m["ours"] - m.groupby("country")["ours"].transform("mean")
         dm_i = m[k] - m.groupby("country")[k].transform("mean")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -56,6 +57,8 @@ def verify_raw_manifest(raw_dir: Path) -> dict[str, list[str]]:
 
 
 def git_revision(root: Path) -> str:
+    """Short commit hash (+ "-dirty"); in a container without git, the revision the image
+    was built from (INRFV_GIT_REVISION, set by the Dockerfile)."""
     try:
         rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root,
                              capture_output=True, text=True, timeout=10)
@@ -65,7 +68,7 @@ def git_revision(root: Path) -> str:
             return "uncommitted"
         return rev.stdout.strip() + ("-dirty" if dirty.stdout.strip() else "")
     except (OSError, subprocess.SubprocessError):
-        return "unknown"
+        return os.environ.get("INRFV_GIT_REVISION") or "unknown"
 
 
 def new_run_dir(cfg: dict, suffix: str = "") -> Path:

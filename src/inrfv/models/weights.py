@@ -21,6 +21,8 @@ default in the forecast-combination literature because estimated weights add noi
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -76,7 +78,8 @@ LABELS = {"equal": "Equal (1/2 each)", "inverse_variance": "Inverse variance (ba
 def run(comp: pd.DataFrame, reer: pd.DataFrame, feer_m: pd.DataFrame, cfg: dict) -> dict:
     b, rule = cfg["backtest"], cfg["composite"].get("weight_rule", {"min_rmse_gain": 0.01})
     h = b["headline_horizon"]
-    res, weights = {}, {}
+    res: dict[str, dict[str, Any]] = {}
+    weights: dict[str, pd.Series] = {}
     for name, w in schemes(comp, reer, feer_m, cfg).items():
         ect = w * comp["gap_reer"] + (1 - w) * comp["gap_feer"]
         evals = {k: backtest.evaluate(backtest.forecasts(_comp(comp, ect), k, b["min_train"], b.get("window_months")), k)

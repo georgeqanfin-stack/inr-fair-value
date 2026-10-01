@@ -18,8 +18,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
-from .stats.forecast_eval import (clark_west, diebold_mariano, hodrick_1b,
-                                  non_overlapping_betas, oos_r2)
+from .stats.forecast_eval import clark_west, diebold_mariano, hodrick_1b, non_overlapping_betas, oos_r2
 
 
 def forecasts(comp: pd.DataFrame, h: int, min_train: int, window: int | None = None) -> pd.DataFrame:

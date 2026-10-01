@@ -26,7 +26,7 @@ def test_data_lines_group_by_source_and_report_revisions():
         "fred/DCOILBRENTEU.csv": {"new": 22, "new_range": ["2026-09-02", "2026-09-30"], "revised": 0},
     }
     lines = note.data_lines(diffs)
-    bop = next(l for l in lines if "balance of payments" in l)
+    bop = next(ln for ln in lines if "balance of payments" in ln)
     assert "4 new observations, now to Apr 2026" in bop and "largest 5.3% at Oct 2025" in bop
-    assert any("FRED" in l and "22 new" in l for l in lines)
+    assert any("FRED" in ln and "22 new" in ln for ln in lines)
     assert note.data_lines({}) == []

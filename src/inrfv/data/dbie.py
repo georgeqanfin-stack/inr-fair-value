@@ -16,6 +16,8 @@ the two, preferring the API where both have a value and reporting disagreements.
 
 from __future__ import annotations
 
+from typing import Any
+
 import json
 import re
 from dataclasses import dataclass, field
@@ -196,7 +198,7 @@ def reconcile(api: pd.Series, xlsx: pd.Series, rel_tol: float = 0.005, revision_
     """
     newer, older, which = newer_first(api, xlsx)
     both = pd.concat([newer, older], axis=1, keys=["new", "old"]).dropna()
-    info = {"api_range": _range(api), "xlsx_range": _range(xlsx), "newer_source": which, "overlap": len(both)}
+    info: dict[str, Any] = {"api_range": _range(api), "xlsx_range": _range(xlsx), "newer_source": which, "overlap": len(both)}
     if len(both):
         denom = both["old"].abs().where(both["old"].abs() > 1e-12, np.nan)
         rel = ((both["new"] - both["old"]).abs() / denom).fillna(0)

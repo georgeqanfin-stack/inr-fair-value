@@ -5,7 +5,6 @@ import re
 
 import pandas as pd
 import pytest
-
 from conftest import RAW
 
 pytestmark = pytest.mark.skipif(not (RAW / "MANIFEST.sha256").exists(), reason="cached raw data not present")

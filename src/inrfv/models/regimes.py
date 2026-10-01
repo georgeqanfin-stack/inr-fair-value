@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -38,7 +39,7 @@ def _fit(ret: pd.Series, seed: int):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         res = mod.fit(maxiter=500, em_iter=50, search_reps=10, disp=False)
-    sig = [res.params[f"sigma2[{i}]"] if isinstance(res.params, pd.Series) else None for i in range(2)]
+    sig: list[Any] = [res.params[f"sigma2[{i}]"] if isinstance(res.params, pd.Series) else None for i in range(2)]
     if sig[0] is None:
         names = mod.param_names
         sig = [res.params[names.index(f"sigma2[{i}]")] for i in range(2)]
@@ -77,7 +78,7 @@ def run(pit: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, dict]:
     out["inr_ret_pct"] = ret
 
     p_rt = pd.Series(np.nan, index=pit.index)
-    current = None
+    current: tuple[Any, Any, int, int] | None = None
     refits = []
     for i in range(p["min_obs"] - 1, len(ret)):
         if current is None or (i - current[3]) >= p["refit_every"]:
@@ -89,6 +90,8 @@ def run(pit: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, dict]:
     out["p_stress_filtered"] = p_rt
 
     # Latest real-time model: summary + forward stress probabilities.
+    if current is None:
+        raise ValueError("regime model: fewer returns than min_obs")
     mod, res, stress, _ = current
     summary = summarise(mod, res, stress)
     p_now = p_rt.dropna().iloc[-1]

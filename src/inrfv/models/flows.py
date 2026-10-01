@@ -35,6 +35,8 @@ honest:
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -81,7 +83,7 @@ def direction_tests(x: pd.DataFrame, hac_lags: int) -> dict:
         cov_type="HAC", cov_kwds={"maxlags": hac_lags})
     rev = sm.OLS(x["fpi"], sm.add_constant(pd.DataFrame({"inr_lag": x["inr"].shift(1), "dxy": x["dxy"]})),
                  missing="drop").fit(cov_type="HAC", cov_kwds={"maxlags": hac_lags})
-    out = {"fpi_predicts_next_inr": {"coef": float(lead.params["fpi"]), "t": float(lead.tvalues["fpi"]),
+    out: dict[str, Any] = {"fpi_predicts_next_inr": {"coef": float(lead.params["fpi"]), "t": float(lead.tvalues["fpi"]),
                                      "p": float(lead.pvalues["fpi"])},
            "inr_predicts_next_fpi": {"coef": float(rev.params["inr_lag"]), "t": float(rev.tvalues["inr_lag"]),
                                      "p": float(rev.pvalues["inr_lag"])}}

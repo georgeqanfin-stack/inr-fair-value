@@ -124,7 +124,8 @@ def _bulletin_rows(sale_mar=1680.0):
             "c5": "1.2 Sale (-)", "c9": "4 Outstanding Net Forward Sales (-)/ Purchase (+) at the end of month"}
     rows = [{"tab": "Sale/Purchase of USD by RBI", **head},
             {"tab": "Sale/Purchase of USD by RBI", "c1": "April", "c2": "2014", "c3": "5,870", "c4": "7,850", "c5": "1,980", "c9": "-32,062"},
-            {"tab": "Sale/Purchase of USD by RBI", "c1": "March", "c2": "2014", "c3": "7782.00", "c4": "9462.00", "c5": str(sale_mar), "c9": "-31,030"},
+            {"tab": "Sale/Purchase of USD by RBI", "c1": "March", "c2": "2014", "c3": "7782.00", "c4": "9462.00",
+             "c5": str(sale_mar), "c9": "-31,030"},
             {"tab": "Sale/Purchase of USD by RBI", "c1": "February", "c2": "2014", "c3": "-530", "c4": "-", "c5": "530", "c9": "-1,39,197"},
             {"tab": "ii) Operations in currency futures segment", "c1": "March", "c2": "2014", "c3": "999"}]
     return pd.DataFrame(rows).reindex(columns=["tab"] + [f"c{i}" for i in range(1, 10)])

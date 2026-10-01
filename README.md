@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.18.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 1.0.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 1.0 | Engineering: ruff, mypy, coverage gate (85%), data schemas as a refresh gate, Docker image built and tested in CI. Roadmap complete |
 | 0.18 | Flow effect identified: recursive orderings, local projections, 2SLS with global push instruments |
 | 0.17 | FEER: IMF-style cyclical adjustment (output gaps) and income term; quarterly real GDP to Apr–Jun 2026 |
 | 0.16 | Regime model with time-varying transition probabilities tested; constant kept |
@@ -35,11 +36,19 @@ pip install -r requirements.txt
 pip install -e .
 python -m inrfv.run            # uses cached data in data/raw, writes outputs/runs/<run-id>/
 python -m inrfv.refresh        # monthly: re-download everything, check, run, summarise
-python -m pytest               # 70 tests, ~90 s
+python -m pytest               # 159 tests, ~5 min
 ```
 
-Optional: copy `.env.example` to `.env` and set `FRED_API_KEY`. Without a key the
-pipeline uses FRED's public CSV endpoint. After editing anything in `data/raw` by
+Or, with Docker (same results, no local Python setup):
+
+```bash
+docker build --build-arg GIT_REVISION=$(git rev-parse --short HEAD) -t inrfv .
+docker run --rm -v "$PWD/outputs:/app/outputs" inrfv
+```
+
+Optional: copy `.env.example` to `.env` and set `FRED_API_KEY` (never put the key in
+`.env.example`, which is tracked; a test fails if it holds a value). Without a key the
+pipeline uses FRED's public CSV endpoint, and US CPI vintages (ALFRED) are skipped. After editing anything in `data/raw` by
 hand, run `python -m inrfv.run --write-raw-manifest` to record the new checksums.
 
 ## Dashboard
@@ -662,12 +671,36 @@ See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
   that gap rather than an equilibrium the rate returns to.
 - No data vintages: revisions to CPI, trade and BoP are not captured.
 
+## Development
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt && pip install -e .
+ruff check src tests scripts       # lint (rules and the reasons for the few exceptions in pyproject.toml)
+mypy src                           # type check
+python -m pytest --cov             # tests; fails below 85% coverage
+```
+
+CI (`.github/workflows/tests.yml`) runs three jobs on every push: lint and types; tests
+with coverage; and a Docker build, with the full test suite run inside the image.
+
+**Data schemas.** Every cached input in `data/raw` has a declarative rule in
+`src/inrfv/data/schemas.py`: exact columns, parseable dates, unique keys, numeric
+values, and plausible ranges for key series. The monthly refresh treats any violation
+as a hard failure and restores `data/raw`; ordinary runs list violations as warnings.
+A source that changes its format then stops the pipeline with a clear message.
+
+**Slow diagnostics are cached** in `outputs/cache/`, keyed on a hash of their input
+data and settings, and recomputed only when those change. These are the panel
+cointegration family (999 bootstrap draws) and the TVTP regime comparison.
+
 ## Repository layout
 
 ```
 config/default.toml        all parameters and assumptions
 src/inrfv/                 pipeline package (data, models, stats, backtest, report, run)
-tests/                     unit, parser and no-look-ahead tests
+tests/                     unit, parser, no-look-ahead, simulation and end-to-end tests
+scripts/                   IMF EBA extraction, panel-cointegration Monte Carlo, scheduler
+Dockerfile                 reproducible environment (built and tested in CI)
 data/raw/                  inputs + MANIFEST.sha256
 data/processed/, outputs/*.png, notebooks/   legacy v0.1–0.2 artefacts (see notebooks/README.md)
 outputs/runs/              pipeline runs (git-ignored)

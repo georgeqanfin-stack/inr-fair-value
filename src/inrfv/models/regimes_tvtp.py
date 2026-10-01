@@ -30,7 +30,7 @@ from __future__ import annotations
 import hashlib
 import json
 import warnings
-from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -137,7 +137,7 @@ def run(pit: pd.DataFrame, cfg: dict) -> dict:
 
     scores = {name: oos(d, cols, p["min_obs"], p["refit_every"], p["seed"]) for name, cols in specs.items()}
     big = d["r"].abs() >= d["r"].abs().quantile(0.8)
-    out_oos = {}
+    out_oos: dict[str, dict[str, Any]] = {}
     for name, s in scores.items():
         diff = s["log_score"] - scores["constant"]["log_score"]
         t = _nw_t(diff.to_numpy()) if name != "constant" else float("nan")

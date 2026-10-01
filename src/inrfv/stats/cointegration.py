@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 from statsmodels.tsa.stattools import coint
 from statsmodels.tsa.vector_ar.var_model import VAR

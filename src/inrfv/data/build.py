@@ -13,6 +13,8 @@ Revisions are not modelled (no vintage data); publication delays are.
 
 from __future__ import annotations
 
+from typing import Any
+
 import json
 import os
 from dataclasses import dataclass, field
@@ -180,7 +182,7 @@ def patch_inr_with_fred(inr: pd.Series, fred_inr: pd.Series, extend: bool, lookb
     """
     both = pd.concat([inr, fred_inr], axis=1, keys=["rbi", "fred"]).dropna()
     rel = (both["rbi"] / both["fred"] - 1).abs()
-    info = {"overlap": len(both), "mean_abs_rel_diff": float(rel.mean()) if len(rel) else None,
+    info: dict[str, Any] = {"overlap": len(both), "mean_abs_rel_diff": float(rel.mean()) if len(rel) else None,
             "filled": [], "extended": []}
     out = inr.copy()
     targets = list(pd.date_range(inr.index.min(), inr.index.max(), freq="MS").difference(inr.dropna().index))
@@ -411,9 +413,9 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
             warnings.append("Official India CPI needs [dbie] mode 'merge' or 'api'; using the OECD series.")
     meta["cpi_india_splice"] = splice_meta
     verified = set(cfg.get("data_checks", {}).get("verified_flat_runs", []))
-    for a, b, v in flat_runs(mospi):
-        if f"mospi_cpi:{a}:{b}" not in verified:
-            warnings.append(f"MOSPI CPI is flat at {v} from {a} to {b}: verify against MOSPI releases, "
+    for run_start, run_end, run_value in flat_runs(mospi):
+        if f"mospi_cpi:{run_start}:{run_end}" not in verified:
+            warnings.append(f"MOSPI CPI is flat at {run_value} from {run_start} to {run_end}: verify against MOSPI releases, "
                             "then list it under [data_checks] verified_flat_runs.")
 
     # India policy rate: call rate by default; RBI repo rate if configured.

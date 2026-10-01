@@ -29,6 +29,7 @@ import tempfile
 import traceback
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -37,6 +38,7 @@ from dotenv import load_dotenv
 from . import report
 from .config import load_config, path
 from .data import panel as panel_data
+from .data import schemas
 from .data.build import build_dataset
 from .io import new_run_dir, write_manifest, write_raw_manifest
 from .note import build_note
@@ -81,11 +83,12 @@ def _key(k) -> str:
 
 
 def diff_snapshots(before: dict, after: dict, rel_tol: float = 1e-6) -> dict[str, dict]:
-    out = {}
+    out: dict[str, dict[str, Any]] = {}
     for name in sorted(set(before) | set(after)):
         a, b = before.get(name), after.get(name)
         if a is None:
-            out[name] = {"status": "new file", "rows": len(b)}
+            if b is not None:
+                out[name] = {"status": "new file", "rows": len(b)}
             continue
         if b is None:
             out[name] = {"status": "removed file", "rows_before": len(a)}
@@ -95,7 +98,7 @@ def diff_snapshots(before: dict, after: dict, rel_tol: float = 1e-6) -> dict[str
         both = a.index.intersection(b.index)
         rel = ((b[both] - a[both]).abs() / a[both].abs().where(a[both].abs() > 1e-12)).fillna(0)
         revised = rel[rel > rel_tol]
-        d = {"rows_before": len(a), "rows_after": len(b), "new": len(new_keys), "lost": len(lost),
+        d: dict[str, Any] = {"rows_before": len(a), "rows_after": len(b), "new": len(new_keys), "lost": len(lost),
              "revised": len(revised)}
         if len(new_keys):
             d["new_range"] = [_key(min(new_keys)), _key(max(new_keys))]
@@ -121,6 +124,8 @@ def expected_mospi_month(today: date) -> pd.Timestamp:
 
 def quality_gates(cfg: dict, diffs: dict, ds, today: date) -> tuple[list[str], list[str]]:
     failures, warnings = [], []
+    # Cached inputs must match their schemas (data/schemas.py): a changed source format fails here.
+    failures += [f"schema: {p}" for p in schemas.validate(path(cfg, "raw"))]
     for name, d in diffs.items():
         if d.get("status") == "removed file" or d.get("lost", 0) > 0:
             failures.append(f"{name}: {d.get('lost', d.get('rows_before'))} cached observations disappeared "

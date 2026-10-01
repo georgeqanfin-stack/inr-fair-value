@@ -18,7 +18,8 @@ def synthetic_ds(rng, n=300, b_dxy=0.7, b_prod=-0.4, noise=0.01):
     cpi_us = 100 * np.exp(np.cumsum(np.full(n, 0.002)))
     panel = pd.DataFrame({"cpi_india": cpi_in, "cpi_us": cpi_us}, index=idx)
     ds = SimpleNamespace(panel=panel, annual={"gdp_pc_ppp_india": ind, "gdp_pc_ppp_usa": usa})
-    ds.pit = pd.DataFrame({"log_dxy": log_dxy, "log_brent": np.log(70.0) + np.cumsum(rng.normal(0, 0.05, n)), "real_rate_diff": rng.normal(1, 0.5, n)},
+    ds.pit = pd.DataFrame({"log_dxy": log_dxy, "log_brent": np.log(70.0) + np.cumsum(rng.normal(0, 0.05, n)),
+                           "real_rate_diff": rng.normal(1, 0.5, n)},
                           index=idx)
     # Build q from the same point-in-time inputs the model sees, then the nominal rate.
     tmp = beer.build_inputs(SimpleNamespace(panel=panel, annual=ds.annual,

@@ -2,7 +2,6 @@ from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 
-import numpy as np
 import pandas as pd
 import pytest
 

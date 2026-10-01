@@ -28,10 +28,9 @@ import tempfile
 from io import BytesIO
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from .config import load_config, path
+from .config import load_config
 from .data import panel as panel_data
 from .data.build import build_dataset
 from .models import composite, feer, panel_anchor, reer_anchor, structural
@@ -52,7 +51,6 @@ def headline(ds, cfg: dict, pdata=None) -> pd.DataFrame:
 
 def compare(current: pd.DataFrame, early: pd.DataFrame, until: pd.Timestamp | None = None) -> dict:
     """Point-in-time readings of two vintages, month by month (percentage points)."""
-    cols = {"composite": "misalignment_pct"}
     d = pd.DataFrame({"current": current["misalignment_pct"], "early": early["misalignment_pct"]}).dropna()
     gr = pd.DataFrame({"reer": (current["gap_reer"] - early["gap_reer"]) * 100,
                        "feer": (current["gap_feer"] - early["gap_feer"]) * 100}).reindex(d.index)

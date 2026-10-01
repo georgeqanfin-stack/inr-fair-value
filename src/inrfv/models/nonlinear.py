@@ -30,6 +30,8 @@ Applied to the 12-month ECM and to the mean of each misalignment series.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -47,7 +49,10 @@ def fit_linear(e, y, x):
     return a + b * x, {"b": b}
 
 
-def fit_threshold(e, y, x, grid=np.linspace(0.15, 0.85, 15)):
+THRESHOLD_GRID = np.linspace(0.15, 0.85, 15)     # quantiles of |ECT| tried as the band edge
+
+
+def fit_threshold(e, y, x, grid=THRESHOLD_GRID):
     best = None
     for qn in np.quantile(np.abs(e), grid):
         inside = np.abs(e) <= qn
@@ -129,7 +134,7 @@ def sup_wald(y: np.ndarray, X: np.ndarray, trim: float = 0.15) -> tuple[float, i
     n, k = X.shape
     beta = _ols(X, y)
     ssr0 = float(np.sum((y - X @ beta) ** 2))
-    best, at = -np.inf, None
+    best, at = -np.inf, -1
     for j in range(int(n * trim), int(n * (1 - trim))):
         Z = np.hstack([X, X * (np.arange(n) >= j)[:, None]])
         b = _ols(Z, y)
@@ -137,6 +142,8 @@ def sup_wald(y: np.ndarray, X: np.ndarray, trim: float = 0.15) -> tuple[float, i
         F = (ssr0 - ssr1) / k / (ssr1 / (n - 2 * k))
         if F > best:
             best, at = F, j
+    if at < 0:
+        raise ValueError("sup_wald: sample too short for the trimming")
     return best, at
 
 
@@ -181,7 +188,8 @@ def run(comp: pd.DataFrame, components: dict[str, pd.Series], cfg: dict) -> dict
     p = cfg["models"]["nonlinear"]
     b = cfg["backtest"]
     h = b["headline_horizon"]
-    res, fcs = {}, {}
+    res: dict[str, dict[str, Any]] = {}
+    fcs: dict[str, pd.DataFrame] = {}
     for name, (fit, flag) in VARIANTS.items():
         res[name] = {"label": LABELS[name], "by_horizon": {}}
         for k in b["horizons"]:

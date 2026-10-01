@@ -70,7 +70,7 @@ def verdict_sentence(spot, fair, mis, lo, hi) -> str:
     return core + f" Allowing for model uncertainty, fair value lies between {lo:.2f} and {hi:.2f}, and the spot rate is {where}."
 
 
-def data_lines(diffs: dict) -> list[str]:
+def data_lines(diffs: dict | None) -> list[str]:
     seen: dict[str, dict] = {}
     for name, d in (diffs or {}).items():
         label = next((v for k, v in GROUPS.items() if name.startswith(k)), name)
@@ -91,7 +91,8 @@ def data_lines(diffs: dict) -> list[str]:
             bits.append(f"{g['new']} new observation{'s' if g['new'] != 1 else ''}" + (f", now to {_month(g['to'])}" if g["to"] else ""))
         if g["revised"]:
             r = g["big"]
-            bits.append(f"{g['revised']} revised" + (f" (largest {r['pct']:.1f}% at {_month(r['at']) if r['at'][:2] in ('19', '20') else r['at']})" if r and r["pct"] >= 1 else ""))
+            where = _month(r["at"]) if r and r["at"][:2] in ("19", "20") else (r["at"] if r else "")
+            bits.append(f"{g['revised']} revised" + (f" (largest {r['pct']:.1f}% at {where})" if r and r["pct"] >= 1 else ""))
         out.append(f"- **{label}**: " + "; ".join(bits) + ".")
     return out
 
@@ -142,7 +143,7 @@ def flow_paragraph(fd: dict) -> list[str]:
 
 def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
                gate_warnings: list[str] | None = None, links: dict | None = None) -> str:
-    comp, ds, cfg = r["composite"], r["dataset"], r["config"]
+    comp, cfg = r["composite"], r["config"]
     spot, asof = _last(comp["inr_usd"])
     fair, _ = _last(comp["fair_inr"])
     mis, _ = _last(comp["misalignment_pct"])
@@ -280,8 +281,8 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
     if wt:
         sc = wt["schemes"]
         h = wt["horizon"]
-        L.append(f"The equal weighting of the two components was tested against weights learned from each one's track "
-                 f"record and from their uncertainty bands; "
+        L.append("The equal weighting of the two components was tested against weights learned from each one's track "
+                 "record and from their uncertainty bands; "
                  + ("none did clearly better, so the weights stay equal" if wt["rule_choice"] == "equal"
                     else f"the rule picks '{sc[wt['rule_choice']]['label']}'")
                  + (f". On their own, neither component beats a random walk at {h} months "

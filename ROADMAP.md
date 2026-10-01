@@ -24,7 +24,7 @@ until the backtest looks better.
 | 8 | Regime model with time-varying transition probabilities | **Done (v0.16)** |
 | 10 | FEER: cyclical adjustment and income balance | **Done (v0.17)** |
 | 11 | Flow identification beyond contemporaneous OLS | **Done (v0.18)** |
-| 15 | Engineering: lint, types, coverage, data schemas, Docker | Next |
+| 15 | Engineering: lint, types, coverage, data schemas, Docker | **Done (v1.0)** |
 
 ## Data
 
@@ -149,5 +149,8 @@ moves.
 
 **14. Version number.** One version (package, README, report header).
 
-**15. Tooling.** Ruff and a type checker in CI, test coverage report, schema checks
+**15. Tooling (done).** Ruff (line length 150 for the report text; three documented
+exceptions) and mypy clean; 159 tests, 87% coverage, CI fails below 85%; schema rules
+for every cached input, a hard gate in the refresh; Dockerfile, built and tested in
+CI. Refactoring verified by byte-identical report, note and dashboard. Original plan: ruff and a type checker in CI, test coverage report, schema checks
 on cached inputs, Dockerfile for a reproducible environment.

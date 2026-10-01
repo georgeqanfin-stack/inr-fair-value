@@ -30,3 +30,6 @@ outputs/refresh_logs/
 data/raw/manual/imf_eba/
 # Cached slow diagnostics (re-computable)
 outputs/cache/
+# Coverage artifacts
+.coverage
+coverage.xml

@@ -56,7 +56,7 @@ def monthly_rows(q: pd.DataFrame, months: pd.DatetimeIndex) -> pd.Series:
 
 
 def corridor(comp: pd.DataFrame, gap_draws: pd.DataFrame, q: pd.DataFrame, weights: dict[str, pd.Series],
-             cfg: dict) -> tuple[pd.DataFrame, np.ndarray]:
+             cfg: dict) -> tuple[pd.DataFrame, np.ndarray | None]:
     u = cfg["uncertainty"]
     rng = np.random.default_rng(u["seed"])
     n = u["draws"]

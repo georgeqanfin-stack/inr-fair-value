@@ -38,7 +38,7 @@ PCT = re.compile(r"-?\d+(?:\.\d+)?%?")
 
 
 def country_row(lines: list[str], name: str) -> list[float] | None:
-    row = next((l for l in lines if re.match(rf"\s*{re.escape(name)}\s+-?\d", l)), None)
+    row = next((ln for ln in lines if re.match(rf"\s*{re.escape(name)}\s+-?\d", ln)), None)
     return None if row is None else [float(x.rstrip("%")) for x in PCT.findall(row.split(name, 1)[1])]
 
 
@@ -47,7 +47,7 @@ def extract(year: int, name: str = "India") -> dict | None:
 
     def table(pattern: str) -> list[float] | None:
         for lines in pages:
-            title = next((l for l in lines if re.match(r"\s*Table\s+\d+", l)), "")
+            title = next((ln for ln in lines if re.match(r"\s*Table\s+\d+", ln)), "")
             if re.search(pattern, title):
                 row = country_row(lines, name)
                 if row is not None:

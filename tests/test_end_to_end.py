@@ -94,3 +94,13 @@ def test_market_pricing_is_reported(run):
     assert "## Market pricing" in (out / "report.md").read_text(encoding="utf-8")
     assert "forward market" in (out / "note.md").read_text(encoding="utf-8")
     assert "fwd" in r["beer_diag"]["specs"]                         # forward-based BEER spec is estimated
+
+
+def test_revision_check_is_reported(run):
+    r, out = run
+    rv = r["revisions"]
+    assert rv is not None and rv["n_months"] > 200
+    assert (out / "revision_effect.csv").exists()
+    assert "## Data revisions" in (out / "report.md").read_text(encoding="utf-8")
+    assert "Data revisions" in (out / "note.md").read_text(encoding="utf-8")
+    assert "cpi_us_vintage" in r["dataset"].meta

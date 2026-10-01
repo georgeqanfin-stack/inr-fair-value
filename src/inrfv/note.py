@@ -226,6 +226,11 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
         caveats.append("the India-only REER model fails its long-run test")
     if caveats:
         L.append("Also: " + "; ".join(caveats) + ".\n")
+    rv = r.get("revisions")
+    if rv:
+        verdict = "matter little" if rv["max_abs_pp"] < 1 else "matter"
+        L.append(f"Data revisions {verdict}: re-run on the earlier vintage of RBI data, the reading changes by at most "
+                 f"{rv['max_abs_pp']:.1f} points in any month ({_month(rv['max_month'])}).\n")
 
     todo = [w for w in (gate_warnings or []) if "MOSPI" in w or "IMF CA norm" in w]
     stale = [w for w in r["warnings"] if w.startswith("Latest BoP quarter") or w.startswith("RBI INR/USD ends")]

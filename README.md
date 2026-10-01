@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.7.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.8.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -16,6 +16,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.5 | Monthly refresh with quality gates, dashboard, monthly note, NFA test, flow attribution |
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
+| 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
 
 ## Quick start
 
@@ -305,6 +306,26 @@ missing month is bridged by the last value. Three uses:
 A forward-based real rate differential was also tested in the BEER (`fwd` spec). It
 adds nothing (t −0.5), as the policy-rate differential does not, so the interest
 differential does not matter for the BEER whichever way it is measured.
+
+**Data vintages (v0.8).** Point-in-time handling covers publication lags; this covers
+revisions.
+
+- *RBI revisions:* the DBIE Excel files and the RBIH Data API are two vintages of the
+  same series. Every run re-runs the headline models on a dataset that prefers the
+  earlier vintage wherever both exist (`[dbie] mode = "merge_early"`), and compares
+  each point-in-time reading. Between the two vintages the RBI revised the BoP
+  current account (up to 15%), FDI and loans (up to 35%), monthly FDI and imports.
+  The headline moved in 11 of 266 months, by at most 0.17 points (2026, through the
+  FEER). Revisions to RBI data matter little for the reading. This is a lower bound,
+  since the earlier files are themselves partly revised.
+- *Past vintages:* every refresh commits data/raw, so the git history is a dated
+  archive of inputs. `python -m inrfv.vintages run <git-rev>` re-runs the full
+  pipeline on data/raw as committed at that revision.
+- *US CPI:* with a FRED API key, US inflation at each month-end comes from FRED's
+  real-time archive (ALFRED), as published then, which also captures the actual
+  release calendar. The vintages are cached in data/raw/alfred, and the report states
+  how far they differ from the revised series. Without a key, the revised series with
+  a one-month lag is used and the report says so.
 
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY

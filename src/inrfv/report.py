@@ -280,6 +280,30 @@ def build_report(r: dict) -> str:
              f"predicted Δlog INR {cf['forecast_log_change']*100:+.1f}% (drift alone {cf['drift_only']*100:+.1f}%). "
              "Estimated on all realised targets; only as credible as the backtest above.\n")
 
+    rv = r.get("revisions")
+    L.append("## Data revisions\n")
+    if rv:
+        lv = rv["last"]
+        L.append(f"The headline was re-run on the earlier RBI vintage ({rv['older_vintage']['source']}, ending "
+                 f"{', '.join(_mon(e) for e in rv['older_vintage']['ends'])}), preferring it wherever both vintages "
+                 f"have a value. Series revised beyond the 0.5% tolerance: "
+                 f"{', '.join(rv['older_vintage']['series_revised_beyond_tolerance']) or 'none'}.\n")
+        L.append(f"Point-in-time composite readings changed in {rv['n_changed']} of {rv['n_months']} months "
+                 f"({_mon(rv['months'][0])}–{_mon(rv['months'][1])}): mean absolute change {rv['mean_abs_pp']:.3f} pp, "
+                 f"largest {rv['max_abs_pp']:.2f} pp ({_mon(rv['max_month'])}); by component, REER "
+                 f"{rv['by_component_mean_abs_pp']['reer']:.3f} pp and FEER {rv['by_component_mean_abs_pp']['feer']:.3f} pp "
+                 f"on average. Latest common month {_mon(lv['month'])}: {lv['early']:+.2f}% on the earlier vintage, "
+                 f"{lv['current']:+.2f}% now. This is a lower bound on the revision effect (the earlier files are "
+                 "themselves partly revised); `python -m inrfv.vintages run <git-rev>` re-runs any committed vintage.\n")
+    else:
+        L.append("Revision check not run (needs `[dbie] mode = \"merge\"` and DBIE Excel files).\n")
+    cv = ds.meta.get("cpi_us_vintage")
+    if isinstance(cv, str):
+        L.append(f"US CPI inflation: {cv}.\n")
+    elif cv:
+        L.append(f"US CPI inflation: {cv['source']} from {_mon(cv['from'])}; versus the revised series the "
+                 f"mean absolute difference is {cv['mean_abs_diff_pp']:.3f} pp (largest {cv['max_abs_diff_pp']:.2f} pp).\n")
+
     L.append("## Diagnostics\n")
     eg = r["beer_diag"]["engle_granger"]
     L.append(f"- BEER Engle-Granger ({eg['n_vars']} vars, n={eg['nobs']}): stat {eg['stat']:.2f}, "

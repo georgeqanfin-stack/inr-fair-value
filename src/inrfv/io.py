@@ -68,8 +68,8 @@ def git_revision(root: Path) -> str:
         return "unknown"
 
 
-def new_run_dir(cfg: dict) -> Path:
-    run_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+def new_run_dir(cfg: dict, suffix: str = "") -> Path:
+    run_id = datetime.now().strftime("%Y%m%d-%H%M%S") + (f"-{suffix}" if suffix else "")
     d = path(cfg, "runs") / run_id
     d.mkdir(parents=True, exist_ok=False)
     return d

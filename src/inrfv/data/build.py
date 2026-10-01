@@ -14,6 +14,7 @@ Revisions are not modelled (no vintage data); publication delays are.
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -21,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 from ..config import path
-from . import dbie, fred, rbi, worldbank
+from . import alfred, dbie, fred, rbi, worldbank
 
 MS = pd.offsets.MonthBegin
 
@@ -66,6 +67,9 @@ MONTHLY_PAIRS = {  # panel column -> (key in load_rbi output, column or None)
 }
 
 
+MERGERS = {"merge": dbie.merge, "merge_early": dbie.merge_older}
+
+
 def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) -> dict:
     """RBI series from the DBIE Excel files, the RBIH Data API, or both merged.
 
@@ -90,12 +94,12 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     for col, xs in xl_monthly.items():
         a = api[col]
         recon[col] = dbie.reconcile(a, xs, tol, window)
-        monthly[col] = dbie.merge(a, xs) if mode == "merge" else a.rename(col)
+        monthly[col] = MERGERS[mode](a, xs).rename(col) if mode in MERGERS else a.rename(col)
     bop_cols = {}
     for name in rbi.BOP_ITEMS.values():
         a, xs = api[f"bop.{name}"], xl["bop"][name]
         recon[f"bop.{name}"] = dbie.reconcile(a, xs, tol, window)
-        bop_cols[name] = dbie.merge(a, xs) if mode == "merge" else a
+        bop_cols[name] = MERGERS[mode](a, xs) if mode in MERGERS else a
     bop = pd.DataFrame(bop_cols).sort_index()
     bop.index.name = "date"
 
@@ -105,6 +109,7 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
                             f"{v['n_unexpected']} of {v['overlap']} periods differ by more than {tol:.1%} "
                             f"(worst {v['worst'][:1]}). Check for a definition change or a parsing error.")
     meta["rbi_source"] = {"merge": "RBIH Data API merged with DBIE Excel (later vintage preferred)",
+                          "merge_early": "RBIH Data API merged with DBIE Excel (earlier vintage preferred; revision check)",
                           "api": "RBIH Data API only"}[mode]
     meta["rbi_reconciliation"] = recon
     intervention = dbie.fetch_intervention(path(cfg, "dbie_cache"), refresh=refresh,
@@ -437,7 +442,8 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     lag = cfg["publication_lag"]
     nowcast = GdpNowcaster(gdp_inr, lag["annual_worldbank"], cfg["gdp"]["growth_lookback_years"])
 
-    pit = build_pit(panel, lag, nowcast, cfg.get("pit", {}).get("carry_forward_months", 0))
+    us_yoy = us_cpi_vintages(cfg, panel, refresh, meta)
+    pit = build_pit(panel, lag, nowcast, cfg.get("pit", {}).get("carry_forward_months", 0), us_yoy)
     bop = build_bop(src["bop"], panel, lag["bop_quarterly"], nowcast, src.get("extra", {}))
     last_q = src["bop"]["current_account"].last_valid_index()
     due = last_q + MS(3 + lag["bop_quarterly"])
@@ -456,7 +462,27 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
 CARRY_FORWARD = ["reer", "neer", "fx_reserves_usd_mn", "exports_usd_mn", "imports_usd_mn"]
 
 
-def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int = 0) -> pd.DataFrame:
+def us_cpi_vintages(cfg: dict, panel: pd.DataFrame, refresh: bool, meta: dict) -> pd.Series | None:
+    """US CPI inflation as published at each month-end, from ALFRED (None without a key or cache)."""
+    if not cfg.get("alfred", {}).get("enabled", False):
+        return None
+    rel = alfred.fetch_releases(cfg["fred"]["series"]["cpi_us"], path(cfg, "raw") / "alfred",
+                                os.environ.get("FRED_API_KEY") or None, refresh=refresh)
+    if rel is None:
+        meta["cpi_us_vintage"] = "revised series with a fixed lag (ALFRED needs FRED_API_KEY; see data/alfred.py)"
+        return None
+    rt = alfred.yoy_as_known(rel, panel.index)
+    revised = (panel["cpi_us"].pct_change(12, fill_method=None) * 100).shift(cfg["publication_lag"]["cpi_us"])
+    both = pd.concat([rt, revised], axis=1, keys=["rt", "rev"]).dropna()
+    meta["cpi_us_vintage"] = {
+        "source": "ALFRED real-time vintages", "from": rt.first_valid_index().strftime("%Y-%m"),
+        "mean_abs_diff_pp": round(float((both["rt"] - both["rev"]).abs().mean()), 3),
+        "max_abs_diff_pp": round(float((both["rt"] - both["rev"]).abs().max()), 3)}
+    return rt
+
+
+def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int = 0,
+              us_yoy: pd.Series | None = None) -> pd.DataFrame:
     """Information set at the end of each month.
 
     Slow-moving levels in CARRY_FORWARD keep their latest published value for up to
@@ -485,6 +511,9 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int 
     pit["india_policy_rate"] = lagged("india_policy_rate").ffill(limit=2)
     pit["cpi_us_yoy"] = (panel["cpi_us"].pct_change(12, fill_method=None) * 100) \
         .shift(lag["cpi_us"]).reindex(idx).ffill(limit=2)
+    if us_yoy is not None:
+        # US inflation as published at each month-end (ALFRED vintages), where available.
+        pit["cpi_us_yoy"] = us_yoy.reindex(idx).combine_first(pit["cpi_us_yoy"])
     # India: inflation as published when available (official CPI), else from the level.
     india_yoy = (panel["cpi_india_yoy"] if "cpi_india_yoy" in panel
                  else panel["cpi_india"].pct_change(12, fill_method=None) * 100)

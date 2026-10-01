@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "inrfv"
-version = "0.7.0"
+version = "0.8.0"
 description = "INR/USD hybrid fair value model (REER, FEER, BEER, regimes, ECM) with point-in-time backtesting"
 requires-python = ">=3.11"
 dependencies = [

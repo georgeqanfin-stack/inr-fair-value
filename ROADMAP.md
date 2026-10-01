@@ -13,8 +13,8 @@ until the backtest looks better.
 | 1 | RBI FX intervention and forward book | **Done (v0.6)** |
 | 14 | Version number consistent everywhere | **Done (v0.6)** |
 | 3 | Market inputs: forward premium, implied rate differential | **Done (v0.7)** |
-| 2 | Real-time data vintages | Next |
-| 4 | Automate manual and stale inputs | Planned |
+| 2 | Real-time data vintages | **Done (v0.8)**; ALFRED activates with a FRED key |
+| 4 | Automate manual and stale inputs | Next |
 | 12 | External benchmark: IMF External Sector Report track record | Planned |
 | 13 | Peer currencies: panel anchor for all 19 | Planned |
 | 5 | Composite weights tested, not assumed | Planned |
@@ -46,7 +46,11 @@ gap. Implied volatility and NDF spreads have no free source; record that as a kn
 *Done when:* the forward premium is in the dataset with its publication lag, tested in
 the BEER and flow model, and the result is reported.
 
-**2. Real-time vintages.** (a) US series from ALFRED (CPI, policy rate, and the
+**2. Real-time vintages (done).** Result: RBI revisions between the Excel and API
+vintages move the headline in 11 of 266 months, by at most 0.17 pp; checked on every
+run. `python -m inrfv.vintages run <rev>` re-runs any committed vintage. ALFRED US CPI
+is implemented and tested, and switches on when FRED_API_KEY is set (keyless ALFRED
+downloads do not work). Original plan: (a) US series from ALFRED (CPI, policy rate, and the
 dollar index where vintaged), so US inputs are as first published. (b) Keep every
 monthly refresh's data/raw as a dated vintage archive, so India's revisions are
 captured from now on. (c) Measure how much revisions move the headline, using

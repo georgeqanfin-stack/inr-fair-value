@@ -215,6 +215,12 @@ def merge(api: pd.Series, xlsx: pd.Series) -> pd.Series:
     return newer.combine_first(older).sort_index().rename(api.name or xlsx.name)
 
 
+def merge_older(api: pd.Series, xlsx: pd.Series) -> pd.Series:
+    """Earlier-vintage source where both have a value: the data as first seen, for revision checks."""
+    newer, older, _ = newer_first(api, xlsx)
+    return older.combine_first(newer).sort_index().rename(api.name or xlsx.name)
+
+
 def monthly_gaps(s: pd.Series) -> list[str]:
     s = s.dropna()
     if s.empty:

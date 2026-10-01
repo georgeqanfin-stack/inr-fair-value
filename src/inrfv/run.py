@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-from . import backtest, dashboard, note, report
+from . import backtest, dashboard, note, report, vintages
 from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
@@ -73,12 +73,14 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
         warnings.append(f"BEER residuals are not cointegrated (Engle-Granger p="
                         f"{beer_diag['engle_granger']['pvalue']:.2f}); treat the BEER fair value as descriptive.")
 
-    return {"dataset": ds, "reer": reer, "feer_q": feer_q, "feer_m": feer_m, "beer": beer_out,
+    r = {"dataset": ds, "reer": reer, "feer_q": feer_q, "feer_m": feer_m, "beer": beer_out,
             "beer_diag": beer_diag, "anchor": anchor, "anchor_diag": anchor_diag,
             "panel": panel_out, "panel_diag": panel_diag, "regimes": reg_out, "regime_summary": reg_summary,
             "flows": flow_out, "flows_diag": flow_diag, "market": market_diag, "composite": comp, "backtest": bt, "forecasts": fcs, "current_forecast": cur,
             "johansen": johansen, "warnings": warnings, "headline_h": h, "config": cfg,
             "run_id": run_dir.name if run_dir else "adhoc"}
+    r["revisions"] = vintages.revision_effect(r, cfg) if cfg.get("vintages", {}).get("revision_check") else None
+    return r
 
 
 NOTE_LINKS = {"Dashboard": "dashboard.html", "Full report": "report.md"}
@@ -97,11 +99,16 @@ def save(r: dict, run_dir) -> None:
     r["beer"].to_csv(run_dir / "model_beer.csv")
     r["regimes"].to_csv(run_dir / "model_regimes.csv")
     r["flows"].to_csv(run_dir / "model_flows.csv")
+    rev = r.get("revisions")
+    if rev:
+        rev["series"].rename("composite_diff_pp").to_csv(run_dir / "revision_effect.csv")
     r["composite"].to_csv(run_dir / "composite_ect.csv")
     for h, fc in r["forecasts"].items():
         fc.to_csv(run_dir / f"oos_forecasts_{h}m.csv")
     results = {"backtest": r["backtest"], "current_forecast": r["current_forecast"],
-               "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"], "johansen": r["johansen"],
+               "regimes": r["regime_summary"], "beer": r["beer_diag"], "reer_anchor": r["anchor_diag"], "panel_anchor": r["panel_diag"], "flows": r["flows_diag"], "market": r["market"],
+               "revisions": {k: v for k, v in (r.get("revisions") or {}).items() if k != "series"} or None,
+               "johansen": r["johansen"],
                "data_meta": ds.meta, "warnings": r["warnings"]}
     (run_dir / "results.json").write_text(json.dumps(results, indent=2, default=_json), encoding="utf-8")
     charts = report.charts(r, run_dir)

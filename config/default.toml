@@ -49,6 +49,16 @@ extend_inr_with_fred = true    # extend INR/USD past RBI's last month with resca
 
 # Slow-moving monthly levels (REER, NEER, reserves, exports, imports) keep their latest
 # published value for up to this many months when a release is late.
+[alfred]
+# US CPI inflation from FRED's real-time archive (data/alfred.py): needs FRED_API_KEY the
+# first time (then cached in data/raw/alfred). Without it the revised series is used.
+enabled = true
+
+[vintages]
+# Re-run the headline on the earlier RBI vintage (DBIE Excel files) and report how much
+# revisions moved each point-in-time reading (vintages.revision_effect).
+revision_check = true
+
 [pit]
 carry_forward_months = 2
 

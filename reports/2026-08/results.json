@@ -812,6 +812,61 @@
         "india_cointegration_p": 0.4455413657375807,
         "india_latest_annual_gap_pct": 2.6203005900309773,
         "india_latest_reer_year": 2025
+      },
+      "prod_nfa": {
+        "regressors": [
+          "rel_prod",
+          "nfa"
+        ],
+        "coef": {
+          "rel_prod": 0.31753462989833753,
+          "nfa": -0.0005020830210037392
+        },
+        "t_cluster": {
+          "rel_prod": 4.405460429770486,
+          "nfa": -0.51912405167977
+        },
+        "expected_sign": {
+          "rel_prod": "+",
+          "nfa": "+"
+        },
+        "nobs": 532,
+        "n_countries": 19,
+        "years": [
+          1996,
+          2023
+        ],
+        "panel_cointegration": {
+          "fisher_stat": 39.21947258278054,
+          "df": 38,
+          "pvalue": 0.41496973052059644,
+          "per_country_p": {
+            "BRA": 0.6425492721782978,
+            "CHL": 0.16434612048121838,
+            "CHN": 0.6325849377162275,
+            "COL": 0.777977091654434,
+            "CZE": 0.982881112502968,
+            "HUN": 0.783919822081844,
+            "IDN": 0.20955858436088443,
+            "IND": 0.3932001974937229,
+            "ISR": 0.9236458242113994,
+            "KOR": 0.026724366653658058,
+            "MEX": 0.7289232331538243,
+            "MYS": 0.7203640122191765,
+            "PER": 0.07504647557228437,
+            "PHL": 0.8648091201356758,
+            "POL": 0.48758484108790856,
+            "ROU": 0.033032286325461756,
+            "THA": 0.8769794249633769,
+            "TUR": 0.9954361760214918,
+            "ZAF": 0.07803105166617408
+          },
+          "share_rejecting_5pct": 0.10526315789473684,
+          "cointegrated_5pct": false
+        },
+        "india_cointegration_p": 0.3932001974937229,
+        "india_latest_annual_gap_pct": 9.951901314634949,
+        "india_latest_reer_year": 2025
       }
     },
     "coef_path": {
@@ -844,11 +899,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T04:47:03+00:00",
+      "fetched_at": "2026-10-01T05:06:47+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T04:38:30.263132502Z",
+        "registry_loaded_at": "2026-10-01T04:58:30.26128576Z",
         "status": "ok",
         "tables": 1049
       }

@@ -1,10 +1,10 @@
 {
-  "run_id": "20261001-101743",
-  "created": "2026-10-01T10:18:29",
+  "run_id": "20261001-103739",
+  "created": "2026-10-01T10:38:32",
   "inrfv_version": "0.3.0",
-  "git_revision": "46a9105-dirty",
+  "git_revision": "f8817ab-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
-  "config_hash": "061366c5f176",
+  "config_hash": "0bea9ede473e",
   "config": {
     "paths": {
       "raw": "data/raw",
@@ -167,6 +167,7 @@
         "min_years": 10,
         "release_lag": 7,
         "tot_release_lag": 18,
+        "nfa_release_lag": 16,
         "reer_lag": 1,
         "band_draws": 2000,
         "band_percentiles": [
@@ -188,6 +189,10 @@
             "log_tot",
             "gov_cons",
             "openness"
+          ],
+          "prod_nfa": [
+            "rel_prod",
+            "nfa"
           ]
         }
       },
@@ -276,6 +281,9 @@
         "tot": "TT.PRI.MRCH.XD.WD",
         "gov_cons": "NE.CON.GOVT.ZS",
         "openness": "NE.TRD.GNFS.ZS"
+      },
+      "nfa": {
+        "measure": "nfa_ewn"
       }
     },
     "composite": {
@@ -297,7 +305,7 @@
   "python": "3.12.4",
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
-    "dbie/_fetch.json": "8552e6b1ca286530ef88cefb44fe9dc2739910483a29e3c5953e9cb0ed6bd281",
+    "dbie/_fetch.json": "440b9b5f594713d524bbe962e68e732fa6da1956d44816597a73c38c44c19b9b",
     "dbie/bop.banking_capital.csv": "a1931a588f9a6765c2bceeceb75479ec1dc98cad57313f65b8920c5eafa4c0ca",
     "dbie/bop.capital_account.csv": "52d9518620aaaef9182600ede61437dee674db4968089c668d39cc10c04a82c2",
     "dbie/bop.current_account.csv": "5333f7fac1a64a5e447f33d34c90572346e4e23bd301194aa9f516e8bda6d74b",
@@ -328,6 +336,9 @@
     "dbie/oil_imports_usd_mn.csv": "f3dfa1519de30aaeef72248b2092fa19257e453d5a8708a016b0678040983be7",
     "dbie/reer.csv": "9b9fcf9f6504240065d617852d0779bf9d155487ec6e53c67d7b8d23448848e5",
     "dbie/wacr.csv": "664ec95fafde563e01fe783e8520cede70e86ffd1b21d8cd1d0fc4d59ffc5b60",
+    "ewn/EWN-dataset-year-end-2024_4.9.26.xlsx": "616c3544225a08bb12441df602d08206d159e9db672a5dddc7a70e91c970f589",
+    "ewn/ewn_nfa.csv": "b5497daef37429d1c6cc5f0e0e80e2eb3445056a0c7098facab5b754bbce7f7d",
+    "ewn/SOURCE.txt": "5717dc8ff0373b75db0698eb218ddc678acd7c98715bc02006c3d8a4af71eb3f",
     "fred/CPIAUCSL.csv": "638dd6808529fb7b71a71ea952965d889936470381b5ed1355c856e8b8436421",
     "fred/DCOILBRENTEU.csv": "e3ed34ab39d2b93609ba84b999cf1fca4b99f5cce80c8f2bd423125a9e1b0174",
     "fred/DTWEXBGS.csv": "a52a31b7a107ed7b06b7bfdcdb76f1bfe038582aae155a501b81701126166314",

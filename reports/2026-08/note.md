@@ -1,6 +1,6 @@
 # INR/USD fair value note, August 2026
 
-Data to August 2026 · run `20261001-101743` · written 01 Oct 2026
+Data to August 2026 · run `20261001-103739` · written 01 Oct 2026
 
 ## The reading
 

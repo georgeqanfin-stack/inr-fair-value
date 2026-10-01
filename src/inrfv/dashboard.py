@@ -117,6 +117,7 @@ def collect(r: dict) -> dict:
         "norm": {"value": _num(fm.get("misalignment_pct_imf_path", pd.Series(dtype=float)).dropna().iloc[-1]
                                if "misalignment_pct_imf_path" in fm else None, 1)},
         "flows": flows_block(r.get("flows_diag")),
+        "market": market_block(r.get("market")),
     }
 
 
@@ -131,6 +132,14 @@ def flows_block(fd: dict | None) -> dict | None:
     return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
             "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way"),
             "rbi": rbi_block(fd.get("rbi"))}
+
+
+def market_block(mk: dict | None) -> dict | None:
+    if not mk:
+        return None
+    f6 = mk["forwards"]["6m"]
+    return {"fwd6": _num(f6["forward"]), "prem6": _num(f6["premium"]), "month": f6["month"],
+            "spread": _num(mk["spread"]["value"]), "pct": _num(mk["spread"]["percentile"], 0)}
 
 
 def rbi_block(iv: dict | None) -> dict | None:
@@ -361,6 +370,10 @@ const facts = [
   ["Spot", fmt(D.spot), `INR per USD, ${monthName(D.asof)}`],
   ["Fair value", fmt(D.fair), `Range ${fmt(D.corridor[0])}–${fmt(D.corridor[1])}`],
 ];
+if (D.market) {
+  facts.push(["6-month forward", fmt(D.market.fwd6), `Premium ${fmt(D.market.prem6)}% a year (${monthName(D.market.month)})`]);
+  facts.push(["Forward spread", `${sgn(D.market.spread, 1)} pp`, `Premium over the policy-rate gap; above ${fmt(D.market.pct, 0)}% of months since 2000`]);
+}
 const R = D.flows && D.flows.rbi;
 if (R) {
   const k0 = Object.keys(R.windows).sort((a, b) => a - b)[0], r0 = R.windows[k0];

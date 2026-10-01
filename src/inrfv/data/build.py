@@ -411,6 +411,9 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
         panel["india_repo_rate"] = repo
     if wacr is not None:
         panel["india_wacr"] = wacr
+    for h in ("1m", "3m", "6m"):
+        if f"fwd_premium_{h}" in extra:
+            panel[f"fwd_premium_{h}"] = extra[f"fwd_premium_{h}"]
     iv = src.get("intervention")
     if iv is not None:
         # RBI Bulletin Table 4. Total intervention = spot net purchases (value dates) + change in
@@ -493,9 +496,17 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int 
         if col in panel:
             pit[col] = lagged(col, "rbi_intervention")
 
+    for h in ("1m", "3m", "6m"):
+        if f"fwd_premium_{h}" in panel:
+            # Market data, public as traded; the occasional missing month is bridged by the last value.
+            pit[f"fwd_premium_{h}"] = _carry(lagged(f"fwd_premium_{h}", "fwd_premium"), 2)
     pit["inflation_diff"] = pit["cpi_india_yoy"] - pit["cpi_us_yoy"]
     pit["real_rate_diff"] = (pit["india_policy_rate"] - pit["cpi_india_yoy"]) - \
                             (pit["fed_funds_rate"] - pit["cpi_us_yoy"])
+    if "fwd_premium_3m" in pit:
+        # Forward premium over the policy-rate gap: hedging demand and expected depreciation beyond carry.
+        pit["fwd_spread"] = pit["fwd_premium_3m"] - (pit["india_policy_rate"] - pit["fed_funds_rate"])
+        pit["real_fwd_diff"] = pit["fwd_premium_3m"] - pit["inflation_diff"]
     pit["log_inr"] = np.log(pit["inr_usd"])
     pit["log_dxy"] = np.log(pit["dxy"])
     pit["log_brent"] = np.log(pit["brent"])

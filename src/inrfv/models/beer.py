@@ -38,7 +38,7 @@ from ..stats.cointegration import engle_granger, johansen_rank
 from .reer_anchor import annual_to_quarters
 from .structural import one_sided_hp
 
-EXPECTED_SIGN = {"log_dxy": "+", "rel_prod": "-", "real_rate_diff": "-", "log_brent": "+"}
+EXPECTED_SIGN = {"log_dxy": "+", "rel_prod": "-", "real_rate_diff": "-", "log_brent": "+", "real_fwd_diff": "-"}
 
 
 def build_inputs(ds, cfg: dict) -> pd.DataFrame:
@@ -54,6 +54,8 @@ def build_inputs(ds, cfg: dict) -> pd.DataFrame:
     d["log_dxy"] = pit["log_dxy"]
     d["log_brent"] = pit["log_brent"]
     d["real_rate_diff"] = pit["real_rate_diff"]
+    if "real_fwd_diff" in pit:
+        d["real_fwd_diff"] = pit["real_fwd_diff"]
     a = ds.annual
     if {"gdp_pc_ppp_india", "gdp_pc_ppp_usa"} <= set(a):
         # Annual inputs follow each month's information set; the value at t uses years public at t.
@@ -121,6 +123,8 @@ def diagnostics(d: pd.DataFrame, cfg: dict, coefs: pd.DataFrame, out: pd.DataFra
     p = cfg["models"]["beer"]
     specs = {}
     for name, regs in p["specs"].items():
+        if not set(regs) <= set(d.columns):     # e.g. forward premia need the RBIH API
+            continue
         x = d[["q"] + regs].dropna()
         b, V, res = dols(d, regs, p["dols_k"], p["hac_lags"])
         se = np.sqrt(np.diag(V))

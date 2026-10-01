@@ -84,3 +84,13 @@ def test_rbi_intervention_is_point_in_time_and_reported(run):
     assert iv["reaction"]["coef"]["fpi"] > 0                      # the RBI leans against portfolio flows
     assert "### RBI intervention" in (out / "report.md").read_text(encoding="utf-8")
     assert "the RBI" in (out / "note.md").read_text(encoding="utf-8")
+
+
+def test_market_pricing_is_reported(run):
+    r, out = run
+    mk = r["market"]
+    obs = r["dataset"].panel["fwd_premium_3m"].last_valid_index().strftime("%Y-%m")
+    assert mk["forwards"]["3m"]["month"] == obs                    # labelled with the month actually observed
+    assert "## Market pricing" in (out / "report.md").read_text(encoding="utf-8")
+    assert "forward market" in (out / "note.md").read_text(encoding="utf-8")
+    assert "fwd" in r["beer_diag"]["specs"]                         # forward-based BEER spec is estimated

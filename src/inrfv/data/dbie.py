@@ -95,6 +95,10 @@ EXTRA: dict[str, Spec] = {
     # Older BPM5-basis IIP (2006-2021), spliced onto the BPM6 series by the REER anchor.
     "bopx.niip_bpm5": Spec("external_sector/intr_inv_pos_ind_rn",
                            {"intl_inv_typ_rn": "IIA_NET_IIP", "unit_measure": "USD"}, _MN, True),
+    # Inter-bank forward premia, monthly average, % a year (the market's INR-USD rate differential).
+    "fwd_premium_1m": Spec("financial_markets/fw_pre_rn", {"avg_month_rn": "1_MON"}),
+    "fwd_premium_3m": Spec("financial_markets/fw_pre_rn", {"avg_month_rn": "3_MON"}),
+    "fwd_premium_6m": Spec("financial_markets/fw_pre_rn", {"avg_month_rn": "6_MON"}),
 }
 SERIES.update(EXTRA)
 

@@ -189,6 +189,17 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
              f"{g['p_stress_forecast'].get(12, g['p_stress_forecast'].get('12', np.nan)) * 100:.0f}%. "
              f"In stress months the rupee's monthly moves are about {g['stress']['sd_pct'] / g['calm']['sd_pct']:.0f} "
              f"times as large as in calm ones ({g['stress']['sd_pct']:.1f}% vs {g['calm']['sd_pct']:.1f}% standard deviation).\n")
+    mk = r.get("market")
+    if mk:
+        f6, s, st = mk["forwards"]["6m"], mk["spread"], mk["spread_test"]
+        L.append(f"The forward market prices the rupee at {f6['forward']:.2f} in six months (premium {f6['premium']:.1f}% a year, "
+                 f"{_month(f6['month'])}). The premium is {s['value']:+.1f} points over the policy-rate gap, higher than "
+                 f"{s['percentile']:.0f}% of months since 2000: "
+                 + ("a sign of hedging demand and expected depreciation beyond carry" if s["value"] > 0
+                    else "dollars for later delivery are cheap relative to the rate gap")
+                 + (". Historically the spread has not predicted the next month's move." if st["p"] >= 0.05 else
+                    f". Historically a wider spread has preceded a {'weaker' if st['coef'] > 0 else 'stronger'} rupee the next month.")
+                 + "\n")
 
     if "flows_diag" in r:
         L += flow_paragraph(r["flows_diag"])

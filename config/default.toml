@@ -110,6 +110,7 @@ exports_usd_mn     = 1
 imports_usd_mn     = 1
 fpi_usd_mn         = 2
 fdi_usd_mn         = 2
+fwd_premium        = 0   # RBI inter-bank forward premia: market prices
 rbi_intervention   = 2   # RBI Bulletin Table 4: month m appears around the 20th of m+2
 bop_quarterly      = 6
 annual_worldbank   = 7   # months after December of the reference year (July Y+1)
@@ -243,6 +244,7 @@ seed                  = 17
 core  = ["log_dxy", "rel_prod", "real_rate_diff"]
 dxy   = ["log_dxy"]
 oil   = ["log_dxy", "rel_prod", "real_rate_diff", "log_brent"]
+fwd   = ["log_dxy", "rel_prod", "real_fwd_diff"]   # market (forward-implied) real rate differential
 
 [models.flows]
 # Flow attribution (models/flows.py): monthly INR/USD % change on net FPI and FDI flows
@@ -252,6 +254,10 @@ regressors = ["fpi", "fdi", "dxy", "brent"]
 start      = "2011-01"      # RBI monthly FDI/FPI coverage on one basis
 hac_lags   = 3
 windows    = [3, 12]        # months summed in the attribution tables
+
+[models.market]
+# Forward premia (models/market.py): implied forwards, UIP test, spread over the policy gap.
+hac_lags = 6
 
 [models.regimes]
 min_obs     = 96

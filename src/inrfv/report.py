@@ -174,6 +174,28 @@ def build_report(r: dict) -> str:
     q, qd = _last(r["regimes"]["oil_dxy_quadrant"])
     L.append(f"Oil × DXY quadrant (expanding medians): {q} ({qd}).\n")
 
+    mk = r.get("market")
+    if mk:
+        L.append("## Market pricing (forward premia)\n")
+        f3, f6 = mk["forwards"]["3m"], mk["forwards"]["6m"]
+        L.append(f"RBI inter-bank forward premia, monthly average (% a year), {_mon(f3['month'])}: 3-month "
+                 f"{f3['premium']:.2f}%, 6-month {f6['premium']:.2f}%. Implied forwards on the {_mon(mk['asof'])} spot "
+                 f"{mk['spot']:.2f}: 3-month {f3['forward']:.2f}, 6-month {f6['forward']:.2f}.\n")
+        s = mk["spread"]
+        L.append(f"Premium over the policy-rate gap (3-month premium − (India policy rate − Fed funds)): "
+                 f"{s['value']:+.2f} pp in {_mon(s['month'])}, above {s['percentile']:.0f}% of months since 2000 "
+                 f"(mean {s['mean']:+.2f}, sd {s['sd']:.2f}). A high spread means dollars for future delivery cost more "
+                 "than the rate gap justifies: hedging demand and expected depreciation beyond carry.\n")
+        st = mk["spread_test"]
+        L.append(f"Does the spread predict next month's rupee move? Coefficient {st['coef']:+.3f}% per pp (t {st['t']:+.1f}); "
+                 f"controlling for next month's dollar move {st['coef_given_dxy']:+.3f} (t {st['t_given_dxy']:+.1f}).\n")
+        L.append("| UIP test | Sample | n | Slope (UIP = 1) | t vs 0 | t vs 1 | R² |")
+        L.append("|---|---|---|---|---|---|---|")
+        for k, u in mk["uip"].items():
+            L.append(f"| {k} premium → {u['h']}-month depreciation | {u['sample'][0]}–{u['sample'][1]} | {u['nobs']} | "
+                     f"{u['slope']:.2f} (se {u['se']:.2f}) | {u['t_vs_0']:+.1f} | {u['t_vs_1']:+.1f} | {u['r2']:.3f} |")
+        L.append("")
+
     fd = r["flows_diag"]
     L.append("## Flow attribution (what moved the spot rate)\n")
     L.append(f"Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent "

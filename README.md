@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.6.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.7.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -15,6 +15,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.4 | RBIH Data API, IMF-style FEER with the IMF norm path, panel REER anchor (19 EMs), official MOSPI CPI, BEER rework |
 | 0.5 | Monthly refresh with quality gates, dashboard, monthly note, NFA test, flow attribution |
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
+| 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 
 ## Quick start
 
@@ -286,6 +287,25 @@ is under pressure, and a direct regression finds no effect (t 0.2). Instead:
 - **Forward book:** net forward sales of US$137 bn in July 2026, 20% of reserves,
   shown on the dashboard as a vulnerability gauge.
 
+**Market pricing (v0.7).** The RBI's inter-bank forward premia (1, 3 and 6 months,
+monthly average, % a year, 1993 onward via the RBIH Data API) are the market's
+rupee-dollar interest differential. Market data enter with no publication lag, and a
+missing month is bridged by the last value. Three uses:
+
+- **Implied forwards:** spot × (1 + premium × months/12). In June 2026 the 6-month
+  premium was 3.0%, a forward of about 96.9 against a fair value of 84.9.
+- **UIP test:** the premium predicts the depreciation that follows with slope 0.60
+  (se 0.44, 3-month). That is consistent with UIP (slope 1) but too imprecise to
+  say much.
+- **Spread over the policy-rate gap:** the 3-month premium was 1.2 points above
+  India's policy rate minus Fed funds in June 2026, higher than 86% of months since
+  2000. That points to hedging demand and expected depreciation beyond carry, but
+  it does not predict the next month's rupee move (t −0.6).
+
+A forward-based real rate differential was also tested in the BEER (`fwd` spec). It
+adds nothing (t −0.5), as the policy-rate differential does not, so the interest
+differential does not matter for the BEER whichever way it is measured.
+
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY
 quadrants use expanding medians.
@@ -359,6 +379,7 @@ against a random walk with drift.
 | RBI DBIE Excel downloads | Same series | Optional manual download to `data/raw/rbi_*.xlsx`; merged with the API |
 | FRED | US CPI, Fed funds, broad and major dollar indices, VIX, 10Y, Brent, Fed balance sheet, India call rate, OECD India CPI | Automatic, cached in `data/raw/fred/` |
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
+| RBI Handbook / DBIE (via the RBIH Data API) | Inter-bank forward premia, 1, 3 and 6 months, monthly average | Automatic, cached in `data/raw/dbie/fwd_premium_*.csv` |
 | RBI Bulletin Table 4 (via the RBIH Data API) | RBI spot net dollar purchases and sales, outstanding net forward position | Automatic, cached in `data/raw/dbie/rbi_intervention.csv` |
 | External Wealth of Nations (Lane & Milesi-Ferretti, Brookings) | Net IIP / GDP for the 19 panel countries | Automatic (latest workbook found on the Brookings page); compact cache `data/raw/ewn/ewn_nfa.csv` |
 | MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |

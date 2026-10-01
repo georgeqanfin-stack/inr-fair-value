@@ -12,8 +12,8 @@ until the backtest looks better.
 |---|---|---|
 | 1 | RBI FX intervention and forward book | **Done (v0.6)** |
 | 14 | Version number consistent everywhere | **Done (v0.6)** |
-| 3 | Market inputs: forward premium, implied rate differential | Next |
-| 2 | Real-time data vintages | Planned |
+| 3 | Market inputs: forward premium, implied rate differential | **Done (v0.7)** |
+| 2 | Real-time data vintages | Next |
 | 4 | Automate manual and stale inputs | Planned |
 | 12 | External benchmark: IMF External Sector Report track record | Planned |
 | 13 | Peer currencies: panel anchor for all 19 | Planned |
@@ -34,7 +34,12 @@ lag. Intervention = spot net + change in forward book (swap-neutral). Reaction
 function, absorbed pressure at the FPI-implied price of a dollar (lower bound),
 forward book as % of reserves. In the report, note and dashboard.
 
-**3. Market inputs.** Add the RBI inter-bank forward premium (1, 3, 6 months; RBIH
+**3. Market inputs (done).** Result: the forward premium tracks the policy gap
+(correlation 0.75) but rose 1.2 points above it in the 2026 sell-off (86th
+percentile); UIP slope 0.60 (se 0.44); the spread does not predict next month's move
+(t −0.6); a forward-based real rate adds nothing to the BEER (t −0.5). Implied
+forwards, the spread and the tests are in the report, note and dashboard.
+Original plan: add the RBI inter-bank forward premium (1, 3, 6 months; RBIH
 `fw_pre_rn`) as the market's interest differential. Test whether it improves the
 BEER's rate term and whether the forward-implied rate differs from the policy-rate
 gap. Implied volatility and NDF spreads have no free source; record that as a known gap.

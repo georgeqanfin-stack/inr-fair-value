@@ -128,7 +128,20 @@ def flows_block(fd: dict | None) -> dict | None:
              "parts": [{"key": k, "label": lbl, "v": _num(w[k], 3)} for k, lbl in parts],
              "fpi_out_of_window": _num(w["out_of_window"]["fpi"], 3)} for w in fd["windows"].values()]
     return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
-            "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way")}
+            "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way"),
+            "rbi": rbi_block(fd.get("rbi"))}
+
+
+def rbi_block(iv: dict | None) -> dict | None:
+    if not iv:
+        return None
+    return {"price": _num(iv["price_pct_per_bn"], 3), "fwd_bn": _num(iv["fwd_book_bn"], 1),
+            "fwd_pct": _num(iv["fwd_book_pct_reserves"], 1) if iv["fwd_book_pct_reserves"] is not None else None,
+            "fwd_month": iv["fwd_book_month"], "latest_month": iv["latest_month"], "latest_bn": _num(iv["latest_bn"], 1),
+            "windows": {k: {"start": w["start"], "end": w["end"], "sold": _num(w["net_sold_bn"], 1), "absorbed": _num(w["absorbed"], 3),
+                            "pressure": _num(w["pressure"], 3), "actual": _num(w["actual"], 3),
+                            "share": _num(w["absorbed_share"], 3) if w["absorbed_share"] is not None else None}
+                        for k, w in iv["windows"].items()}}
 
 
 def build_page(r: dict) -> str:
@@ -303,7 +316,8 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     <p class="sub" id="flowSub"></p>
     <div class="legend"><span><i style="border-color:var(--accent);border-top-width:8px"></i>Pushed the rupee weaker</span><span><i style="border-color:var(--s1);border-top-width:8px"></i>Pushed it stronger</span><span><i style="border-color:var(--ink-3);border-top-width:8px"></i>Unexplained</span></div>
     <div class="flows" id="flowBars" role="img"></div>
-    <p class="sub" id="flowNote" style="margin-top:14px"></p>
+    <p class="sub" id="flowRbi" style="margin-top:14px;color:var(--ink-2)"></p>
+    <p class="sub" id="flowNote" style="margin-top:10px"></p>
   </section>
 
   <div class="grid2">
@@ -346,6 +360,12 @@ const facts = [
   ["Spot", fmt(D.spot), `INR per USD, ${monthName(D.asof)}`],
   ["Fair value", fmt(D.fair), `Range ${fmt(D.corridor[0])}–${fmt(D.corridor[1])}`],
 ];
+const R = D.flows && D.flows.rbi;
+if (R) {
+  const k0 = Object.keys(R.windows).sort((a, b) => a - b)[0], r0 = R.windows[k0];
+  facts.push(["RBI intervention", `${r0.sold >= 0 ? "Sold" : "Bought"} $${fmt(Math.abs(r0.sold), 1)}bn`, `Net incl. forwards, ${monthName(r0.start)}–${monthName(r0.end)}`]);
+  if (R.fwd_pct !== null) facts.push(["Forward book", `−$${fmt(Math.abs(R.fwd_bn), 0)}bn`, `Net forward sales, ${fmt(Math.abs(R.fwd_pct), 0)}% of reserves (${monthName(R.fwd_month)})`]);
+}
 $("facts").innerHTML = facts.map(([k, v, s]) => `<div class="fact"><div class="eyebrow">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
 
 function drawCorridor() {
@@ -506,6 +526,9 @@ function drawFlows() {
     cell.append(svg, t); row.appendChild(cell);
     host.appendChild(row);
   });
+  const rb = F.rbi && F.rbi.windows[String(w.months)];
+  $("flowRbi").innerHTML = rb ? `<strong>RBI:</strong> ${rb.sold >= 0 ? "sold" : "bought"} a net $${fmt(Math.abs(rb.sold), 1)}bn over these months, counting forwards. At the market's price of a dollar (${fmt(F.rbi.price, 2)}% per $1bn) that held the rupee about ${fmt(Math.abs(rb.absorbed), 1)} points ${rb.absorbed > 0 ? "stronger" : "weaker"}`
+    + (rb.share !== null ? `; without it the move would have been about ${sgn(rb.pressure)}%, so the RBI absorbed roughly ${fmt(rb.share * 100, 0)}% of the pressure (a lower bound).` : ".") : "";
   const oow = w.fpi_out_of_window;
   $("flowNote").textContent = `Monthly regression, ${monthName(F.sample[0])} to ${monthName(F.sample[1])} (R² ${fmt(F.r2)}): each US$1bn of net portfolio inflow goes with a ${fmt(Math.abs(F.coef_fpi))}% ${F.coef_fpi < 0 ? "stronger" : "weaker"} rupee that month (t ${sgn(F.t_fpi)}). `
     + `Fitted without these months, portfolio flows account for ${sgn(oow)} points. `

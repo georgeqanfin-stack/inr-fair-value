@@ -37,6 +37,7 @@ class Spec:
     filters: dict = field(default_factory=dict)
     scale: float = 1.0               # multiply obs_value (e.g. 1e-6 for US$ -> US$ mn)
     quarterly: bool = False          # time_period is a quarter end -> stamp at quarter start
+    order: str = "time_period"       # sheet-layout tables (publications) have row_no instead
 
 
 _MN = 1e-6
@@ -107,7 +108,7 @@ def _get_rows(base: str, spec: Spec, session: requests.Session) -> pd.DataFrame:
     out, offset = [], 0
     while True:
         r = session.get(url, params={**spec.filters, "limit": PAGE, "offset": offset,
-                                     "order": "time_period"}, timeout=120)
+                                     "order": spec.order}, timeout=120)
         if r.status_code != 200:
             raise DbieError(f"{spec.table}: HTTP {r.status_code} {r.text[:200]}")
         body = r.json()
@@ -221,3 +222,56 @@ def monthly_gaps(s: pd.Series) -> list[str]:
 def _range(s: pd.Series) -> list[str] | None:
     s = s.dropna()
     return [s.index.min().strftime("%Y-%m"), s.index.max().strftime("%Y-%m")] if len(s) else None
+
+
+# --------------------------------------------------------------------------- RBI intervention
+
+INTERVENTION_TABLE = "financial_sector/r14_sale_purchase_of_u_s_dollar_by_the_rbi"   # RBI Bulletin Table 4
+INTERVENTION_TAB = "Sale/Purchase of USD by RBI"
+MONTHS = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July",
+                                      "August", "September", "October", "November", "December"], 1)}
+
+
+def _num(s: pd.Series) -> pd.Series:
+    """Bulletin cells: Indian digit grouping ("1,39,197"), "-" for no transaction."""
+    s = s.astype("string").str.replace(",", "", regex=False).str.strip()
+    return pd.to_numeric(s.mask(s.isin(["-", "–"]), "0"), errors="coerce")
+
+
+def parse_intervention(rows: pd.DataFrame) -> pd.DataFrame:
+    """RBI Bulletin Table 4 (sheet layout) -> monthly US$ mn.
+
+    Columns: net_purchase (spot, incl. swap and forward legs at value date; + = purchase),
+    purchase, sale, fwd_book (outstanding net forward position at month end; - = net
+    forward sales). The table's header is checked so a layout change fails loudly.
+    """
+    t = rows[rows["tab"].str.strip() == INTERVENTION_TAB].copy()
+    head = " ".join(t[["c3", "c9"]].astype("string").fillna("").agg(" ".join, axis=1))
+    if "Net Purchase" not in head or "Outstanding Net Forward" not in head:
+        raise DbieError("RBI intervention table layout changed (header not found)")
+    t = t[t["c1"].astype("string").str.strip().isin(MONTHS)
+          & t["c2"].astype("string").str.strip().str.fullmatch(r"\d{4}").fillna(False)]
+    idx = pd.to_datetime({"year": t["c2"].astype(int), "month": t["c1"].str.strip().map(MONTHS), "day": 1})
+    out = pd.DataFrame({"net_purchase": _num(t["c3"]).values, "purchase": _num(t["c4"]).values,
+                        "sale": _num(t["c5"]).values, "fwd_book": _num(t["c9"]).values},
+                       index=pd.DatetimeIndex(idx.values, name="date")).sort_index()
+    out = out[~out.index.duplicated(keep="first")]
+    # The net column agrees with the table's cumulative column; where a gross leg does not
+    # add up (e.g. Mar 2014 prints sales equal to purchases), rebuild sales from the net.
+    bad = (out["purchase"] - out["sale"] - out["net_purchase"]).abs() > 1
+    out.loc[bad, "sale"] = out.loc[bad, "purchase"] - out.loc[bad, "net_purchase"]
+    out["gross_fixed"] = bad
+    return out
+
+
+def fetch_intervention(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE,
+                       session: requests.Session | None = None) -> pd.DataFrame:
+    """Monthly RBI FX intervention, cached as data/raw/dbie/rbi_intervention.csv."""
+    cache = cache_dir / "rbi_intervention.csv"
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
+    rows = _get_rows(base, Spec(INTERVENTION_TABLE, order="row_no"), session or requests.Session())
+    out = parse_intervention(rows)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out.to_csv(cache, date_format="%Y-%m-%d")
+    return out

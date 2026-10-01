@@ -56,3 +56,34 @@ def test_direction_flags_two_way_feedback(rng, fcfg):
     p["fpi_usd_mn"] = p["fpi_usd_mn"] - 1500 * inr.shift(1).fillna(0)   # investors sell after a fall
     d = flows.direction_tests(flows.frame(p), 3)
     assert d["inr_predicts_next_fpi"]["p"] < 0.05
+
+
+def _with_rbi(p, rng, react=1.0):
+    fpi_bn = p["fpi_usd_mn"] / 1000
+    p["rbi_intervention_usd_mn"] = (react * fpi_bn + rng.normal(0, 1, len(p))) * 1000   # RBI offsets outflows
+    p["rbi_fwd_book_usd_mn"] = -20000.0
+    p["fx_reserves_usd_mn"] = 600000.0
+    return p
+
+
+def test_absorbed_pressure_is_the_dollar_price_times_rbi_sales(rng, fcfg):
+    p = _with_rbi(_panel(rng), rng)
+    c, d = flows.run(p, fcfg)
+    iv, w = d["rbi"], d["rbi"]["windows"]["3"]
+    assert iv["price_pct_per_bn"] == pytest.approx(-d["coef"]["fpi"])
+    tail = c.iloc[-3:]
+    assert w["absorbed"] == pytest.approx(-(iv["price_pct_per_bn"] * tail["rbi"]).sum())
+    assert w["pressure"] == pytest.approx(w["actual"] + w["absorbed"])
+    assert iv["reaction"]["coef"]["fpi"] == pytest.approx(1.0, abs=0.1)
+    assert iv["fwd_book_pct_reserves"] == pytest.approx(-20000 / 600000 * 100)
+
+
+def test_dollar_price_override(rng, fcfg):
+    fcfg["models"]["flows"]["dollar_price"] = 0.3
+    _, d = flows.run(_with_rbi(_panel(rng), rng), fcfg)
+    assert d["rbi"]["price_pct_per_bn"] == 0.3 and d["rbi"]["price_source"] == "override"
+
+
+def test_no_rbi_data_means_no_rbi_block(rng, fcfg):
+    _, d = flows.run(_panel(rng), fcfg)
+    assert d["rbi"] is None

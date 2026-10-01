@@ -261,6 +261,25 @@ contributions are associations, not causes. The analysis is ex post and by refer
 month (RBI publishes flows about two months later), so it explains past moves and
 does not enter the fair value. It appears in the report, the note and the dashboard.
 
+*RBI intervention (v0.6).* RBI Bulletin Table 4 (via the RBIH Data API, June 1995
+onward) gives the RBI's monthly spot net dollar purchases and its outstanding net
+forward position. Intervention = spot net purchases + change in the forward book,
+so forward sales count when they are made and the two legs of a swap cancel. It is
+public two months later. It cannot be a regressor: the RBI sells because the rupee
+is under pressure, and a direct regression finds no effect (t 0.2). Instead:
+
+- **Reaction function:** the RBI buys about US$1.2 bn per US$1 bn of net FPI inflow,
+  and sells per US$1 bn of outflow (t 4.8). It also sells more as the rupee weakens
+  (t −1.6).
+- **Absorbed pressure:** each dollar the RBI sold is valued at the market's price of
+  a dollar, the FPI coefficient (0.13% per US$1 bn). That gives the move the rupee
+  would have made without the RBI. In March–May 2026 the RBI sold US$54 bn, holding
+  the rupee about 7 points stronger: absent the RBI, the move would have been about
+  12% instead of 5%. The FPI coefficient is net of the RBI's usual response, so the
+  absorbed share is a lower bound. `[models.flows] dollar_price` overrides it.
+- **Forward book:** net forward sales of US$137 bn in July 2026, 20% of reserves,
+  shown on the dashboard as a vulnerability gauge.
+
 **Regimes.** Two-state Markov switching in the mean and variance of monthly INR
 returns, re-estimated every 12 months; filtered probabilities only. Oil × DXY
 quadrants use expanding medians.
@@ -334,6 +353,7 @@ against a random walk with drift.
 | RBI DBIE Excel downloads | Same series | Optional manual download to `data/raw/rbi_*.xlsx`; merged with the API |
 | FRED | US CPI, Fed funds, broad and major dollar indices, VIX, 10Y, Brent, Fed balance sheet, India call rate, OECD India CPI | Automatic, cached in `data/raw/fred/` |
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
+| RBI Bulletin Table 4 (via the RBIH Data API) | RBI spot net dollar purchases and sales, outstanding net forward position | Automatic, cached in `data/raw/dbie/rbi_intervention.csv` |
 | External Wealth of Nations (Lane & Milesi-Ferretti, Brookings) | Net IIP / GDP for the 19 panel countries | Automatic (latest workbook found on the Brookings page); compact cache `data/raw/ewn/ewn_nfa.csv` |
 | MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |
 | MOSPI | CPI-Combined, 2024 = 100 (from Jan 2025) | Manual, verified: `data/raw/manual/mospi_cpi_2024base.csv` |

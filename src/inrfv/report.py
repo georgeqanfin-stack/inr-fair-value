@@ -198,6 +198,28 @@ def build_report(r: dict) -> str:
     L.append(f"\nDirection: FPI this month → INR next month t {a['t']:+.1f} (p {a['p']:.3f}); INR last month → "
              f"FPI this month t {b['t']:+.1f} (p {b['p']:.3f}). Reading: {dr['reading']}. Flow data end "
              f"{_mon(fd['latest_flows_month'])}.\n")
+    iv = fd.get("rbi")
+    if iv:
+        rc = iv["reaction"]
+        L.append("### RBI intervention\n")
+        L.append("RBI Bulletin Table 4: spot net purchases plus the change in the outstanding forward book (US$ bn; "
+                 "negative = net dollar sales). Intervention is not a regressor: the RBI sells because the rupee is "
+                 f"under pressure, and a direct regression finds {iv['naive_coef']:+.3f}% per US$1bn (t {iv['naive_t']:+.1f}). "
+                 f"Reaction function: the RBI buys {rc['coef']['fpi']:+.2f} bn per US$1bn of net FPI inflow "
+                 f"(t {rc['t']['fpi']:+.1f}) and {rc['coef']['inr']:+.2f} bn per 1% rupee depreciation "
+                 f"(t {rc['t']['inr']:+.1f}); R² {rc['r2']:.2f}.\n")
+        L.append(f"Absorbed pressure values each dollar the RBI sold at the market price implied by the FPI coefficient "
+                 f"({iv['price_pct_per_bn']:.3f}% per US$1bn). That coefficient is net of the RBI's usual response, "
+                 "so the absorbed share is a lower bound; it scales linearly with the price.\n")
+        L.append("| Window | RBI net sales | Actual move | Held stronger by | Move without RBI | Share absorbed |")
+        L.append("|---|---|---|---|---|---|")
+        for w in iv["windows"].values():
+            sh = f"{w['absorbed_share']:.0%}" if w["absorbed_share"] is not None else "n/a"
+            L.append(f"| {_mon(w['start'])}–{_mon(w['end'])} | US${w['net_sold_bn']:.1f} bn | {w['actual']:+.1f}% | "
+                     f"{w['absorbed']:+.1f} pts | {w['pressure']:+.1f}% | {sh} |")
+        bp = f" ({iv['fwd_book_pct_reserves']:.0f}% of FX reserves)" if iv["fwd_book_pct_reserves"] is not None else ""
+        L.append(f"\nOutstanding net forward position, {_mon(iv['fwd_book_month'])}: US${iv['fwd_book_bn']:.1f} bn{bp}. "
+                 f"Latest month of intervention data: {_mon(iv['latest_month'])} (US${iv['latest_bn']:+.1f} bn).\n")
 
     L.append("## Out-of-sample backtest (ECM vs random walk with drift)\n")
     L.append("| h | OOS window | n | RMSE ratio | OOS R² | Clark-West p | DM p | hit ECM | hit naive 'depreciate' | hit vs drift | α range |")

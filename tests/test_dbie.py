@@ -117,3 +117,33 @@ def test_inr_patch_fills_gap_and_extends_with_rescaled_fred():
 def test_series_specs_cover_every_bop_item():
     from inrfv.data.rbi import BOP_ITEMS
     assert {f"bop.{v}" for v in BOP_ITEMS.values()} <= set(dbie.SERIES)
+
+
+def _bulletin_rows(sale_mar=1680.0):
+    head = {"c1": "Month", "c3": "1 Net Purchase/ Sale of Foreign Currency (US $ Millions)", "c4": "1.1 Purchase (+)",
+            "c5": "1.2 Sale (-)", "c9": "4 Outstanding Net Forward Sales (-)/ Purchase (+) at the end of month"}
+    rows = [{"tab": "Sale/Purchase of USD by RBI", **head},
+            {"tab": "Sale/Purchase of USD by RBI", "c1": "April", "c2": "2014", "c3": "5,870", "c4": "7,850", "c5": "1,980", "c9": "-32,062"},
+            {"tab": "Sale/Purchase of USD by RBI", "c1": "March", "c2": "2014", "c3": "7782.00", "c4": "9462.00", "c5": str(sale_mar), "c9": "-31,030"},
+            {"tab": "Sale/Purchase of USD by RBI", "c1": "February", "c2": "2014", "c3": "-530", "c4": "-", "c5": "530", "c9": "-1,39,197"},
+            {"tab": "ii) Operations in currency futures segment", "c1": "March", "c2": "2014", "c3": "999"}]
+    return pd.DataFrame(rows).reindex(columns=["tab"] + [f"c{i}" for i in range(1, 10)])
+
+
+def test_parse_intervention_reads_indian_grouping_and_dashes():
+    out = dbie.parse_intervention(_bulletin_rows())
+    assert list(out.index.strftime("%Y-%m")) == ["2014-02", "2014-03", "2014-04"]
+    assert out.loc["2014-02-01", "purchase"] == 0 and out.loc["2014-02-01", "fwd_book"] == -139197
+    assert not out["gross_fixed"].any()
+
+
+def test_parse_intervention_rebuilds_a_bad_gross_leg_from_the_net():
+    out = dbie.parse_intervention(_bulletin_rows(sale_mar=9462.0))     # RBI's Mar 2014 typo
+    assert out.loc["2014-03-01", "sale"] == 1680 and out.loc["2014-03-01", "gross_fixed"]
+
+
+def test_parse_intervention_fails_on_layout_change():
+    rows = _bulletin_rows()
+    rows.loc[0, "c9"] = "something else"
+    with pytest.raises(dbie.DbieError, match="layout"):
+        dbie.parse_intervention(rows)

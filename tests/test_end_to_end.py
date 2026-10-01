@@ -3,6 +3,7 @@
 import json
 import re
 
+import pandas as pd
 import pytest
 
 from conftest import RAW
@@ -71,3 +72,15 @@ def test_dashboard_flow_values_round_like_the_note(run):
     w = r["flows_diag"]["windows"]["3"]
     for p in data["flows"]["windows"][0]["parts"]:
         assert f"{p['v']:+.1f}" == f"{w[p['key']]:+.1f}"
+
+
+def test_rbi_intervention_is_point_in_time_and_reported(run):
+    r, out = run
+    ds = r["dataset"]
+    col = "rbi_intervention_usd_mn"
+    lag = r["config"]["publication_lag"]["rbi_intervention"]
+    pd.testing.assert_series_equal(ds.pit[col], ds.panel[col].shift(lag).reindex(ds.pit.index), check_names=False)
+    iv = r["flows_diag"]["rbi"]
+    assert iv["reaction"]["coef"]["fpi"] > 0                      # the RBI leans against portfolio flows
+    assert "### RBI intervention" in (out / "report.md").read_text(encoding="utf-8")
+    assert "the RBI" in (out / "note.md").read_text(encoding="utf-8")

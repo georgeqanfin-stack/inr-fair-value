@@ -110,6 +110,21 @@ def flow_paragraph(fd: dict) -> list[str]:
             if fpi_sig else " Portfolio flows are not a significant driver over the sample.")
          + (" Flows and the rupee feed each other (foreign investors also sell a falling currency), so read "
             "these as associations, not causes." if two_way else "") + "\n"]
+    iv = fd.get("rbi")
+    if iv:
+        r = iv["windows"][min(iv["windows"], key=int)]
+        act = "sold" if r["net_sold_bn"] > 0 else "bought"
+        s = (f"Over the same months the RBI {act} a net US${abs(r['net_sold_bn']):.1f} bn, counting forwards. "
+             f"Valued at the market's price of a dollar, that held the rupee about {abs(r['absorbed']):.1f} points "
+             f"{'stronger' if r['absorbed'] > 0 else 'weaker'}")
+        if r["absorbed_share"] is not None:
+            s += (f": without it the rupee would have weakened about {r['pressure']:.1f}% instead of "
+                  f"{r['actual']:.1f}%, so the RBI absorbed roughly {r['absorbed_share']:.0%} of the pressure (a lower bound)")
+        s += "."
+        if iv["fwd_book_pct_reserves"] is not None:
+            s += (f" Its net forward sales outstanding stand at US${abs(iv['fwd_book_bn']):.0f} bn, "
+                  f"{abs(iv['fwd_book_pct_reserves']):.0f}% of reserves ({_month(iv['fwd_book_month'])}).")
+        L.append(s + "\n")
     return L
 
 

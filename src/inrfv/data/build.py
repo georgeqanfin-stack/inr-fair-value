@@ -78,7 +78,7 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     xl_monthly = {col: (xl[k] if c is None else xl[k][c]).rename(col) for col, (k, c) in MONTHLY_PAIRS.items()}
     if mode == "xlsx":
         meta["rbi_source"] = "DBIE Excel files only"
-        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None, "extra": {}}
+        return {"monthly": xl_monthly, "bop": xl["bop"], "wacr": None, "extra": {}, "intervention": None}
 
     api = dbie.fetch_all(path(cfg, "dbie_cache"), refresh=refresh, base=dcfg.get("base_url", dbie.DEFAULT_BASE))
     fetch_meta = path(cfg, "dbie_cache") / "_fetch.json"
@@ -107,8 +107,10 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     meta["rbi_source"] = {"merge": "RBIH Data API merged with DBIE Excel (later vintage preferred)",
                           "api": "RBIH Data API only"}[mode]
     meta["rbi_reconciliation"] = recon
+    intervention = dbie.fetch_intervention(path(cfg, "dbie_cache"), refresh=refresh,
+                                           base=dcfg.get("base_url", dbie.DEFAULT_BASE))
     return {"monthly": monthly, "bop": bop, "wacr": api.get("wacr"),
-            "extra": {k: api[k] for k in dbie.EXTRA}}
+            "extra": {k: api[k] for k in dbie.EXTRA}, "intervention": intervention}
 
 
 def dbie_gaps(monthly: dict[str, pd.Series], start: pd.Timestamp) -> dict[str, list[str]]:
@@ -409,6 +411,17 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
         panel["india_repo_rate"] = repo
     if wacr is not None:
         panel["india_wacr"] = wacr
+    iv = src.get("intervention")
+    if iv is not None:
+        # RBI Bulletin Table 4. Total intervention = spot net purchases (value dates) + change in
+        # the outstanding net forward book: new forward commitments count when made, maturing
+        # forwards are not double counted, and the two legs of a swap cancel.
+        panel["rbi_net_purchase_usd_mn"] = iv["net_purchase"]
+        panel["rbi_fwd_book_usd_mn"] = iv["fwd_book"]
+        panel["rbi_intervention_usd_mn"] = iv["net_purchase"] + iv["fwd_book"].diff()
+        meta["rbi_intervention"] = {"source": "RBI Bulletin Table 4 via the RBIH Data API",
+                                    "range": [iv.index.min().strftime("%Y-%m"), iv.index.max().strftime("%Y-%m")],
+                                    "gross_legs_rebuilt": list(iv.index[iv["gross_fixed"].astype(bool)].strftime("%Y-%m"))}
     panel = panel.reindex(idx)
 
     # Annual GDP.
@@ -476,6 +489,9 @@ def build_pit(panel: pd.DataFrame, lag: dict, nowcast: GdpNowcaster, carry: int 
     pit["exports_usd_mn"] = _carry(lagged("exports_usd_mn"), carry)
     pit["imports_usd_mn"] = _carry(lagged("imports_usd_mn"), carry)
     pit["fpi_usd_mn"] = lagged("fpi_usd_mn")
+    for col in ["rbi_net_purchase_usd_mn", "rbi_fwd_book_usd_mn", "rbi_intervention_usd_mn"]:
+        if col in panel:
+            pit[col] = lagged(col, "rbi_intervention")
 
     pit["inflation_diff"] = pit["cpi_india_yoy"] - pit["cpi_us_yoy"]
     pit["real_rate_diff"] = (pit["india_policy_rate"] - pit["cpi_india_yoy"]) - \

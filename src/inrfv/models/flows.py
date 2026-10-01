@@ -17,6 +17,16 @@ honest:
 
 * Out-of-window fit: the coefficients are re-estimated without the months being
   explained, so the attribution does not rest on those months' own data.
+* RBI intervention cannot be a regressor: the RBI sells dollars because the rupee is
+  under pressure, so a regression of the rupee on intervention finds roughly nothing
+  (simultaneity). Instead the module estimates the RBI's reaction function and values
+  its net dollar sales at the market's price of a dollar, the FPI coefficient: a dollar
+  the RBI sells is supplied to the same market as a dollar a foreign investor brings
+  in. That gives the move the rupee would have made without the RBI (exchange market
+  pressure) and the share the RBI absorbed. Because the FPI coefficient is itself
+  estimated net of the RBI's usual response, the absorbed share is a lower bound.
+  Intervention = spot net purchases + change in the outstanding forward book (RBI
+  Bulletin Table 4), so forward sales count when made and swap legs cancel.
 * Direction: flows and the rupee feed each other (foreign investors sell a falling
   currency). Lead-lag regressions test whether FPI this month predicts next month's INR
   move and whether last month's INR move predicts this month's FPI. Significance in
@@ -81,6 +91,46 @@ def direction_tests(x: pd.DataFrame, hac_lags: int) -> dict:
     return out
 
 
+def intervention(panel: pd.DataFrame, x: pd.DataFrame, res, contrib: pd.DataFrame, windows: list[int],
+                 hac_lags: int, price: float | None = None) -> tuple[dict, pd.DataFrame] | None:
+    """RBI reaction function, absorbed pressure and the forward book (see module notes)."""
+    if "rbi_intervention_usd_mn" not in panel or panel["rbi_intervention_usd_mn"].dropna().empty:
+        return None
+    rbi = (panel["rbi_intervention_usd_mn"] / 1000).rename("rbi")
+    d = x.join(rbi, how="inner").dropna()
+    react = sm.OLS(d["rbi"], sm.add_constant(d[["inr", "fpi"]])).fit(cov_type="HAC", cov_kwds={"maxlags": hac_lags})
+    regs = [c for c in res.params.index if c != "const"]
+    naive = sm.OLS(d["inr"], sm.add_constant(d[regs + ["rbi"]])).fit(cov_type="HAC", cov_kwds={"maxlags": hac_lags})
+    rho = price if price is not None else -float(res.params["fpi"])      # % rupee move per US$1bn supplied
+    m = contrib.join(rbi, how="left")
+    m["rbi_effect"] = rho * m["rbi"]            # purchases (+) weaken the rupee, sales (-) strengthen it
+    m["pressure"] = m["actual"] - m["rbi_effect"]
+    wins = {}
+    for k in windows:
+        w = m.iloc[-k:]
+        sold = -float(w["rbi"].sum())
+        absorbed = -float(w["rbi_effect"].sum())
+        pressure = float(w["pressure"].sum())
+        wins[str(k)] = {"start": w.index[0].strftime("%Y-%m"), "end": w.index[-1].strftime("%Y-%m"),
+                        "net_sold_bn": sold, "actual": float(w["actual"].sum()), "absorbed": absorbed,
+                        "pressure": pressure,
+                        "absorbed_share": absorbed / pressure if pressure > 0 and absorbed > 0 else None}
+    book = panel["rbi_fwd_book_usd_mn"].dropna()
+    res_ = panel["fx_reserves_usd_mn"].reindex(book.index).ffill()
+    return {
+        "price_pct_per_bn": rho, "price_source": "override" if price is not None else "FPI coefficient",
+        "reaction": {"coef": {k: float(v) for k, v in react.params.items()},
+                     "t": {k: float(v) for k, v in react.tvalues.items()}, "r2": float(react.rsquared),
+                     "nobs": int(react.nobs)},
+        "naive_coef": float(naive.params["rbi"]), "naive_t": float(naive.tvalues["rbi"]),
+        "windows": wins,
+        "fwd_book_bn": float(book.iloc[-1] / 1000), "fwd_book_month": book.index[-1].strftime("%Y-%m"),
+        "fwd_book_pct_reserves": float(book.iloc[-1] / res_.iloc[-1] * 100) if pd.notna(res_.iloc[-1]) else None,
+        "latest_month": panel["rbi_intervention_usd_mn"].last_valid_index().strftime("%Y-%m"),
+        "latest_bn": float(panel["rbi_intervention_usd_mn"].dropna().iloc[-1] / 1000),
+    }, m[["rbi", "rbi_effect", "pressure"]]
+
+
 def run(panel: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, dict]:
     p = cfg["models"]["flows"]
     regs, lags = p["regressors"], p["hac_lags"]
@@ -103,6 +153,11 @@ def run(panel: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, dict]:
         "p": {k: float(res.pvalues[k]) for k in ["const"] + regs},
         "windows": windows, "direction": direction_tests(x, lags),
         "latest_flows_month": x.index[-1].strftime("%Y-%m"),
+        "rbi": None,
         "units": "INR/USD % change (log x 100; positive = rupee weaker); flows in US$ bn, positive = inflow",
     }
+    iv = intervention(panel, x, res, contrib, p["windows"], lags, p.get("dollar_price"))
+    if iv is not None:
+        diag["rbi"], monthly = iv
+        contrib = contrib.join(monthly)
     return contrib, diag

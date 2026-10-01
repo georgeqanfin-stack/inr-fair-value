@@ -1,8 +1,8 @@
 {
-  "run_id": "20261001-144529",
-  "created": "2026-10-01T14:46:35",
-  "inrfv_version": "0.9.0",
-  "git_revision": "ae6c3c9-dirty",
+  "run_id": "20261001-150835",
+  "created": "2026-10-01T15:09:45",
+  "inrfv_version": "0.10.0",
+  "git_revision": "7d9def2-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
   "config_hash": "1920ba09cc9b",
   "config": {
@@ -335,7 +335,8 @@
   "python": "3.12.4",
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
-    "dbie/_fetch.json": "737af68519186ca05492eb809fb334dd32767b375b52d85b1fb1e9978c03920b",
+    "alfred/CPIAUCSL.csv": "a186dff5f75003ad87b6377c64f391a82b3e077d816b7501cfb4936de4b71d98",
+    "dbie/_fetch.json": "20a40800d55a63728f8e08033a3c33dfd26991b8c5f54140ca7352c0b209fab6",
     "dbie/bop.banking_capital.csv": "a1931a588f9a6765c2bceeceb75479ec1dc98cad57313f65b8920c5eafa4c0ca",
     "dbie/bop.capital_account.csv": "52d9518620aaaef9182600ede61437dee674db4968089c668d39cc10c04a82c2",
     "dbie/bop.current_account.csv": "5333f7fac1a64a5e447f33d34c90572346e4e23bd301194aa9f516e8bda6d74b",
@@ -384,7 +385,7 @@
     "fred/EXINUS.csv": "16c69d95915c361666b353814cf9d797c1218b7a506d857ad6ed694e5d6ad81e",
     "fred/FEDFUNDS.csv": "88de981bfd8069fb75c105b14fe6ce5fdc57d6ee3a179188ffcf96b138fee29f",
     "fred/GS10.csv": "82aa05aa56fc6d09b660de92ee69bd485c1688196967509ac48cd2941c11828b",
-    "fred/INDCPIALLMINMEI.csv": "d79d58b9edece5022f3fc0eabd5ff374027850799714c9364a28d44589876946",
+    "fred/INDCPIALLMINMEI.csv": "333622a46327ce3d4cbba059a7d09170cc3bce1c51a80b7ad38d4b72bec50ffa",
     "fred/IRSTCI01INM156N.csv": "a51764406534d92e8a675b83f668693eb83b3be52955946817a2bd6679a88601",
     "fred/RBBRBIS.csv": "c9da0bb818dcff3ca368da0d038a849b4a2ea883d7b99ca56a61b0ff320bc345",
     "fred/RBCLBIS.csv": "4e00d7bc12aa04311bcc4493544e9661ca215d53cf92f8a61fcec89f73311c37",
@@ -406,10 +407,20 @@
     "fred/RBTRBIS.csv": "9d02fe128f2eee467648808952fac9d747669919f24dc94e5ab2a7c6f1115972",
     "fred/RBZABIS.csv": "37c55eac3e75e7f907140d565265a414843f75b336876b95f31bbe4c6afcf8aa",
     "fred/VIXCLS.csv": "d1a059176623192671a6d7b3ad268d67307d1f83b6649969157978fab4d2bcd4",
-    "fred/WALCL.csv": "5982bc8603c13e6cbb3ee284ecd2f75ded62eca4c050d0c9b4de7c3c228b7d99",
+    "fred/WALCL.csv": "7e4292902798aa43655615812060001a8a8c74ef8fa7eb8e284419ade678c691",
     "fred_raw.csv": "42b2e798a556c79ea16ffab80ec5805e34e5e648d3e74ad38133c4bdad80641d",
     "india_fred_raw.csv": "4f94c2d922bb29243e8923fbb711916edcee3c15b3b82a892a4bd947c6913708",
     "manual/imf_ca_norm_india.csv": "a7bab661d1ce210db7f7502d3764ab0167a5b4b0534111b7861783a508f24489",
+    "manual/imf_eba/EBAEstimates-analysis-2017.pdf": "20cb7f73bb43e8a5b41a9b9193a2146f21bf36cd5ed197dbbcc6489ba6631067",
+    "manual/imf_eba/EBAEstimates-analysis-2018.pdf": "1b20f59dc14188ca5adc6f40d2afdd6a69d70542957b3282be038b55826b4b86",
+    "manual/imf_eba/EBAEstimates-analysis-2019.pdf": "9e679348d27a972c59de59e176fe158331714d9712197851df1a374ace2c0bd2",
+    "manual/imf_eba/EBAEstimates-analysis-2020.pdf": "4697f44247de3e2b10e52f79a802d725f7606435fc50ca6517a8c5b7305bd68c",
+    "manual/imf_eba/EBAEstimates-analysis-2021.pdf": "d67c7ab1689caf2a6308a0246f761f09a322669df315394ce28ccb00a0dd3ffc",
+    "manual/imf_eba/EBAEstimates-analysis-2022.pdf": "09ef7726a22d0cb257c7e9eea69d5756e93384b4f2ec332d8c755f1136ad0049",
+    "manual/imf_eba/EBAEstimates-analysis-2023.pdf": "3a023d339efd7f1819764efe74f808d7827bfc7bca08d3fe793e6366c53d45ab",
+    "manual/imf_eba/EBAEstimates-analysis-2024.pdf": "d6050aef94ef709789cef2a0ef11cf45330f1e5f8847b5dde43f595c96c42b8b",
+    "manual/imf_eba/EBAEstimates-analysis-2025.pdf": "150bfa3ae60c9d4221844dda2712da25b452c45695f0a31b0a5525c0d150f15c",
+    "manual/imf_eba_india.csv": "e0aa390d65e0de4717dab5773d5f8d02cb0d46478539d0d53ad7a712ea21ff83",
     "manual/mospi_cpi_2024base.csv": "16e8f24c65bcdb52a4a962d1dc087e8c4b8c104706bd27ad09e6c4b43ebae829",
     "manual/rbi_policy_repo_rate.csv": "f9d35df26ee47bbeec6d9d94ca489abc5f8daec9cebe74726561d770d1d1e124",
     "manual/rbi_repo_rate_changes.csv": "5bd2d6debfa91f4826ad290defe706de4395d6985bc9597aebebf34a63785b83",
@@ -450,7 +461,7 @@
   "asof": "2026-09",
   "warnings": [
     "REER anchor fundamentals are not cointegrated with the REER (Engle-Granger p=0.85); the anchor is reported, not relied on.",
-    "BEER residuals are not cointegrated (Engle-Granger p=0.98); treat the BEER fair value as descriptive."
+    "BEER residuals are not cointegrated (Engle-Granger p=0.97); treat the BEER fair value as descriptive."
   ],
   "refresh": {
     "data_changes": {},

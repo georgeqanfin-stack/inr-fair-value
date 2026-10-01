@@ -323,22 +323,22 @@
           "rel_prod",
           "real_rate_diff"
         ],
-        "nobs": 301,
+        "nobs": 313,
         "sample": [
-          "2001-02",
+          "2000-02",
           "2026-09"
         ],
         "coef": {
-          "const": 1.1709296455678633,
-          "log_dxy": 0.723071495384327,
-          "rel_prod": -0.40940996930782775,
-          "real_rate_diff": -0.0019419405971669282
+          "const": 1.2130792720019405,
+          "log_dxy": 0.7158472630149499,
+          "rel_prod": -0.4058860239246176,
+          "real_rate_diff": -0.0018809118950973104
         },
         "t_hac": {
-          "const": 2.836198982749821,
-          "log_dxy": 8.633820149607448,
-          "rel_prod": -8.283873726763098,
-          "real_rate_diff": -0.45741039413164
+          "const": 3.873956936302552,
+          "log_dxy": 9.985738475520806,
+          "rel_prod": -9.726638845619245,
+          "real_rate_diff": -0.4577489495378794
         },
         "expected_sign": {
           "log_dxy": "+",
@@ -346,13 +346,13 @@
           "real_rate_diff": "-"
         },
         "engle_granger": {
-          "stat": -1.304102493402072,
-          "pvalue": 0.975372773913254,
+          "stat": -1.342706648469102,
+          "pvalue": 0.9727562372677415,
           "n_vars": 4,
-          "nobs": 308,
-          "crit_1pct": -4.702690642659339,
-          "crit_5pct": -4.132714334369595,
-          "crit_10pct": -3.8375829823128096,
+          "nobs": 320,
+          "crit_1pct": -4.700442678629337,
+          "crit_5pct": -4.131328938394867,
+          "crit_10pct": -3.8365513123888326,
           "cointegrated_5pct": false
         },
         "johansen_rank": 0
@@ -396,24 +396,24 @@
           "real_rate_diff",
           "log_brent"
         ],
-        "nobs": 301,
+        "nobs": 313,
         "sample": [
-          "2001-02",
+          "2000-02",
           "2026-09"
         ],
         "coef": {
-          "const": -1.2553967908864638,
-          "log_dxy": 1.061284185240022,
-          "rel_prod": -0.5524111097935918,
-          "real_rate_diff": -0.0010988115939454897,
-          "log_brent": 0.11876437124978444
+          "const": -1.1047478571362086,
+          "log_dxy": 1.0362511593777906,
+          "rel_prod": -0.541387535288601,
+          "real_rate_diff": -0.0008686527983824366,
+          "log_brent": 0.11699854078660071
         },
         "t_hac": {
-          "const": -1.4008697507701853,
-          "log_dxy": 7.283266800737168,
-          "rel_prod": -9.72122007580875,
-          "real_rate_diff": -0.3059067702900453,
-          "log_brent": 3.4460262096959164
+          "const": -1.3661513791207105,
+          "log_dxy": 7.829739641461094,
+          "rel_prod": -11.681792844360164,
+          "real_rate_diff": -0.24743997528075265,
+          "log_brent": 3.4284580644564
         },
         "expected_sign": {
           "log_dxy": "+",
@@ -422,13 +422,13 @@
           "log_brent": "+"
         },
         "engle_granger": {
-          "stat": -1.5478271569780135,
-          "pvalue": 0.9831675184886127,
+          "stat": -1.5948404726122725,
+          "pvalue": 0.980686786119626,
           "n_vars": 5,
-          "nobs": 308,
-          "crit_1pct": -5.029336359430869,
-          "crit_5pct": -4.46105795085359,
-          "crit_10pct": -4.16659939978143,
+          "nobs": 320,
+          "crit_1pct": -5.026618968563595,
+          "crit_5pct": -4.4593276804473225,
+          "crit_10pct": -4.165280225921522,
           "cointegrated_5pct": false
         },
         "johansen_rank": 0
@@ -439,22 +439,22 @@
           "rel_prod",
           "real_fwd_diff"
         ],
-        "nobs": 300,
+        "nobs": 312,
         "sample": [
-          "2001-02",
+          "2000-02",
           "2026-08"
         ],
         "coef": {
-          "const": 1.1168328578492215,
-          "log_dxy": 0.7327665506162802,
-          "rel_prod": -0.4123973094752993,
-          "real_fwd_diff": -0.002087225999470933
+          "const": 1.1763259265105424,
+          "log_dxy": 0.7228638305003428,
+          "rel_prod": -0.40690831661283167,
+          "real_fwd_diff": -0.002151509196368629
         },
         "t_hac": {
-          "const": 2.6566787670149226,
-          "log_dxy": 8.682278011238168,
-          "rel_prod": -8.420939728153344,
-          "real_fwd_diff": -0.5420840347650172
+          "const": 3.3811935203743677,
+          "log_dxy": 9.482497624252492,
+          "rel_prod": -9.811770887445979,
+          "real_fwd_diff": -0.5562377471083789
         },
         "expected_sign": {
           "log_dxy": "+",
@@ -462,162 +462,162 @@
           "real_fwd_diff": "-"
         },
         "engle_granger": {
-          "stat": -1.1788825387019228,
-          "pvalue": 0.98229674484738,
+          "stat": -1.2674436578894068,
+          "pvalue": 0.9776336393510059,
           "n_vars": 4,
-          "nobs": 307,
-          "crit_1pct": -4.702885985304797,
-          "crit_5pct": -4.1328347046007945,
-          "crit_10pct": -3.8376726130975265,
+          "nobs": 319,
+          "crit_1pct": -4.700623486808275,
+          "crit_5pct": -4.131440382105138,
+          "crit_10pct": -3.8366343063961077,
           "cointegrated_5pct": false
         },
-        "johansen_rank": 1
+        "johansen_rank": 0
       }
     },
     "sample": [
-      "2001-02",
+      "2000-02",
       "2026-09"
     ],
-    "nobs": 301,
+    "nobs": 313,
     "coef": {
-      "const": 1.1709296455678633,
-      "log_dxy": 0.723071495384327,
-      "rel_prod": -0.40940996930782775,
-      "real_rate_diff": -0.0019419405971669282
+      "const": 1.2130792720019405,
+      "log_dxy": 0.7158472630149499,
+      "rel_prod": -0.4058860239246176,
+      "real_rate_diff": -0.0018809118950973104
     },
     "engle_granger": {
-      "stat": -1.304102493402072,
-      "pvalue": 0.975372773913254,
+      "stat": -1.342706648469102,
+      "pvalue": 0.9727562372677415,
       "n_vars": 4,
-      "nobs": 308,
-      "crit_1pct": -4.702690642659339,
-      "crit_5pct": -4.132714334369595,
-      "crit_10pct": -3.8375829823128096,
+      "nobs": 320,
+      "crit_1pct": -4.700442678629337,
+      "crit_5pct": -4.131328938394867,
+      "crit_10pct": -3.8365513123888326,
       "cointegrated_5pct": false
     },
     "coef_path": {
       "log_dxy": [
-        0.28336686843267994,
-        0.719062918708586
+        0.2871269684435225,
+        0.708771019037979
       ],
       "rel_prod": [
-        -0.8330168510291149,
-        -0.41867822254918124
+        -0.9320697190827154,
+        -0.4138423053014222
       ],
       "real_rate_diff": [
-        -0.0022611083275961914,
-        0.0074045629229248676
+        -0.0020404857580714497,
+        0.007105193939795016
       ]
     },
-    "first_estimate": "2009-01",
+    "first_estimate": "2008-01",
     "oos": {
       "1": {
-        "n_oos": 152,
+        "n_oos": 164,
         "oos_window": [
-          "2014-01",
+          "2013-01",
           "2026-08"
         ],
-        "rmse_zero": 0.011762353257779804,
-        "rmse_drift": 0.01148502731783078,
-        "rmse_ecm": 0.011558587222557024,
-        "rmse_ratio_ecm_vs_drift": 1.006404852395261,
-        "oos_r2_vs_drift": -0.012850726924726885,
+        "rmse_zero": 0.013587823868299367,
+        "rmse_drift": 0.013250573263745466,
+        "rmse_ecm": 0.013333541017556592,
+        "rmse_ratio_ecm_vs_drift": 1.006261446366108,
+        "oos_r2_vs_drift": -0.012562098442811642,
         "clark_west": {
-          "stat": -0.3208827447442373,
-          "pvalue_one_sided": 0.625850374632376
+          "stat": -0.8041816840165226,
+          "pvalue_one_sided": 0.7893539724141306
         },
         "diebold_mariano": {
-          "stat": -1.0101297214914244,
-          "pvalue_two_sided": 0.31404904803171085
+          "stat": -1.0091589238918615,
+          "pvalue_two_sided": 0.31439412516004306
         },
-        "hit_rate_ecm_sign": 0.5921052631578947,
-        "hit_rate_naive_depreciation": 0.5921052631578947,
-        "hit_rate_excess_over_drift": 0.5592105263157895,
+        "hit_rate_ecm_sign": 0.5975609756097561,
+        "hit_rate_naive_depreciation": 0.5975609756097561,
+        "hit_rate_excess_over_drift": 0.5182926829268293,
         "share_ecm_predicts_appreciation": 0.0,
-        "alpha_min": -0.02966427685322739,
-        "alpha_max": 0.0011488506520330273,
-        "alpha_last": -0.0042201830094816175
+        "alpha_min": -0.01617673861752494,
+        "alpha_max": 0.03043363418998557,
+        "alpha_last": -0.0035420544880811595
       },
       "3": {
-        "n_oos": 148,
+        "n_oos": 160,
         "oos_window": [
-          "2014-03",
+          "2013-03",
           "2026-06"
         ],
-        "rmse_zero": 0.02273960620560661,
-        "rmse_drift": 0.021015601845968544,
-        "rmse_ecm": 0.022127730691791993,
-        "rmse_ratio_ecm_vs_drift": 1.052919200409994,
-        "oos_r2_vs_drift": -0.10863884259202128,
+        "rmse_zero": 0.02770538007185115,
+        "rmse_drift": 0.026226982776732417,
+        "rmse_ecm": 0.0264502265883464,
+        "rmse_ratio_ecm_vs_drift": 1.0085119898661021,
+        "oos_r2_vs_drift": -0.017096433703685188,
         "clark_west": {
-          "stat": -0.1233765694822913,
-          "pvalue_one_sided": 0.549095544924423
+          "stat": 0.22422833827567284,
+          "pvalue_one_sided": 0.4112898170289364
         },
         "diebold_mariano": {
-          "stat": -1.3898402162556884,
-          "pvalue_two_sided": 0.16667858777785516
+          "stat": -0.674791986874112,
+          "pvalue_two_sided": 0.5007879540798179
         },
-        "hit_rate_ecm_sign": 0.581081081081081,
-        "hit_rate_naive_depreciation": 0.6824324324324325,
-        "hit_rate_excess_over_drift": 0.5540540540540541,
-        "share_ecm_predicts_appreciation": 0.18243243243243243,
-        "alpha_min": -0.166276034603731,
-        "alpha_max": -0.03162676688716954,
-        "alpha_last": -0.03231526354317661
+        "hit_rate_ecm_sign": 0.66875,
+        "hit_rate_naive_depreciation": 0.66875,
+        "hit_rate_excess_over_drift": 0.5375,
+        "share_ecm_predicts_appreciation": 0.0,
+        "alpha_min": -0.07762069285769063,
+        "alpha_max": 0.00036245920578845397,
+        "alpha_last": -0.02886854448885752
       },
       "6": {
-        "n_oos": 142,
+        "n_oos": 154,
         "oos_window": [
-          "2014-06",
+          "2013-06",
           "2026-03"
         ],
-        "rmse_zero": 0.03606403094155642,
-        "rmse_drift": 0.03147492433561355,
-        "rmse_ecm": 0.03379375873824303,
-        "rmse_ratio_ecm_vs_drift": 1.0736724377127649,
-        "oos_r2_vs_drift": -0.15277250350407057,
+        "rmse_zero": 0.036019113890816676,
+        "rmse_drift": 0.0347344273171893,
+        "rmse_ecm": 0.03531191306431188,
+        "rmse_ratio_ecm_vs_drift": 1.0166257454556273,
+        "oos_r2_vs_drift": -0.033527906323210344,
         "clark_west": {
-          "stat": 0.12147035677406547,
-          "pvalue_one_sided": 0.45165924634204235
+          "stat": 0.7708194746266427,
+          "pvalue_one_sided": 0.22040697115991648
         },
         "diebold_mariano": {
-          "stat": -1.0983866083635254,
-          "pvalue_two_sided": 0.2739077684148161
+          "stat": -0.33951619815339257,
+          "pvalue_two_sided": 0.7346864906103159
         },
-        "hit_rate_ecm_sign": 0.6408450704225352,
-        "hit_rate_naive_depreciation": 0.7746478873239436,
-        "hit_rate_excess_over_drift": 0.528169014084507,
-        "share_ecm_predicts_appreciation": 0.1619718309859155,
-        "alpha_min": -0.2714236808773689,
-        "alpha_max": -0.07097867106081375,
-        "alpha_last": -0.07097867106081375
+        "hit_rate_ecm_sign": 0.6883116883116883,
+        "hit_rate_naive_depreciation": 0.7402597402597403,
+        "hit_rate_excess_over_drift": 0.5584415584415584,
+        "share_ecm_predicts_appreciation": 0.05194805194805195,
+        "alpha_min": -0.20035395155803506,
+        "alpha_max": -0.08241839199526355,
+        "alpha_last": -0.08858358142967018
       },
       "12": {
-        "n_oos": 130,
+        "n_oos": 142,
         "oos_window": [
-          "2014-12",
+          "2013-12",
           "2025-09"
         ],
-        "rmse_zero": 0.05442893193117126,
-        "rmse_drift": 0.04447835521274959,
-        "rmse_ecm": 0.04832472094659988,
-        "rmse_ratio_ecm_vs_drift": 1.08647724753877,
-        "oos_r2_vs_drift": -0.18043280941942186,
+        "rmse_zero": 0.054403030515296616,
+        "rmse_drift": 0.04504479071089266,
+        "rmse_ecm": 0.0475077108140469,
+        "rmse_ratio_ecm_vs_drift": 1.054677135009058,
+        "oos_r2_vs_drift": -0.11234385911091449,
         "clark_west": {
-          "stat": 1.1418157427476388,
-          "pvalue_one_sided": 0.12676530860274648
+          "stat": 1.5351469275088827,
+          "pvalue_one_sided": 0.062373870699239164
         },
         "diebold_mariano": {
-          "stat": -0.8457743065647755,
-          "pvalue_two_sided": 0.3992447535596091
+          "stat": -0.523225841398405,
+          "pvalue_two_sided": 0.6016384015504923
         },
-        "hit_rate_ecm_sign": 0.6615384615384615,
-        "hit_rate_naive_depreciation": 0.823076923076923,
-        "hit_rate_excess_over_drift": 0.6230769230769231,
-        "share_ecm_predicts_appreciation": 0.2230769230769231,
-        "alpha_min": -0.5524368881980978,
-        "alpha_max": -0.2705526334109297,
-        "alpha_last": -0.2705526334109297
+        "hit_rate_ecm_sign": 0.7323943661971831,
+        "hit_rate_naive_depreciation": 0.8309859154929577,
+        "hit_rate_excess_over_drift": 0.6126760563380281,
+        "share_ecm_predicts_appreciation": 0.14084507042253522,
+        "alpha_min": -0.5802008369531073,
+        "alpha_max": -0.32837717456530635,
+        "alpha_last": -0.32837717456530635
       }
     }
   },
@@ -1128,6 +1128,317 @@
       "t_given_dxy": -1.1875062987886558
     }
   },
+  "benchmark": {
+    "table": [
+      {
+        "analysis_year": 2017,
+        "published": "2018-07",
+        "ca_actual": -1.9,
+        "ca_cyc_adj": -2.1,
+        "ca_norm": -3.0,
+        "ca_gap": 0.9,
+        "reer_gap_index": 10.9,
+        "reer_gap_level": 8.8,
+        "elasticity": 0.18,
+        "source": "IMF EBA estimates: analysis of 2017 (ESR 2018), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 5.0,
+        "imf_reer_index": -10.9,
+        "imf_reer_level": -8.8,
+        "composite_year": 6.565433026526815,
+        "composite_at_pub": 5.918756036609252,
+        "feer_year": 12.302652554205935,
+        "feer_at_pub": 5.077821004350749,
+        "reer_year": 1.1318748429512082,
+        "reer_at_pub": 6.766421049768789
+      },
+      {
+        "analysis_year": 2018,
+        "published": "2019-07",
+        "ca_actual": -2.5,
+        "ca_cyc_adj": -2.5,
+        "ca_norm": -3.4,
+        "ca_gap": 0.9,
+        "reer_gap_index": 5.4,
+        "reer_gap_level": 2.5,
+        "elasticity": 0.18,
+        "source": "IMF EBA estimates: analysis of 2018 (ESR 2019), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 5.0,
+        "imf_reer_index": -5.4,
+        "imf_reer_level": -2.5,
+        "composite_year": 8.159394042139954,
+        "composite_at_pub": 8.380491966098425,
+        "feer_year": 10.061333788505662,
+        "feer_at_pub": 11.848382920953474,
+        "reer_year": 6.366905985976383,
+        "reer_at_pub": 5.020123957581046
+      },
+      {
+        "analysis_year": 2019,
+        "published": "2020-08",
+        "ca_actual": -0.9,
+        "ca_cyc_adj": -1.4,
+        "ca_norm": -3.0,
+        "ca_gap": 1.6,
+        "reer_gap_index": 13.4,
+        "reer_gap_level": 10.2,
+        "elasticity": 0.15,
+        "source": "IMF EBA estimates: analysis of 2019 (ESR 2020), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 10.666666666666668,
+        "imf_reer_index": -13.4,
+        "imf_reer_level": -10.2,
+        "composite_year": 7.627719378564328,
+        "composite_at_pub": 12.448711579480975,
+        "feer_year": 9.462704662995211,
+        "feer_at_pub": 20.451131653447693,
+        "reer_year": 5.866459097119608,
+        "reer_at_pub": 4.97794883543019
+      },
+      {
+        "analysis_year": 2020,
+        "published": "2021-08",
+        "ca_actual": 1.0,
+        "ca_cyc_adj": -0.8,
+        "ca_norm": -2.4,
+        "ca_gap": 1.7,
+        "reer_gap_index": 10.9,
+        "reer_gap_level": 6.6,
+        "elasticity": 0.17,
+        "source": "IMF EBA estimates: analysis of 2020 (ESR 2021), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 9.999999999999998,
+        "imf_reer_index": -10.9,
+        "imf_reer_level": -6.6,
+        "composite_year": 12.13002291542354,
+        "composite_at_pub": 14.136672537644678,
+        "feer_year": 20.049471329303792,
+        "feer_at_pub": 26.53982965069757,
+        "reer_year": 4.763010735024557,
+        "reer_at_pub": 2.949245734927519
+      },
+      {
+        "analysis_year": 2021,
+        "published": "2022-07",
+        "ca_actual": -1.2,
+        "ca_cyc_adj": -1.6,
+        "ca_norm": -1.9,
+        "ca_gap": 0.3,
+        "reer_gap_index": 10.1,
+        "reer_gap_level": 8.5,
+        "elasticity": 0.16,
+        "source": "IMF EBA estimates: analysis of 2021 (ESR 2022), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 1.875,
+        "imf_reer_index": -10.1,
+        "imf_reer_level": -8.5,
+        "composite_year": 14.860502890844094,
+        "composite_at_pub": 4.750089550552228,
+        "feer_year": 26.389653585485576,
+        "feer_at_pub": 7.418750075031712,
+        "reer_year": 4.393541772857293,
+        "reer_at_pub": 2.147727963548185
+      },
+      {
+        "analysis_year": 2022,
+        "published": "2023-07",
+        "ca_actual": -2.0,
+        "ca_cyc_adj": -0.9,
+        "ca_norm": -2.3,
+        "ca_gap": 1.5,
+        "reer_gap_index": 12.5,
+        "reer_gap_level": 10.6,
+        "elasticity": 0.19,
+        "source": "IMF EBA estimates: analysis of 2022 (ESR 2023), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 7.894736842105263,
+        "imf_reer_index": -12.5,
+        "imf_reer_level": -10.6,
+        "composite_year": 5.169294035156972,
+        "composite_at_pub": 5.076012683976305,
+        "feer_year": 8.71100045680359,
+        "feer_at_pub": 6.263837156683077,
+        "reer_year": 1.7602216437817517,
+        "reer_at_pub": 3.9014657948361675
+      },
+      {
+        "analysis_year": 2023,
+        "published": "2024-07",
+        "ca_actual": -0.8,
+        "ca_cyc_adj": -0.5,
+        "ca_norm": -2.2,
+        "ca_gap": 1.7,
+        "reer_gap_index": 5.9,
+        "reer_gap_level": 5.2,
+        "elasticity": 0.18,
+        "source": "IMF EBA estimates: analysis of 2023 (ESR 2024), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 9.444444444444445,
+        "imf_reer_index": -5.9,
+        "imf_reer_level": -5.2,
+        "composite_year": 4.1860542597366885,
+        "composite_at_pub": 5.807722011865835,
+        "feer_year": 4.270211716979003,
+        "feer_at_pub": 10.684045682600006,
+        "reer_year": 4.148625789188389,
+        "reer_at_pub": 1.1462308618903405
+      },
+      {
+        "analysis_year": 2024,
+        "published": "2025-07",
+        "ca_actual": -0.8,
+        "ca_cyc_adj": -0.6,
+        "ca_norm": -2.0,
+        "ca_gap": 1.4,
+        "reer_gap_index": 5.4,
+        "reer_gap_level": 4.1,
+        "elasticity": 0.18,
+        "source": "IMF EBA estimates: analysis of 2024 (ESR 2025), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 7.777777777777778,
+        "imf_reer_index": -5.4,
+        "imf_reer_level": -4.1,
+        "composite_year": 6.127325730317815,
+        "composite_at_pub": 8.81298142994098,
+        "feer_year": 10.422831755104205,
+        "feer_at_pub": 9.617955158557018,
+        "reer_year": 2.007925746633284,
+        "reer_at_pub": 8.013918983859124
+      },
+      {
+        "analysis_year": 2025,
+        "published": "2026-07",
+        "ca_actual": -0.9,
+        "ca_cyc_adj": -0.7,
+        "ca_norm": -2.3,
+        "ca_gap": 1.6,
+        "reer_gap_index": 0.8,
+        "reer_gap_level": -5.6,
+        "elasticity": 0.18,
+        "source": "IMF EBA estimates: analysis of 2025 (ESR 2026), Table 1, REER-index, REER-level and external-sustainability tables",
+        "imf_ca": 8.88888888888889,
+        "imf_reer_index": -0.8,
+        "imf_reer_level": 5.6,
+        "composite_year": 8.17599719570202,
+        "composite_at_pub": 14.279702713611009,
+        "feer_year": 9.585233874532866,
+        "feer_at_pub": 10.025093452526015,
+        "reer_year": 6.820007814362722,
+        "reer_at_pub": 18.69883535201373
+      }
+    ],
+    "stats": {
+      "feer_year~imf_ca": {
+        "ours": "FEER",
+        "imf": "IMF CA model (CA gap / elasticity)",
+        "when": "year",
+        "n": 9,
+        "corr": -0.547477616878591,
+        "same_sign": 1.0,
+        "mean_diff_pp": 4.9675087893369785,
+        "mean_abs_diff_pp": 6.384885396256289
+      },
+      "feer_at_pub~imf_ca": {
+        "ours": "FEER",
+        "imf": "IMF CA model (CA gap / elasticity)",
+        "when": "at_pub",
+        "n": 9,
+        "corr": 0.60705908143173,
+        "same_sign": 1.0,
+        "mean_diff_pp": 4.597703570551586,
+        "mean_abs_diff_pp": 4.960125722867627
+      },
+      "reer_year~imf_reer_level": {
+        "ours": "REER component",
+        "imf": "IMF REER-level model",
+        "when": "year",
+        "n": 9,
+        "corr": 0.5461126500737103,
+        "same_sign": 0.1111111111111111,
+        "mean_diff_pp": 9.79539704754391,
+        "mean_abs_diff_pp": 9.79539704754391
+      },
+      "reer_at_pub~imf_reer_level": {
+        "ours": "REER component",
+        "imf": "IMF REER-level model",
+        "when": "at_pub",
+        "n": 9,
+        "corr": 0.7907616076176904,
+        "same_sign": 0.1111111111111111,
+        "mean_diff_pp": 11.613546503761677,
+        "mean_abs_diff_pp": 11.613546503761677
+      },
+      "reer_year~imf_reer_index": {
+        "ours": "REER component",
+        "imf": "IMF REER-index model",
+        "when": "year",
+        "n": 9,
+        "corr": 0.39249897663379363,
+        "same_sign": 0.0,
+        "mean_diff_pp": 12.506508158655022,
+        "mean_abs_diff_pp": 12.506508158655022
+      },
+      "reer_at_pub~imf_reer_index": {
+        "ours": "REER component",
+        "imf": "IMF REER-index model",
+        "when": "at_pub",
+        "n": 9,
+        "corr": 0.6483804995423385,
+        "same_sign": 0.0,
+        "mean_diff_pp": 14.324657614872788,
+        "mean_abs_diff_pp": 14.324657614872788
+      },
+      "composite_year~imf_ca": {
+        "ours": "Composite",
+        "imf": "IMF CA model (CA gap / elasticity)",
+        "when": "year",
+        "n": 9,
+        "corr": -0.44695342429030155,
+        "same_sign": 1.0,
+        "mean_diff_pp": 0.717136539392132,
+        "mean_abs_diff_pp": 3.691830766148847
+      },
+      "composite_at_pub~imf_ca": {
+        "ours": "Composite",
+        "imf": "IMF CA model (CA gap / elasticity)",
+        "when": "at_pub",
+        "n": 9,
+        "corr": 0.6326698632786417,
+        "same_sign": 1.0,
+        "mean_diff_pp": 1.451513987766294,
+        "mean_abs_diff_pp": 2.8860576745901976
+      },
+      "composite_year~imf_reer_level": {
+        "ours": "Composite",
+        "imf": "IMF REER-level model",
+        "when": "year",
+        "n": 9,
+        "corr": -0.039291869535393695,
+        "same_sign": 0.1111111111111111,
+        "mean_diff_pp": 13.766860386045801,
+        "mean_abs_diff_pp": 13.766860386045801
+      },
+      "composite_at_pub~imf_reer_level": {
+        "ours": "Composite",
+        "imf": "IMF REER-level model",
+        "when": "at_pub",
+        "n": 9,
+        "corr": 0.49010841886443934,
+        "same_sign": 0.1111111111111111,
+        "mean_diff_pp": 14.501237834419966,
+        "mean_abs_diff_pp": 14.501237834419966
+      }
+    },
+    "latest": {
+      "analysis_year": 2025,
+      "published": "2026-07",
+      "imf_ca": 8.88888888888889,
+      "ca_gap": 1.6,
+      "ca_norm": -2.3,
+      "elasticity": 0.18,
+      "imf_reer_level": 5.6,
+      "imf_reer_index": -0.8,
+      "feer_year": 9.585233874532866,
+      "composite_year": 8.17599719570202,
+      "reer_year": 6.820007814362722
+    },
+    "first_year": 2017,
+    "n_years": 9,
+    "reer_component": "panel"
+  },
   "revisions": {
     "months": [
       "2004-07",
@@ -1190,11 +1501,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T09:14:35+00:00",
+      "fetched_at": "2026-10-01T09:37:43+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T09:08:30.371079871Z",
+        "registry_loaded_at": "2026-10-01T09:28:30.259962967Z",
         "status": "ok",
         "tables": 1049
       }
@@ -1963,7 +2274,12 @@
         "2014-03"
       ]
     },
-    "cpi_us_vintage": "revised series with a fixed lag (ALFRED needs FRED_API_KEY; see data/alfred.py)",
+    "cpi_us_vintage": {
+      "source": "ALFRED real-time vintages",
+      "from": "2000-01",
+      "mean_abs_diff_pp": 0.035,
+      "max_abs_diff_pp": 0.223
+    },
     "series_end": {
       "inr_usd": "2026-09",
       "reer": "2026-07",
@@ -1997,6 +2313,6 @@
   },
   "warnings": [
     "REER anchor fundamentals are not cointegrated with the REER (Engle-Granger p=0.85); the anchor is reported, not relied on.",
-    "BEER residuals are not cointegrated (Engle-Granger p=0.98); treat the BEER fair value as descriptive."
+    "BEER residuals are not cointegrated (Engle-Granger p=0.97); treat the BEER fair value as descriptive."
   ]
 }

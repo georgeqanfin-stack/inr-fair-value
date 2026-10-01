@@ -1,6 +1,6 @@
 # INR/USD fair value: run report
 
-inrfv 0.9.0 · run `20261001-144529` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 0.10.0 · run `20261001-150835` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -16,8 +16,8 @@ All figures are point-in-time: each value uses only data published by that month
 | FEER, NIIP-stabilising norm | Sep 2026 | -1.6% | n/a | alternative norm |
 | FEER, legacy −2.5% norm | Sep 2026 | +11.3% | n/a | v0.2 assumption, for comparison |
 | FEER conditional (experimental) | Jun 2026 | -1.5% | n/a | ad hoc norm, not in composite |
-| BEER, current (real INR/USD, DOLS) | Sep 2026 | +25.2% | 76.23 | **not cointegrated**: descriptive only |
-| BEER, total (permanent fundamentals) | Sep 2026 | +21.5% | 78.54 | fundamentals at one-sided HP trend |
+| BEER, current (real INR/USD, DOLS) | Sep 2026 | +25.1% | 76.27 | **not cointegrated**: descriptive only |
+| BEER, total (permanent fundamentals) | Sep 2026 | +21.4% | 78.56 | fundamentals at one-sided HP trend |
 | Composite (REER+FEER) | Sep 2026 | +14.1% | 83.59 | drives the ECM |
 
 **Fair-value corridor (10th–90th percentile of FEER norm and elasticity uncertainty): 78.27 – 88.53** (central 83.59, spot 95.41).
@@ -41,25 +41,25 @@ Coefficient range across 23 point-in-time re-estimations since 2004-07: rel_prod
 
 ### BEER (bilateral, real INR/USD)
 
-Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding window, first estimate 2009-01. Current BEER uses today's fundamentals; total BEER uses their one-sided HP trends.
+Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding window, first estimate 2008-01. Current BEER uses today's fundamentals; total BEER uses their one-sided HP trends.
 
 | Spec | Sample | n | Coefficients (t, expected sign) | Engle-Granger p | Johansen rank |
 |---|---|---|---|---|---|
-| core (central) | 2001-02–2026-09 | 301 | log_dxy +0.723 (+8.6, +), rel_prod -0.409 (-8.3, -), real_rate_diff -0.002 (-0.5, -) | 0.975 | 0 |
+| core (central) | 2000-02–2026-09 | 313 | log_dxy +0.716 (+10.0, +), rel_prod -0.406 (-9.7, -), real_rate_diff -0.002 (-0.5, -) | 0.973 | 0 |
 | dxy | 2000-02–2026-09 | 314 | log_dxy +0.438 (+2.4, +) | 0.772 | 0 |
-| oil | 2001-02–2026-09 | 301 | log_dxy +1.061 (+7.3, +), rel_prod -0.552 (-9.7, -), real_rate_diff -0.001 (-0.3, -), log_brent +0.119 (+3.4, +) | 0.983 | 0 |
-| fwd | 2001-02–2026-08 | 300 | log_dxy +0.733 (+8.7, +), rel_prod -0.412 (-8.4, -), real_fwd_diff -0.002 (-0.5, -) | 0.982 | 1 |
+| oil | 2000-02–2026-09 | 313 | log_dxy +1.036 (+7.8, +), rel_prod -0.541 (-11.7, -), real_rate_diff -0.001 (-0.2, -), log_brent +0.117 (+3.4, +) | 0.981 | 0 |
+| fwd | 2000-02–2026-08 | 312 | log_dxy +0.723 (+9.5, +), rel_prod -0.407 (-9.8, -), real_fwd_diff -0.002 (-0.6, -) | 0.978 | 0 |
 
-Coefficient range across re-estimations: log_dxy +0.28 to +0.72, rel_prod -0.83 to -0.42, real_rate_diff -0.00 to +0.01.
+Coefficient range across re-estimations: log_dxy +0.29 to +0.71, rel_prod -0.93 to -0.41, real_rate_diff -0.00 to +0.01.
 
 Does the BEER gap predict INR/USD? (same out-of-sample test as the composite)
 
 | h | OOS window | n | RMSE ratio vs drift | Clark-West p | α range |
 |---|---|---|---|---|---|
-| 1 | 2014-01–2026-08 | 152 | 1.006 | 0.626 | -0.03 to +0.00 |
-| 3 | 2014-03–2026-06 | 148 | 1.053 | 0.549 | -0.17 to -0.03 |
-| 6 | 2014-06–2026-03 | 142 | 1.074 | 0.452 | -0.27 to -0.07 |
-| 12 | 2014-12–2025-09 | 130 | 1.086 | 0.127 | -0.55 to -0.27 |
+| 1 | 2013-01–2026-08 | 164 | 1.006 | 0.789 | -0.02 to +0.03 |
+| 3 | 2013-03–2026-06 | 160 | 1.009 | 0.411 | -0.08 to +0.00 |
+| 6 | 2013-06–2026-03 | 154 | 1.017 | 0.220 | -0.20 to -0.08 |
+| 12 | 2013-12–2025-09 | 142 | 1.055 | 0.062 | -0.58 to -0.33 |
 
 Reading: the dollar and productivity coefficients are large, significant and correctly signed, but the real rate is not cointegrated with them, so the BEER gap describes where fundamentals would put the rupee, not a level it reliably returns to.
 
@@ -149,17 +149,46 @@ Regime-conditional (h=12, filtered P(stress)): α_calm -0.227 (p=0.435), α_stre
 
 h=12m from 2026-09: ECT +0.132, α -0.434, const +0.071 → predicted Δlog INR +1.3% (drift alone +3.4%). Estimated on all realised targets; only as credible as the backtest above.
 
+## External benchmark: the IMF's assessments of India
+
+IMF External Balance Assessment for each year (published with the following year's External Sector Report), on this report's sign convention (positive = rupee undervalued). The IMF CA model's REER equivalent is CA gap / semi-elasticity; IMF staff assessments rest mainly on it. Our columns: the average of this model's point-in-time readings over the year assessed, and the reading in the month the IMF published. Our FEER uses the IMF's published norms, so the FEER-vs-IMF-CA pairing is not independent.
+
+| Year | IMF published | IMF CA gap (% GDP) | IMF CA model | IMF REER index | IMF REER level | Our FEER (year) | Our REER comp. (year) | Our composite (year) | Our composite (at publication) |
+|---|---|---|---|---|---|---|---|---|---|
+| 2017 | Jul 2018 | +0.9 | +5.0% | -10.9% | -8.8% | +12.3% | +1.1% | +6.6% | +5.9% |
+| 2018 | Jul 2019 | +0.9 | +5.0% | -5.4% | -2.5% | +10.1% | +6.4% | +8.2% | +8.4% |
+| 2019 | Aug 2020 | +1.6 | +10.7% | -13.4% | -10.2% | +9.5% | +5.9% | +7.6% | +12.4% |
+| 2020 | Aug 2021 | +1.7 | +10.0% | -10.9% | -6.6% | +20.0% | +4.8% | +12.1% | +14.1% |
+| 2021 | Jul 2022 | +0.3 | +1.9% | -10.1% | -8.5% | +26.4% | +4.4% | +14.9% | +4.8% |
+| 2022 | Jul 2023 | +1.5 | +7.9% | -12.5% | -10.6% | +8.7% | +1.8% | +5.2% | +5.1% |
+| 2023 | Jul 2024 | +1.7 | +9.4% | -5.9% | -5.2% | +4.3% | +4.1% | +4.2% | +5.8% |
+| 2024 | Jul 2025 | +1.4 | +7.8% | -5.4% | -4.1% | +10.4% | +2.0% | +6.1% | +8.8% |
+| 2025 | Jul 2026 | +1.6 | +8.9% | -0.8% | +5.6% | +9.6% | +6.8% | +8.2% | +14.3% |
+
+| Ours vs IMF | When | n | Same sign | Correlation | Mean difference (ours − IMF) | Mean absolute difference |
+|---|---|---|---|---|---|---|
+| FEER vs IMF CA model (CA gap / elasticity) | year average | 9 | 100% | -0.55 | +5.0 pp | 6.4 pp |
+| FEER vs IMF CA model (CA gap / elasticity) | at publication | 9 | 100% | +0.61 | +4.6 pp | 5.0 pp |
+| REER component vs IMF REER-level model | year average | 9 | 11% | +0.55 | +9.8 pp | 9.8 pp |
+| REER component vs IMF REER-level model | at publication | 9 | 11% | +0.79 | +11.6 pp | 11.6 pp |
+| REER component vs IMF REER-index model | year average | 9 | 0% | +0.39 | +12.5 pp | 12.5 pp |
+| REER component vs IMF REER-index model | at publication | 9 | 0% | +0.65 | +14.3 pp | 14.3 pp |
+| Composite vs IMF CA model (CA gap / elasticity) | year average | 9 | 100% | -0.45 | +0.7 pp | 3.7 pp |
+| Composite vs IMF CA model (CA gap / elasticity) | at publication | 9 | 100% | +0.63 | +1.5 pp | 2.9 pp |
+| Composite vs IMF REER-level model | year average | 9 | 11% | -0.04 | +13.8 pp | 13.8 pp |
+| Composite vs IMF REER-level model | at publication | 9 | 11% | +0.49 | +14.5 pp | 14.5 pp |
+
 ## Data revisions
 
 The headline was re-run on the earlier RBI vintage (DBIE Excel files in data/raw, ending Oct 2025, Feb 2026, Mar 2026, Apr 2026), preferring it wherever both vintages have a value. Series revised beyond the 0.5% tolerance: bop.capital_account, bop.current_account, bop.fdi_bop, bop.loans, bop.merch_balance, fdi_usd_mn, fpi_usd_mn, imports_usd_mn, neer.
 
 Point-in-time composite readings changed in 30 of 267 months (Jul 2004–Sep 2026): mean absolute change 0.014 pp, largest 0.47 pp (Jun 2026); by component, REER 0.000 pp and FEER 0.024 pp on average. Latest common month Sep 2026: +14.59% on the earlier vintage, +14.14% now. This is a lower bound on the revision effect (the earlier files are themselves partly revised); `python -m inrfv.vintages run <git-rev>` re-runs any committed vintage.
 
-US CPI inflation: revised series with a fixed lag (ALFRED needs FRED_API_KEY; see data/alfred.py).
+US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised series the mean absolute difference is 0.035 pp (largest 0.22 pp).
 
 ## Diagnostics
 
-- BEER Engle-Granger (4 vars, n=308): stat -1.30, 5% critical -4.13, p = 0.975.
+- BEER Engle-Granger (4 vars, n=320): stat -1.34, 5% critical -4.13, p = 0.973.
 - Johansen PPP [log INR, log CPI India, log CPI US]: rank 0 of 3 (sequential trace, 5%, k_ar_diff=1, n=319).
 - DXY splice: ratio 1.1937; log change at seam 2006-01: -2.40%.
 - India CPI: official MOSPI CPI-Combined (inflation as published at the time). Segments: CPI-IW chained 1988-10–2010-12; MOSPI 2012 back series x LF 2011-01–2012-12; MOSPI 2012 x LF 2013-01–2025-12; MOSPI 2024 (chained) 2026-01–2026-08. Linking factor 2012→2024 0.5267 (2025 overlap ratio 0.5267); CPI-IW 1982→2001 factor 4.63. Inflation vs the old OECD series: corr 0.966, mean |diff| 0.41pp.
@@ -169,7 +198,7 @@ US CPI inflation: revised series with a fixed lag (ALFRED needs FRED_API_KEY; se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T09:14:35+00:00, mirror loaded 2026-10-01T09:08:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-01T09:37:43+00:00, mirror loaded 2026-10-01T09:28:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|
@@ -194,7 +223,7 @@ RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026
 ## Data warnings
 
 - REER anchor fundamentals are not cointegrated with the REER (Engle-Granger p=0.85); the anchor is reported, not relied on.
-- BEER residuals are not cointegrated (Engle-Granger p=0.98); treat the BEER fair value as descriptive.
+- BEER residuals are not cointegrated (Engle-Granger p=0.97); treat the BEER fair value as descriptive.
 
 ## Series end dates (reference month)
 

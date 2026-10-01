@@ -844,11 +844,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-01T03:58:20+00:00",
+      "fetched_at": "2026-10-01T04:02:44+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-01T03:48:30.26628448Z",
+        "registry_loaded_at": "2026-10-01T03:58:30.265408161Z",
         "status": "ok",
         "tables": 1049
       }

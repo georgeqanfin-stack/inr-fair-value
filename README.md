@@ -5,7 +5,7 @@ structural gauge, a FEER external-sustainability model, a BEER market model,
 Markov-switching regimes, and an error-correction (ECM) forecast test.
 Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 
-**Version 0.17.** Version 0.3 replaced the exploratory notebooks with a tested,
+**Version 0.18.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
 [What changed in 0.3](#what-changed-in-03). Since then:
@@ -17,6 +17,7 @@ Fixing the look-ahead reversed the headline result of v0.2; see
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
+| 0.18 | Flow effect identified: recursive orderings, local projections, 2SLS with global push instruments |
 | 0.17 | FEER: IMF-style cyclical adjustment (output gaps) and income term; quarterly real GDP to Apr–Jun 2026 |
 | 0.16 | Regime model with time-varying transition probabilities tested; constant kept |
 | 0.15 | Formal panel cointegration (Pedroni-type, Westerlund) with bootstrap p; 16-spec family, Holm/BH |
@@ -281,6 +282,26 @@ next month's rupee move, and the rupee's move predicts next month's flows, so th
 contributions are associations, not causes. The analysis is ex post and by reference
 month (RBI publishes flows about two months later), so it explains past moves and
 does not enter the fair value. It appears in the report, the note and the dashboard.
+
+*Identifying the flow effect (v0.18).* The attribution's −0.13% per US$1 bn is a
+same-month association, and flows and the rupee feed each other. With no free,
+clean instrument (EM fund-flow data are proprietary), the effect is bounded instead
+(`models/flow_id.py`, monthly 2011–2026):
+
+| Method | Impact | After 2 / 4 / 6 months |
+|---|---|---|
+| Recursive, flows move the rupee within the month (A) | −0.130 (t −3.8) | −0.167 / −0.149 / −0.067 |
+| Recursive, the rupee moves flows within the month (B) | 0 by construction | −0.018 / −0.010 / +0.082 (none significant) |
+| 2SLS, instruments: changes in VIX and US 10-year yield | −0.070 (t −1.1) | |
+
+Both recursive orderings condition on same-month global moves (VIX, US 10-year,
+dollar) and two lags of everything; the horizons come from local projections. The IV
+first stage is strong (F 21) and Hansen's J does not reject (p 0.16). Exclusion is
+untestable, though: global risk shocks reaching the rupee only through portfolio
+flows, given the dollar, is a strong assumption. So the same-month estimate is the
+upper end of the identified range, and the IV puts the effect at about half of it.
+The portfolio-flow contributions and the RBI's absorbed pressure in the attribution
+are upper bounds; the report shows both.
 
 *RBI intervention (v0.6).* RBI Bulletin Table 4 (via the RBIH Data API, June 1995
 onward) gives the RBI's monthly spot net dollar purchases and its outstanding net

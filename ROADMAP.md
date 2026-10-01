@@ -23,8 +23,8 @@ until the backtest looks better.
 | 9 | Formal panel cointegration tests, multiple-testing adjustment | **Done (v0.15)** |
 | 8 | Regime model with time-varying transition probabilities | **Done (v0.16)** |
 | 10 | FEER: cyclical adjustment and income balance | **Done (v0.17)** |
-| 11 | Flow identification beyond contemporaneous OLS | Next |
-| 15 | Engineering: lint, types, coverage, data schemas, Docker | Planned |
+| 11 | Flow identification beyond contemporaneous OLS | **Done (v0.18)** |
+| 15 | Engineering: lint, types, coverage, data schemas, Docker | Next |
 
 ## Data
 
@@ -137,7 +137,10 @@ an uncertain foreign-currency share. FEER +10.0% -> +13.0%; composite +15.7%; ba
 0.977 -> 0.964. Original plan: cyclical adjustment of the current account for India's and partners'
 output gaps (IMF style), and an income-balance term in the semi-elasticity.
 
-**11. Flow identification.** Local projections of the rupee on FPI shocks, with
+**11. Flow identification (done).** Impact between 0 (rupee drives flows) and −0.13
+(flows drive the rupee; persists ~5 months); 2SLS with VIX and US-yield instruments
+−0.07 (F 21, J p 0.16, not significant). Attribution flow shares are upper bounds.
+Original plan: local projections of the rupee on FPI shocks, with
 global EM fund flows or index rebalancing dates as instruments where data allow;
 otherwise a VAR with timing restrictions. Report how far the contemporaneous estimate
 moves.

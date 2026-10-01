@@ -144,7 +144,8 @@ def flows_block(fd: dict | None) -> dict | None:
              "fpi_out_of_window": _num(w["out_of_window"]["fpi"], 9)} for w in fd["windows"].values()]
     return {"windows": wins, "coef_fpi": _num(fd["coef"]["fpi"], 3), "t_fpi": _num(fd["t"]["fpi"], 1),
             "sample": fd["sample"], "r2": _num(fd["r2"], 2), "two_way": fd["direction"]["reading"].startswith("two-way"),
-            "rbi": rbi_block(fd.get("rbi"))}
+            "rbi": rbi_block(fd.get("rbi")),
+            "iv_beta": _num(fd["identification"]["iv"]["beta"], 3) if fd.get("identification") else None}
 
 
 PEER_NAMES = {"IND": "India", "CHN": "China", "BRA": "Brazil", "MEX": "Mexico", "IDN": "Indonesia", "TUR": "Turkey",
@@ -586,6 +587,7 @@ function drawFlows() {
   $("flowNote").textContent = `Monthly regression, ${monthName(F.sample[0])} to ${monthName(F.sample[1])} (R² ${fmt(F.r2)}): each US$1bn of net portfolio inflow goes with a ${fmt(Math.abs(F.coef_fpi))}% ${F.coef_fpi < 0 ? "stronger" : "weaker"} rupee that month (t ${sgn(F.t_fpi)}). `
     + `Fitted without these months, portfolio flows account for ${sgn(oow)} points. `
     + (F.two_way ? "Flows and the rupee feed each other (foreign investors also sell a falling currency), so these are associations, not causes. " : "")
+    + (F.iv_beta !== null ? `Identification: this is the upper end; with global risk shocks as instruments the effect is about ${fmt(Math.abs(F.iv_beta), 2)}% per $1bn (not significant), so the portfolio-flow bar is an upper bound. ` : "")
     + "Ex post and by reference month; this explains spot moves and does not change the fair value.";
 }
 // ---------- peers

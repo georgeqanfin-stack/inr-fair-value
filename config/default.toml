@@ -321,6 +321,14 @@ break_reps     = 199      # block-bootstrap replications for break-test p-values
 break_block    = 12       # block length (months)
 seed           = 29
 
+[models.flow_id]
+# Identification of the FPI effect (models/flow_id.py): recursive orderings, local
+# projections and 2SLS with global push instruments.
+start       = "2011-03"
+lags        = 2
+horizons    = 6
+instruments = ["vix", "us10y"]
+
 [models.regimes]
 min_obs     = 96
 refit_every = 12

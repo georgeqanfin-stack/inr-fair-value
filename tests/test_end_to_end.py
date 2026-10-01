@@ -179,3 +179,12 @@ def test_feer_cyclical_and_income_adjustments(run):
     assert pd.notna(x["cyclical_contribution"]) and pd.notna(x["income_pct_gdp"])
     assert x["cad_underlying"] == pytest.approx(x["cad_underlying_precyc"] - x["cyclical_contribution"])
     assert "Cyclical adjustment (applied)" in (out / "report.md").read_text(encoding="utf-8")
+
+
+def test_flow_identification_reported(run):
+    r, out = run
+    fi = r["flows_diag"]["identification"]
+    assert fi["ordering_a"][0]["beta"] == pytest.approx(fi["ols_beta"], abs=0.03)
+    assert fi["ordering_b"][0]["beta"] == 0.0
+    assert fi["iv"]["first_stage_F"] > 0
+    assert "### Identifying the flow effect" in (out / "report.md").read_text(encoding="utf-8")

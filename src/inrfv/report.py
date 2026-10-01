@@ -283,6 +283,35 @@ def build_report(r: dict) -> str:
     L.append(f"\nDirection: FPI this month → INR next month t {a['t']:+.1f} (p {a['p']:.3f}); INR last month → "
              f"FPI this month t {b['t']:+.1f} (p {b['p']:.3f}). Reading: {dr['reading']}. Flow data end "
              f"{_mon(fd['latest_flows_month'])}.\n")
+    fi = fd.get("identification")
+    if fi:
+        L.append("### Identifying the flow effect\n")
+        L.append(f"Monthly, {_mon(fi['sample'][0])}–{_mon(fi['sample'][1])} (n = {fi['n']}; one standard deviation of net "
+                 f"FPI = US${fi['fpi_sd_bn']:.1f} bn). Per US$1 bn of net inflow, % change of INR/USD (negative = rupee "
+                 "stronger). Ordering A treats the same-month co-movement as flows moving the rupee; ordering B as the "
+                 "rupee moving flows (impact zero by construction). Both condition on same-month VIX, US 10-year yield and "
+                 "dollar-index changes and on two lags of every variable. Local projections give the cumulative effect h "
+                 "months out (Newey-West errors).\n")
+        hs = [r["h"] for r in fi["ordering_a"]]
+        L.append("| Method | " + " | ".join(f"h={h}" for h in hs) + " |")
+        L.append("|---|" + "---|" * len(hs))
+        for key, lab in (("ordering_a", "Ordering A (flows → rupee)"), ("ordering_b", "Ordering B (rupee → flows)")):
+            L.append(f"| {lab} | " + " | ".join(
+                "0 (by construction)" if r.get("note") else f"{r['beta']:+.3f} (t {r['t']:+.1f})" for r in fi[key]) + " |")
+        ivr = fi["iv"]
+        jp = f", Hansen J p {ivr['J_p']:.2f}" if ivr.get("J_p") is not None else ""
+        L.append(f"\nInstrumental variables (2SLS; instruments: changes in {', '.join(fi['settings']['instruments'])}; "
+                 f"controls: dollar index, Brent, FDI, lags): {ivr['beta']:+.3f} (se {ivr['se']:.3f}, t {ivr['t']:+.1f}); "
+                 f"first-stage F {ivr['first_stage_F']:.1f}{jp}. Exclusion (global push shocks reach the rupee only "
+                 f"through portfolio flows, given the dollar) cannot be tested and is a strong assumption.\n")
+        if fi.get("ols_beta"):
+            ratio = ivr["beta"] / fi["ols_beta"]
+            w0 = fd["windows"][min(fd["windows"], key=int)]
+            L.append(f"Reading: the same-month estimate used in the attribution ({fi['ols_beta']:+.3f}) equals ordering A's "
+                     f"impact, the upper end of the identified range (0 to {fi['impact_bounds'][0]:+.3f}); the IV estimate is "
+                     f"{ratio:.0%} of it. On the IV estimate, portfolio flows would account for {w0['fpi'] * ratio:+.1f} "
+                     f"points of the {_mon(w0['start'])}–{_mon(w0['end'])} move instead of {w0['fpi']:+.1f}, and the RBI's "
+                     f"absorbed pressure would scale down in the same proportion.\n")
     iv = fd.get("rbi")
     if iv:
         rc = iv["reaction"]

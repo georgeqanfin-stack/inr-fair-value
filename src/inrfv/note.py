@@ -114,6 +114,14 @@ def flow_paragraph(fd: dict) -> list[str]:
             if fpi_sig else " Portfolio flows are not a significant driver over the sample.")
          + (" Flows and the rupee feed each other (foreign investors also sell a falling currency), so read "
             "these as associations, not causes." if two_way else "") + "\n"]
+    fi = fd.get("identification")
+    if fi and fi.get("ols_beta"):
+        ratio = fi["iv"]["beta"] / fi["ols_beta"]
+        L[-1] = L[-1].rstrip("\n") + (
+            f" Separating cause from effect is hard: if flows drive the rupee within the month the effect is the full "
+            f"{abs(fi['ols_beta']):.2f}% per US$1bn; if the rupee drives flows it is close to zero; using global risk "
+            f"shocks as instruments gives about {abs(fi['iv']['beta']):.2f}% ({ratio:.0%} of it), so the portfolio-flow share "
+            "above is an upper bound.\n")
     iv = fd.get("rbi")
     if iv:
         r = iv["windows"][min(iv["windows"], key=int)]

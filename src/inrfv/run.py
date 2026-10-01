@@ -20,7 +20,7 @@ from .config import load_config, path
 from .data.build import build_dataset
 from .io import new_run_dir, verify_raw_manifest, write_manifest, write_raw_manifest
 from .data import panel as panel_data
-from .models import benchmark, beer, composite, feer, flows, market, nonlinear, panel_anchor, peers, regimes_tvtp, uncertainty, weights, reer_anchor, regimes, structural
+from .models import benchmark, beer, composite, feer, flow_id, flows, market, nonlinear, panel_anchor, peers, regimes_tvtp, uncertainty, weights, reer_anchor, regimes, structural
 from .stats.cointegration import johansen_rank
 
 
@@ -58,6 +58,8 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
     cur = backtest.current_forecast(comp, h, cfg["backtest"].get("window_months"))
 
     flow_out, flow_diag = flows.run(ds.panel, cfg)
+    if cfg["models"].get("flow_id"):
+        flow_diag["identification"] = flow_id.run(ds.panel, cfg, flow_diag["coef"]["fpi"])
     market_diag = market.run(ds.pit, ds.panel, cfg)
 
     panel = ds.panel

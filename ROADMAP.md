@@ -31,8 +31,8 @@ Beyond the roadmap (towards 9.5):
 | # | Item | Status |
 |---|---|---|
 | 16 | Recalibrate the corridor from its measured coverage | **Done (v1.1)** |
-| 17 | Write-up for outside review | Open |
-| 18 | Let the vintage archive accumulate; real-time India evaluation | Open (time) |
+| 17 | Write-up for outside review | **Done (v1.1)**: [docs/REVIEW.md](docs/REVIEW.md); awaiting a reviewer |
+| 18 | Let the vintage archive accumulate; real-time India evaluation | Open (time): needs the monthly refresh task registered |
 
 ## Data
 

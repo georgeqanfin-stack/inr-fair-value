@@ -8,7 +8,8 @@ Data: RBI DBIE, FRED, World Bank and MOSPI, January 2000 onward.
 **Version 1.1.** Version 0.3 replaced the exploratory notebooks with a tested,
 reproducible pipeline in which every number uses only data published at that date.
 Fixing the look-ahead reversed the headline result of v0.2; see
-[What changed in 0.3](#what-changed-in-03). Since then:
+[What changed in 0.3](#what-changed-in-03). For outside reviewers, the argument, the
+ledger of choices and the open questions are in [docs/REVIEW.md](docs/REVIEW.md). Since then:
 
 | Version | Added |
 |---|---|
@@ -360,8 +361,8 @@ revisions.
   earlier vintage wherever both exist (`[dbie] mode = "merge_early"`), and compares
   each point-in-time reading. Between the two vintages the RBI revised the BoP
   current account (up to 15%), FDI and loans (up to 35%), monthly FDI and imports.
-  The headline moved in 11 of 266 months, by at most 0.17 points (2026, through the
-  FEER). Revisions to RBI data matter little for the reading. This is a lower bound,
+  The headline moved in 30 of 267 months, by at most 0.48 points (June 2026, through
+  the FEER; 0.17 before the v0.17 FEER changes). Revisions to RBI data matter little for the reading. This is a lower bound,
   since the earlier files are themselves partly revised.
 - *Past vintages:* every refresh commits data/raw, so the git history is a dated
   archive of inputs. `python -m inrfv.vintages run <git-rev>` re-runs the full
@@ -381,8 +382,8 @@ sign convention (positive = undervalued):
 
 | This model vs IMF | Same sign | Mean abs. difference at IMF publication | Correlation at publication |
 |---|---|---|---|
-| Composite vs IMF CA model (CA gap / elasticity) | 9 of 9 years | 2.9 pp (ours 1.5 pp more undervalued) | 0.63 |
-| FEER vs IMF CA model | 9 of 9 | 5.0 pp | 0.61 |
+| Composite vs IMF CA model (CA gap / elasticity) | 9 of 9 years | 2.2 pp (ours 1.5 pp more undervalued) | 0.71 |
+| FEER vs IMF CA model | 9 of 9 | 4.7 pp | 0.85 |
 | REER component vs IMF REER-level model | 1 of 9 | 11.6 pp | 0.79 |
 
 The IMF's own models disagree about India. Its CA model, which staff assessments rest
@@ -673,29 +674,31 @@ RBI's level, and the report says so. `[dbie] mode` in the config switches betwee
 
 See [`data/raw/manual/README.md`](data/raw/manual/README.md) for manual inputs.
 
-## Known limitations (Phase 2 roadmap)
+## Known limitations
 
-- The panel anchor's cointegration evidence comes from one specification out of
-  thirteen tried. Net foreign assets (External Wealth of Nations) were added and
-  tested, entered with the wrong sign, and broke the panel check.
-- The panel's World Bank fundamentals lag by one to two years, so the equilibrium
-  moves in annual steps and the recent gap is driven mostly by the REER itself.
-- Before Feb 2013 there is no published IMF norm for India, so the FEER uses the
-  earliest one (−3.4%). That makes the 2002–08 surplus years read as a 25–55%
-  "undervaluation". The 2017 EBA vintage (assessing 2016) is not available online,
-  so the 2016 norm carries forward until Jul 2018.
-- The IMF norm and the NIIP-stabilising norm still differ by about 1.6pp today,
-  which moves the reading by about 10pp. That is more than the Monte Carlo band.
-- A panel model estimating India's norm from structural fundamentals (relative
-  income, demographics, oil balance; 19 EMs) was tried and dropped: R² 0.09, no
-  correctly-signed significant coefficient. The IMF's norms rely on a much wider
-  panel and policy variables this project does not have.
-- The FEER has no output-gap adjustment (the IMF adjusts for the domestic and
-  partner-country cycle) and no income-balance semi-elasticity.
-- Neither the BEER nor the India-only REER anchor is cointegrated on 2001–26 data.
-  The rupee has not tracked India's productivity catch-up, and both models record
-  that gap rather than an equilibrium the rate returns to.
-- No data vintages: revisions to CPI, trade and BoP are not captured.
+The full list, with the questions we would most like an outside reviewer to check, is
+in [docs/REVIEW.md](docs/REVIEW.md) (section 8). In short:
+
+- **No significant forecasting power** at any horizon (12-month Clark-West p 0.12). The
+  gap is a valuation gauge, not a timing signal.
+- **The panel anchor is suggestive, not conclusive:** productivity-only was chosen as
+  the one variant to pass the original Fisher check; over the 16-specification family
+  the formal test gives Holm 0.25 and BH 0.09. The World
+  Bank fundamentals lag one to two years.
+- **Norm sensitivity:** the IMF and NIIP-stabilising norms differ by about 1.6 pp of
+  GDP, worth 10–12 points of misalignment, more than the range. Before Feb 2013 the norm
+  is backcast (−3.4%), so the 2002–08 FEER readings (+25 to +55%) mostly reflect that.
+  The 2017 EBA vintage is not online, so the 2016 norm carries forward until Jul 2018.
+- **The range is calibrated on nine years** against an ex-post value that is itself a
+  model output (final panel fit, the IMF's later norm). Its miscalibration was not stable
+  over time (v1.1).
+- **Real-time India data** only from the vintage archive (Oct 2026 on); before that,
+  publication lags are modelled but revisions to CPI, trade and national accounts are
+  not. RBI revision effects are a lower bound.
+- **The flow effect is bounded** (0 to −0.13% per US$1 bn), not point-identified; free EM
+  fund-flow data do not exist.
+- The India-only anchor and the BEER are not cointegrated, and a panel-estimated CA
+  norm was dropped (R² 0.09).
 
 ## Development
 

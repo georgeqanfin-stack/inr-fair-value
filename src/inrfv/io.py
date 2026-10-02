@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import os
@@ -17,8 +18,18 @@ from .config import config_hash, path
 MANIFEST_NAME = "MANIFEST.sha256"
 
 
+# Text files are hashed with line endings normalised to LF, so the manifest does not
+# depend on how git checked them out (core.autocrlf). Files that are gitignored
+# (local source documents) are left out, so a fresh clone verifies cleanly.
+TEXT_SUFFIXES = {".csv", ".json", ".txt", ".md"}
+LOCAL_ONLY = ("manual/imf_eba/*", "ewn/*.xlsx")
+
+
 def sha256_file(p: Path) -> str:
     h = hashlib.sha256()
+    if p.suffix.lower() in TEXT_SUFFIXES:
+        h.update(p.read_bytes().replace(b"\r\n", b"\n"))
+        return h.hexdigest()
     with open(p, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
@@ -26,7 +37,8 @@ def sha256_file(p: Path) -> str:
 
 
 def raw_checksums(raw_dir: Path) -> dict[str, str]:
-    files = sorted(p for p in raw_dir.rglob("*") if p.is_file() and p.name != MANIFEST_NAME)
+    files = sorted(p for p in raw_dir.rglob("*") if p.is_file() and p.name != MANIFEST_NAME
+                   and not any(fnmatch.fnmatch(p.relative_to(raw_dir).as_posix(), g) for g in LOCAL_ONLY))
     return {p.relative_to(raw_dir).as_posix(): sha256_file(p) for p in files}
 
 

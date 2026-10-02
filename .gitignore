@@ -33,3 +33,6 @@ outputs/cache/
 # Coverage artifacts
 .coverage
 coverage.xml
+
+# GitHub Pages build output (python -m inrfv.site)
+_site/

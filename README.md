@@ -8,11 +8,13 @@ range around the result, and checks itself against the IMF's own assessments, pe
 currencies and out-of-sample forecasts. Every number uses only data that was public at
 the date it describes. Data: RBI, MOSPI, FRED, BIS and World Bank, January 2000 onward.
 
-**Version 1.1.** History in [CHANGELOG.md](CHANGELOG.md).
+**Live monitor: [georgeqanfin-stack.github.io/inr-fair-value](https://georgeqanfin-stack.github.io/inr-fair-value/)**,
+updated after each monthly refresh. **Version 1.1.** History in [CHANGELOG.md](CHANGELOG.md).
 
 ## Current reading
 
-Data as of **September 2026** (run of 2 Oct 2026). For later months see
+Data as of **September 2026** (run of 2 Oct 2026). For later months see the
+[live monitor](https://georgeqanfin-stack.github.io/inr-fair-value/) or
 [`reports/latest/note.md`](reports/latest/note.md), which the monthly refresh rewrites.
 
 | | Misalignment | Fair INR/USD |
@@ -126,9 +128,11 @@ The refresh also publishes these to `reports/latest/` and `reports/<YYYY-MM>/`.
 Each committed refresh is a dated snapshot of the inputs, so the git history doubles as
 a data vintage archive: `python -m inrfv.vintages run <git-rev>` re-runs any of them.
 
-**Scheduling.** Either on GitHub (`.github/workflows/monthly-refresh.yml`: the 15th of
-each month, or by hand from the Actions tab; tests first, then commits and pushes only
-if every gate passes) or on a Windows PC:
+**Scheduling.** On GitHub: `.github/workflows/monthly-refresh.yml` runs on the 15th of
+each month (or by hand from the Actions tab). It runs the tests first, commits and
+pushes only if every gate passes, then rebuilds the live monitor on GitHub Pages
+(`.github/workflows/pages.yml`, built by `python -m inrfv.site`). Pull before working
+locally. To run it on a Windows PC instead (use one or the other, not both):
 
 ```
 powershell -ExecutionPolicy Bypass -File scripts\schedule_monthly_refresh.ps1
@@ -207,6 +211,7 @@ scripts/                   IMF EBA extraction, panel-cointegration Monte Carlo, 
 Dockerfile                 reproducible environment (built and tested in CI)
 data/raw/                  inputs + MANIFEST.sha256
 docs/                      methodology, review write-up
+.github/workflows/         tests on every push; monthly refresh; GitHub Pages site
 data/processed/, outputs/*.png, notebooks/   legacy v0.1–0.2 artefacts (see notebooks/README.md)
 outputs/runs/              pipeline runs (git-ignored)
 reports/latest/, reports/<YYYY-MM>/   published report and refresh summary (committed)

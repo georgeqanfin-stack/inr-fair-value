@@ -4,7 +4,8 @@ name: monthly-refresh
 # commits data/raw and reports/ when everything passes. Runs on the 15th, a few days
 # after MOSPI's CPI release (~12th) and RBI's monthly data. Can also be run by hand
 # from the Actions tab. If a gate fails, nothing is committed and the summary is
-# attached to the run as an artifact.
+# attached to the run as an artifact. After a successful refresh the site on GitHub
+# Pages is rebuilt (pages.yml). Commits are made under the repository owner's name.
 
 on:
   schedule:
@@ -13,6 +14,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: monthly-refresh
@@ -35,8 +38,8 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional; public CSV endpoint is used without it
         run: |
-          git config user.name "inrfv-refresh[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "georgeqanfin-stack"
+          git config user.email "279508037+georgeqanfin-stack@users.noreply.github.com"
           python -m inrfv.refresh --commit
       - name: Push
         run: git push
@@ -49,3 +52,7 @@ jobs:
             outputs/
             reports/latest/
           if-no-files-found: ignore
+
+  pages:
+    needs: refresh
+    uses: ./.github/workflows/pages.yml

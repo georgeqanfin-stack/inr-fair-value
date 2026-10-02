@@ -1,6 +1,6 @@
 # Data refresh 02 Oct 2026
 
-Run `20261002-113403` · as of **2026-09**
+Run `20261002-133250` · as of **2026-09**
 
 ## Headline
 
@@ -14,9 +14,5 @@ Composite misalignment +15.7% → **+15.7%** (2026-09 → 2026-09); fair value 8
 
 ## Data changes
 
-| File | New obs | New range | Revised | Largest revision | Lost |
-|---|---|---|---|---|---|
-| fred/EXINUS.csv | 1 | 2026-09–2026-09 | 0 |  | 0 |
-| fred/FEDFUNDS.csv | 1 | 2026-09–2026-09 | 0 |  | 0 |
-| fred/GS10.csv | 1 | 2026-09–2026-09 | 0 |  | 0 |
-| fred/WALCL.csv | 1 | 2026-09–2026-09 | 0 |  | 0 |
+No cached series changed.
+

@@ -1,8 +1,8 @@
 {
-  "run_id": "20261002-113403",
-  "created": "2026-10-02T11:36:38",
-  "inrfv_version": "1.1.0",
-  "git_revision": "4f08ca9-dirty",
+  "run_id": "20261002-133250",
+  "created": "2026-10-02T13:35:27",
+  "inrfv_version": "1.2.0",
+  "git_revision": "2839dc4-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
   "config_hash": "ffc20284fa28",
   "config": {
@@ -499,7 +499,7 @@
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
     "alfred/CPIAUCSL.csv": "9d42869cf45487ce4722dd0ad7a850fa9e4acd3fdc50411ff47a03c49af45684",
-    "dbie/_fetch.json": "4aa05833ec67b7be6c32b3c2db164ed11a37479f821f34ac7239447250485a12",
+    "dbie/_fetch.json": "1be0b20bf961f879910858726370322e1214d5b14ba5951dc119ada2a6d8b8b1",
     "dbie/bop.banking_capital.csv": "cb2fb953ac3ecaf5b30b8d805314159c2ddee3fbeb7c7d93206703955142ddeb",
     "dbie/bop.capital_account.csv": "962f2828bf4ae7f72c83b5fa4445986324eb887cfe887fe0e28f179382318594",
     "dbie/bop.current_account.csv": "421cfec3d0de3181cd9c576819163f2734924f83274a94790fbb9dcea36767e9",
@@ -583,7 +583,7 @@
     "manual/mospi_cpi_2024base.csv": "16e8f24c65bcdb52a4a962d1dc087e8c4b8c104706bd27ad09e6c4b43ebae829",
     "manual/rbi_policy_repo_rate.csv": "fb80eb2cdbcfc18ddb21bee9b1d7f75b663cd3938a133980b9471533337fe191",
     "manual/rbi_repo_rate_changes.csv": "1446b5d647737395c6aa503fde0e622863e4f5e81dc1f8fe390c4c992b6047b8",
-    "manual/README.md": "379bd95a085185f39be41e465d9bf101bf943b0d87dbb073f0ec60e98cecc74b",
+    "manual/README.md": "c09afdd75d0fa750742b4a13c66345b4092d7808c232185784735fbb4d66e986",
     "parsed_cab.csv": "1ca6cab23204486d294da0b4198be6691fba440226961a7cb275642f8bb022cd",
     "parsed_fpi_inr.csv": "7bb1ac62f5635810cf2f53cca13c5c60e66e57b39f043a05f0745f78f06747cb",
     "parsed_fpi_usd.csv": "8357eece0c452b879d09becf715b9e4105e817dff81b8406614d51fdf12fb632",
@@ -623,52 +623,7 @@
     "BEER residuals are not cointegrated (Engle-Granger p=0.97); treat the BEER fair value as descriptive."
   ],
   "refresh": {
-    "data_changes": {
-      "fred/EXINUS.csv": {
-        "rows_before": 644,
-        "rows_after": 645,
-        "new": 1,
-        "lost": 0,
-        "revised": 0,
-        "new_range": [
-          "2026-09",
-          "2026-09"
-        ]
-      },
-      "fred/FEDFUNDS.csv": {
-        "rows_before": 866,
-        "rows_after": 867,
-        "new": 1,
-        "lost": 0,
-        "revised": 0,
-        "new_range": [
-          "2026-09",
-          "2026-09"
-        ]
-      },
-      "fred/GS10.csv": {
-        "rows_before": 881,
-        "rows_after": 882,
-        "new": 1,
-        "lost": 0,
-        "revised": 0,
-        "new_range": [
-          "2026-09",
-          "2026-09"
-        ]
-      },
-      "fred/WALCL.csv": {
-        "rows_before": 1241,
-        "rows_after": 1242,
-        "new": 1,
-        "lost": 0,
-        "revised": 0,
-        "new_range": [
-          "2026-09",
-          "2026-09"
-        ]
-      }
-    },
+    "data_changes": {},
     "gate_warnings": []
   }
 }

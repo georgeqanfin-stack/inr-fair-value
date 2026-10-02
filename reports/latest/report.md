@@ -1,12 +1,12 @@
-# INR/USD fair value: run report
+# USD/INR fair value: run report
 
-inrfv 1.1.0 · run `20261002-113403` · as of **Sep 2026** (latest month with RBI INR/USD) · spot **95.41**
+inrfv 1.2.0 · run `20261002-133250` · as of **Sep 2026** (latest month with RBI USD/INR) · spot **95.41**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
 ## Current reading
 
-| Model | As of | Misalignment | Fair INR/USD | Notes |
+| Model | As of | Misalignment | Fair USD/INR | Notes |
 |---|---|---|---|---|
 | REER gap (one-sided HP) | Sep 2026 | +4.8% | 91.06 | cyclical gauge; mean-reverting by construction |
 | REER panel anchor (EM panel) | Sep 2026 | +18.4% | 80.57 | productivity-based; BIS REER; spec 'prod' |
@@ -16,7 +16,7 @@ All figures are point-in-time: each value uses only data published by that month
 | FEER, NIIP-stabilising norm | Sep 2026 | +0.9% | n/a | alternative norm |
 | FEER, legacy −2.5% norm | Sep 2026 | +14.2% | n/a | v0.2 assumption, for comparison |
 | FEER conditional (experimental) | Jun 2026 | +0.6% | n/a | ad hoc norm, not in composite |
-| BEER, current (real INR/USD, DOLS) | Sep 2026 | +25.1% | 76.29 | **not cointegrated**: descriptive only |
+| BEER, current (real USD/INR, DOLS) | Sep 2026 | +25.1% | 76.29 | **not cointegrated**: descriptive only |
 | BEER, total (permanent fundamentals) | Sep 2026 | +21.4% | 78.56 | fundamentals at one-sided HP trend |
 | Composite (REER+FEER) | Sep 2026 | +15.7% | 82.50 | drives the ECM |
 
@@ -66,9 +66,9 @@ Search family: every specification containing relative productivity (16 specs, 1
 
 Central specification: group ADF p 0.023; after the search, Holm 0.25 and BH 0.09. Country-by-country cointegration with productivity is broadly supported; the common slope the anchor imposes, and the central specification's p-value after accounting for the search, are suggestive rather than conclusive.
 
-### BEER (bilateral, real INR/USD)
+### BEER (bilateral, real USD/INR)
 
-Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding window, first estimate 2008-01. Current BEER uses today's fundamentals; total BEER uses their one-sided HP trends.
+Real USD/INR with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding window, first estimate 2008-01. Current BEER uses today's fundamentals; total BEER uses their one-sided HP trends.
 
 | Spec | Sample | n | Coefficients (t, expected sign) | Engle-Granger p | Johansen rank |
 |---|---|---|---|---|---|
@@ -79,7 +79,7 @@ Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals
 
 Coefficient range across re-estimations: log_dxy +0.29 to +0.71, rel_prod -0.93 to -0.41, real_rate_diff -0.00 to +0.01.
 
-Does the BEER gap predict INR/USD? (same out-of-sample test as the composite)
+Does the BEER gap predict USD/INR? (same out-of-sample test as the composite)
 
 | h | OOS window | n | RMSE ratio vs drift | Clark-West p | α range |
 |---|---|---|---|---|---|
@@ -135,7 +135,7 @@ Does the spread predict next month's rupee move? Coefficient -0.048% per pp (t -
 
 ## Flow attribution (what moved the spot rate)
 
-Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent % changes, 2011-03 to 2026-06 (n = 184, R² 0.34, Newey-West t). Ex post, by reference month; it explains spot moves and does not enter the fair value. Positive = rupee weaker.
+Monthly USD/INR % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent % changes, 2011-03 to 2026-06 (n = 184, R² 0.34, Newey-West t). Ex post, by reference month; it explains spot moves and does not enter the fair value. Positive = rupee weaker.
 
 | Term | Coefficient | t | Meaning |
 |---|---|---|---|
@@ -154,7 +154,7 @@ Direction: FPI this month → INR next month t -2.6 (p 0.009); INR last month �
 
 ### Identifying the flow effect
 
-Monthly, Mar 2011–Jun 2026 (n = 184; one standard deviation of net FPI = US$4.0 bn). Per US$1 bn of net inflow, % change of INR/USD (negative = rupee stronger). Ordering A treats the same-month co-movement as flows moving the rupee; ordering B as the rupee moving flows (impact zero by construction). Both condition on same-month VIX, US 10-year yield and dollar-index changes and on two lags of every variable. Local projections give the cumulative effect h months out (Newey-West errors).
+Monthly, Mar 2011–Jun 2026 (n = 184; one standard deviation of net FPI = US$4.0 bn). Per US$1 bn of net inflow, % change of USD/INR (negative = rupee stronger). Ordering A treats the same-month co-movement as flows moving the rupee; ordering B as the rupee moving flows (impact zero by construction). Both condition on same-month VIX, US 10-year yield and dollar-index changes and on two lags of every variable. Local projections give the cumulative effect h months out (Newey-West errors).
 
 | Method | h=0 | h=1 | h=2 | h=3 | h=4 | h=5 | h=6 |
 |---|---|---|---|---|---|---|---|
@@ -366,7 +366,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-02T06:00:30+00:00, mirror loaded 2026-10-02T05:58:30.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-10-02T08:01:28+00:00, mirror loaded 2026-10-02T07:58:30.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

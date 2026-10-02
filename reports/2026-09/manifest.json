@@ -1,8 +1,8 @@
 {
-  "run_id": "20261002-153548",
-  "created": "2026-10-02T15:38:51",
+  "run_id": "20261002-155329",
+  "created": "2026-10-02T15:56:04",
   "inrfv_version": "1.2.0",
-  "git_revision": "0b9e430-dirty",
+  "git_revision": "13548b8-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
   "config_hash": "a6c49fdce6fc",
   "config": {
@@ -503,7 +503,7 @@
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
     "alfred/CPIAUCSL.csv": "9d42869cf45487ce4722dd0ad7a850fa9e4acd3fdc50411ff47a03c49af45684",
-    "dbie/_fetch.json": "c5f5eff2f3dfdf7d371a8ddc2a3c1558e215d81063248d7a509c47d2238e97de",
+    "dbie/_fetch.json": "75858a9c7176fc1cb6fc8d8d26561dc57c8bb4940b621e6496a8e50fdb10edb5",
     "dbie/bop.banking_capital.csv": "cb2fb953ac3ecaf5b30b8d805314159c2ddee3fbeb7c7d93206703955142ddeb",
     "dbie/bop.capital_account.csv": "962f2828bf4ae7f72c83b5fa4445986324eb887cfe887fe0e28f179382318594",
     "dbie/bop.current_account.csv": "421cfec3d0de3181cd9c576819163f2734924f83274a94790fbb9dcea36767e9",

@@ -3032,11 +3032,11 @@
   },
   "data_meta": {
     "dbie_fetch": {
-      "fetched_at": "2026-10-02T10:04:33+00:00",
+      "fetched_at": "2026-10-02T10:22:30+00:00",
       "base": "https://data-api.dbie.rbihub.in",
       "api_health": {
         "catalogue_entries": 1430,
-        "registry_loaded_at": "2026-10-02T09:58:30.257874252Z",
+        "registry_loaded_at": "2026-10-02T10:18:30.27117821Z",
         "status": "ok",
         "tables": 1049
       }

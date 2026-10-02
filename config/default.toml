@@ -307,7 +307,7 @@ weight_schemes    = ["equal", "performance", "inverse_variance"]
 # Headline corridor: "bootstrap" (joint draws; ex-post coverage 75% vs nominal 80%, 2017-25,
 # 66% after the v0.17 FEER changes, hence [uncertainty.recalibration])
 # or "end_to_end" (the component bands joined end to end; coverage 100%, about twice as
-# wide). Chosen after the coverage test, as the one closer to nominal; see README.
+# wide). Chosen after the coverage test, as the one closer to nominal; see docs/METHODOLOGY.md.
 headline_corridor = "bootstrap"
 seed              = 23
 
@@ -365,7 +365,7 @@ seed        = 42
 # "panel" (panel anchor, pooled across emerging markets).
 # All three are estimated and reported every run. Default "panel": the only one whose
 # error-correction coefficient has the right sign in every out-of-sample window
-# (see README, "REER component choice"). The India-only anchor fails cointegration.
+# (see docs/METHODOLOGY.md, "REER component choice"). The India-only anchor fails cointegration.
 reer_component = "panel"
 weight_reer = 0.5
 weight_feer = 0.5
@@ -378,5 +378,5 @@ weight_rule = {min_rmse_gain = 0.01}
 horizons         = [1, 3, 6, 12]
 min_train        = 60      # realised target observations before the first OOS forecast
 headline_horizon = 12
-# window_months = 120     # rolling ECM estimation window; unset = expanding (see README, item 7:
+# window_months = 120     # rolling ECM estimation window; unset = expanding (see docs/METHODOLOGY.md, item 7:
                           # the rolling window beats expanding at 120 months but not robustly)

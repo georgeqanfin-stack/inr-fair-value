@@ -5,7 +5,7 @@ Version 1.1 · data as of September 2026 · run `20261002-001918` · repository
 
 This document is for a reviewer who has not seen the project. It states what the model
 claims and how each claim is tested. It also lists every choice made after seeing a
-result, and what we would most like checked. The [README](../README.md) is the full
+result, and what we would most like checked. The [methodology notes](METHODOLOGY.md) are the full
 reference; this is the argument. All figures come from
 `reports/latest/results.json` unless marked otherwise.
 
@@ -257,7 +257,7 @@ was written down before the competing results were computed.
 | Equal composite weights | Performance, inverse variance, each alone | Before (rule in config) | Performance 0.963 vs equal 0.964 |
 | Linear ECM | Threshold, ESTAR, rolling, Kalman TVP | Rule before; **robustness requirement added after** the rolling window passed | Rolling 0.944 at 120 months, median gain 0.007 across 72–180 |
 | Constant regime transitions | Brent, VIX, FPI, intervention, all four | Before | None improve the predictive log score |
-| Bootstrap range as headline | End-to-end band | **After** the coverage test | Disclosed in the README and report |
+| Bootstrap range as headline | End-to-end band | **After** the coverage test | Disclosed in METHODOLOGY.md and the report |
 | Scale recalibration | Shift and scale, raw | Before (rule in config) | Real-time over-coverage reported |
 | FEER cyclical adjustment and income term | Without either | Before (IMF method) | Raised FEER from +10.0% to +13.0% and the composite from +14.1% to +15.7% |
 | Crisis episode list | — | Before | |

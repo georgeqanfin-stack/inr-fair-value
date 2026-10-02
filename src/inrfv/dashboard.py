@@ -272,10 +272,13 @@ header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-cont
 h1 { font: 400 2rem/1.1 var(--f-display); margin: 0; letter-spacing: .005em; text-wrap: balance; }
 .meta { color: var(--ink-3); font: 12.5px/1.4 var(--f-mono); }
 .byline { color: var(--ink-2); font-size: 13.5px; margin-top: 6px; } .byline strong { color: var(--ink); font-weight: 600; }
-.sched { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 10px; padding: 5px 12px; border: 1px solid var(--rule);
-  border-radius: 999px; font-size: 12.5px; color: var(--ink-2); background: var(--surface); }
-.sched .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
-.sched strong { color: var(--ink); font-weight: 600; }
+.sched { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; row-gap: 2px; margin-top: 12px;
+  padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px; font-size: 12.5px; line-height: 1.45; color: var(--ink-2);
+  background: var(--surface); max-width: 100%; }
+.sched .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); grid-row: 1 / span 2; margin-top: 5px; }
+@media (min-width: 900px) { .sched { display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px; border-radius: 999px; }
+  .sched .dot { margin-top: 0; } .sched span + span + span::before { content: "·"; margin-right: 10px; color: var(--ink-3); } }
+.sched strong { color: var(--ink); font-weight: 600; white-space: nowrap; }
 .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
 .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px; min-width: 0; }
 .verdict { display: grid; gap: 18px 32px; grid-template-columns: 1fr; }
@@ -534,8 +537,13 @@ function drawCorridor() {
   el("line", { x1: x(D.fair), x2: x(D.fair), y1: 12, y2: 36, stroke: css("--s1"), "stroke-width": 2 }, svg);
   el("circle", { cx: x(D.spot), cy: 24, r: 6, fill: css("--ink"), stroke: css("--surface"), "stroke-width": 2 }, svg);
   const t = (txt, xx, y, anchor, col) => { const e = el("text", { x: xx, y, "text-anchor": anchor, fill: col, style: "font:11px var(--f-mono)" }, svg); e.textContent = txt; };
-  t(`range ${fmt(D.corridor[0])}`, x(D.corridor[0]), 50, "start", css("--ink-3"));
-  t(`${fmt(D.corridor[1])}`, x(D.corridor[1]), 50, "end", css("--ink-3"));
+  if (x(D.corridor[1]) - x(D.corridor[0]) < 130) {   // narrow screens: one label under the band
+    const mid = (x(D.corridor[0]) + x(D.corridor[1])) / 2;
+    t(`range ${fmt(D.corridor[0])}–${fmt(D.corridor[1])}`, Math.max(60, Math.min(mid, W - 60)), 50, "middle", css("--ink-3"));
+  } else {
+    t(`range ${fmt(D.corridor[0])}`, x(D.corridor[0]), 50, "start", css("--ink-3"));
+    t(`${fmt(D.corridor[1])}`, x(D.corridor[1]), 50, "end", css("--ink-3"));
+  }
   t(`fair ${fmt(D.fair)}`, x(D.fair), 9, "middle", css("--s1"));
   t(`spot ${fmt(D.spot)}`, Math.min(x(D.spot), W - 8), 50, x(D.spot) > W - 60 ? "end" : "middle", css("--ink"));
 }

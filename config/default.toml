@@ -3,7 +3,9 @@
 # (code version, this file, data/raw checksums). The run manifest records all three.
 
 [publication]
-author = "George P Babu, Quantitative Researcher"   # byline on the dashboard and the site
+author = "George P Babu, Quantitative Researcher"   # "Built and maintained by ..." on the dashboard and the site
+refresh_day = 15          # day of the month the scheduled refresh runs (06:00 UTC); must match
+                          # the cron in .github/workflows/monthly-refresh.yml (a test checks it)
 
 [paths]
 raw        = "data/raw"

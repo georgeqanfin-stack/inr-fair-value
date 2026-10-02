@@ -117,6 +117,7 @@ def collect(r: dict, note_md: str | None = None) -> dict:
     v, _ = _last(comp["misalignment_pct"])
     return {
         "author": cfg.get("publication", {}).get("author"),
+        "refresh_day": cfg.get("publication", {}).get("refresh_day"),
         "run_id": r["run_id"], "version": __version__, "generated": date.today().isoformat(), "asof": ds.asof.strftime("%Y-%m"),
         "spot": _num(spot), "fair": _num(_last(comp["fair_inr"])[0]), "misalignment": _num(v, 1),
         "corridor": [_num(_last(comp.get("fair_inr_strong", pd.Series(dtype=float)))[0]),
@@ -271,6 +272,10 @@ header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-cont
 h1 { font: 400 2rem/1.1 var(--f-display); margin: 0; letter-spacing: .005em; text-wrap: balance; }
 .meta { color: var(--ink-3); font: 12.5px/1.4 var(--f-mono); }
 .byline { color: var(--ink-2); font-size: 13.5px; margin-top: 6px; } .byline strong { color: var(--ink); font-weight: 600; }
+.sched { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 10px; padding: 5px 12px; border: 1px solid var(--rule);
+  border-radius: 999px; font-size: 12.5px; color: var(--ink-2); background: var(--surface); }
+.sched .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.sched strong { color: var(--ink); font-weight: 600; }
 .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
 .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px; min-width: 0; }
 .verdict { display: grid; gap: 18px 32px; grid-template-columns: 1fr; }
@@ -364,6 +369,7 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
       <div class="eyebrow">INR per US dollar · point-in-time fair value</div>
       <h1>Rupee Fair Value Monitor</h1>
       <div class="byline" id="byline"></div>
+      <div class="sched" id="sched" hidden></div>
     </div>
     <div class="meta" id="meta"></div>
   </header>
@@ -482,7 +488,17 @@ const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS,
 
 // ---------- header, verdict, facts
 const under = D.misalignment > 0;
-if (D.author) { const [nm, ...role] = D.author.split(","); $("byline").innerHTML = `By <strong>${mdInline(nm.trim())}</strong>${role.length ? ", " + mdInline(role.join(",").trim()) : ""}`; } else { $("byline").hidden = true; }
+if (D.author) { const [nm, ...role] = D.author.split(","); $("byline").innerHTML = `Built and maintained by <strong>${mdInline(nm.trim())}</strong>${role.length ? ", " + mdInline(role.join(",").trim()) : ""}`; } else { $("byline").hidden = true; }
+if (D.refresh_day) {
+  // Next scheduled run: day refresh_day of the month at 06:00 UTC (the GitHub Actions schedule).
+  const now = new Date();
+  let nx = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), D.refresh_day, 6));
+  if (now >= nx) nx = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, D.refresh_day, 6));
+  const nd = nx.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  $("sched").innerHTML = `<span class="dot" aria-hidden="true"></span><span><strong>Automated data pipeline</strong> · sources re-pulled, validated and re-estimated monthly</span>`
+    + `<span>Last updated <strong>${new Date(D.generated + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}</strong> · next scheduled update <strong>${nd}</strong></span>`;
+  $("sched").hidden = false;
+}
 $("meta").textContent = `Data to ${monthName(D.asof)} · inrfv ${D.version} · run ${D.run_id} · built ${D.generated}`;
 $("bigMis").innerHTML = `${sgn(D.misalignment)}<span class="unit">%</span>`;
 $("lede").innerHTML = `At <strong>${fmt(D.spot)}</strong> per dollar, the rupee is <strong>${Math.abs(D.misalignment).toFixed(1)}% ${under ? "weaker" : "stronger"}</strong> than its composite fair value of <strong>${fmt(D.fair)}</strong>. `

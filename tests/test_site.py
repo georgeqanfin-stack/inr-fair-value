@@ -25,3 +25,11 @@ def test_build_writes_every_page_with_working_internal_links(tmp_path):
         assert "<table>" in text or page == "changes.html" or "<h1" in text
         for target in ("index.html", "note.html", "methodology.html"):
             assert f'href="{target}"' in text                                         # navigation on every page
+
+
+def test_refresh_day_matches_the_workflow_schedule():
+    import re
+    import tomllib
+    day = tomllib.loads((ROOT / "config" / "default.toml").read_text(encoding="utf-8"))["publication"]["refresh_day"]
+    cron = re.search(r'cron: "(\S+) (\S+) (\S+) ', (ROOT / ".github" / "workflows" / "monthly-refresh.yml").read_text(encoding="utf-8"))
+    assert cron and cron.group(1, 2) == ("0", "6") and int(cron.group(3)) == day

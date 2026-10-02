@@ -76,7 +76,7 @@ def render(md_text: str, title: str, page: str, author: str | None = None) -> st
     import markdown
 
     body = markdown.markdown(relink(md_text), extensions=["tables", "fenced_code", "toc"])
-    by = f"By {html.escape(author)}. " if author else ""
+    by = f"Built and maintained by {html.escape(author)}. " if author else ""
     meta = f'<meta name="author" content="{html.escape(author)}">' if author else ""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">{meta}'

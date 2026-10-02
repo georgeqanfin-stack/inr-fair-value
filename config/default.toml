@@ -2,6 +2,9 @@
 # Every modelling assumption lives here so a run is fully described by
 # (code version, this file, data/raw checksums). The run manifest records all three.
 
+[publication]
+author = "George P Babu, Quantitative Researcher"   # byline on the dashboard and the site
+
 [paths]
 raw        = "data/raw"
 fred_cache = "data/raw/fred"

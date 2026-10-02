@@ -72,14 +72,16 @@ def relink(md_text: str) -> str:
     return re.sub(r"(\[[^\]]*\])\(([^)#\s]+)(#[^)\s]*)?\)", fix, md_text)
 
 
-def render(md_text: str, title: str, page: str) -> str:
+def render(md_text: str, title: str, page: str, author: str | None = None) -> str:
     import markdown
 
     body = markdown.markdown(relink(md_text), extensions=["tables", "fenced_code", "toc"])
+    by = f"By {html.escape(author)}. " if author else ""
+    meta = f'<meta name="author" content="{html.escape(author)}">' if author else ""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">{meta}'
             f"<title>{html.escape(title)} · USD/INR fair value</title><style>{STYLE}</style></head>"
-            f"<body>{nav(page)}<main>{body}<footer>Published from <a href=\"{REPO}\">{REPO.split('/', 3)[3]}</a>. "
+            f"<body>{nav(page)}<main>{body}<footer>{by}Published from <a href=\"{REPO}\">{REPO.split('/', 3)[3]}</a>. "
             f"Every figure comes from the last monthly refresh.</footer></main></body></html>\n")
 
 
@@ -93,6 +95,11 @@ def dashboard(text: str) -> str:
 
 def build(out: Path, root: Path = ROOT) -> list[str]:
     latest = root / "reports" / "latest"
+    try:
+        import tomllib
+        author = tomllib.loads((root / "config" / "default.toml").read_text(encoding="utf-8")).get("publication", {}).get("author")
+    except (OSError, ValueError):
+        author = None
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -101,7 +108,7 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
     for src, page, title in PAGES:
         p = root / src
         if p.exists():
-            (out / page).write_text(render(p.read_text(encoding="utf-8"), title, page), encoding="utf-8")
+            (out / page).write_text(render(p.read_text(encoding="utf-8"), title, page, author), encoding="utf-8")
             written.append(page)
     for a in ASSETS:
         if (latest / a).exists():

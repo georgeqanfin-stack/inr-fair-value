@@ -8,6 +8,7 @@ drawn from the embedded data, so the file works offline and as a shared page.
 
 from __future__ import annotations
 
+import html
 import json
 import math
 from datetime import date
@@ -115,6 +116,7 @@ def collect(r: dict, note_md: str | None = None) -> dict:
     spot, asof = _last(comp["inr_usd"])
     v, _ = _last(comp["misalignment_pct"])
     return {
+        "author": cfg.get("publication", {}).get("author"),
         "run_id": r["run_id"], "version": __version__, "generated": date.today().isoformat(), "asof": ds.asof.strftime("%Y-%m"),
         "spot": _num(spot), "fair": _num(_last(comp["fair_inr"])[0]), "misalignment": _num(v, 1),
         "corridor": [_num(_last(comp.get("fair_inr_strong", pd.Series(dtype=float)))[0]),
@@ -225,9 +227,11 @@ def build_page(r: dict, note_md: str | None = None) -> str:
 def write(r: dict, run_dir: Path, note_md: str | None = None) -> Path:
     """``note_md``: the monthly note (Markdown, without its links line), shown on the page."""
     page = build_page(r, note_md)
+    author = r["config"].get("publication", {}).get("author")
     doc = ("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n"
-           "</head>\n<body>\n" + page + "\n</body>\n</html>\n")
+           + (f"<meta name=\"author\" content=\"{html.escape(author)}\">\n" if author else "")
+           + "</head>\n<body>\n" + page + "\n</body>\n</html>\n")
     out = Path(run_dir) / "dashboard.html"
     out.write_text(doc, encoding="utf-8")
     return out
@@ -266,6 +270,7 @@ body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); m
 header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
 h1 { font: 400 2rem/1.1 var(--f-display); margin: 0; letter-spacing: .005em; text-wrap: balance; }
 .meta { color: var(--ink-3); font: 12.5px/1.4 var(--f-mono); }
+.byline { color: var(--ink-2); font-size: 13.5px; margin-top: 6px; } .byline strong { color: var(--ink); font-weight: 600; }
 .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
 .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px; min-width: 0; }
 .verdict { display: grid; gap: 18px 32px; grid-template-columns: 1fr; }
@@ -333,6 +338,11 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
 .notebody ul { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 3px; }
 .notebody code { font: 12px var(--f-mono); background: var(--grid); padding: 1px 4px; border-radius: 3px; }
 .notebody details > summary { margin: 6px 0 4px; color: var(--accent); font-weight: 600; }
+@media (min-width: 900px) {
+  .notebody { max-width: none; columns: 2; column-gap: 44px; column-rule: 1px solid var(--grid); }
+  .notebody h3 { break-after: avoid; } .notebody h3:first-child, .notebody p:first-child { margin-top: 0; }
+  .notebody p, .notebody li { break-inside: avoid; }
+}
 .scen { display: grid; gap: 22px 36px; grid-template-columns: 1fr; margin-top: 14px; }
 @media (min-width: 820px) { .scen { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
 .ctl { display: grid; gap: 4px; margin-bottom: 16px; }
@@ -353,6 +363,7 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     <div>
       <div class="eyebrow">INR per US dollar · point-in-time fair value</div>
       <h1>Rupee Fair Value Monitor</h1>
+      <div class="byline" id="byline"></div>
     </div>
     <div class="meta" id="meta"></div>
   </header>
@@ -471,6 +482,7 @@ const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS,
 
 // ---------- header, verdict, facts
 const under = D.misalignment > 0;
+if (D.author) { const [nm, ...role] = D.author.split(","); $("byline").innerHTML = `By <strong>${mdInline(nm.trim())}</strong>${role.length ? ", " + mdInline(role.join(",").trim()) : ""}`; } else { $("byline").hidden = true; }
 $("meta").textContent = `Data to ${monthName(D.asof)} · inrfv ${D.version} · run ${D.run_id} · built ${D.generated}`;
 $("bigMis").innerHTML = `${sgn(D.misalignment)}<span class="unit">%</span>`;
 $("lede").innerHTML = `At <strong>${fmt(D.spot)}</strong> per dollar, the rupee is <strong>${Math.abs(D.misalignment).toFixed(1)}% ${under ? "weaker" : "stronger"}</strong> than its composite fair value of <strong>${fmt(D.fair)}</strong>. `

@@ -150,7 +150,7 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
     lo, _ = _last(comp.get("fair_inr_strong", pd.Series(dtype=float)))
     hi, _ = _last(comp.get("fair_inr_weak", pd.Series(dtype=float)))
     month = asof.strftime("%B %Y") if asof is not None else "n/a"
-    L = [f"# INR/USD fair value note, {month}\n",
+    L = [f"# USD/INR fair value note, {month}\n",
          f"Data to {month} · run `{r['run_id']}` · written {date.today():%d %b %Y}\n"]
 
     L.append("## The reading\n")
@@ -329,7 +329,7 @@ def build_note(r: dict, change: dict | None = None, diffs: dict | None = None,
                  f"{rv['max_abs_pp']:.1f} points in any month ({_month(rv['max_month'])}).\n")
 
     todo = [w for w in (gate_warnings or []) if "MOSPI" in w or "IMF CA norm" in w]
-    stale = [w for w in r["warnings"] if w.startswith("Latest BoP quarter") or w.startswith("RBI INR/USD ends")]
+    stale = [w for w in r["warnings"] if w.startswith("Latest BoP quarter") or w.startswith("RBI USD/INR ends")]
     if todo or stale:
         L.append("## To do\n")
         L += [f"- {w}" for w in todo + stale]

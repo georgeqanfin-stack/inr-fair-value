@@ -32,14 +32,14 @@ def build_report(r: dict) -> str:
     L = []
     asof = ds.asof
     spot = ds.pit.loc[asof, "inr_usd"]
-    L.append("# INR/USD fair value: run report\n")
-    L.append(f"inrfv {__version__} · run `{r['run_id']}` · as of **{asof:%b %Y}** (latest month with RBI INR/USD) · "
+    L.append("# USD/INR fair value: run report\n")
+    L.append(f"inrfv {__version__} · run `{r['run_id']}` · as of **{asof:%b %Y}** (latest month with RBI USD/INR) · "
              f"spot **{spot:.2f}**\n")
     L.append("All figures are point-in-time: each value uses only data published by that month-end. "
              "Positive misalignment = INR undervalued (weaker than fair).\n")
 
     L.append("## Current reading\n")
-    L.append("| Model | As of | Misalignment | Fair INR/USD | Notes |")
+    L.append("| Model | As of | Misalignment | Fair USD/INR | Notes |")
     L.append("|---|---|---|---|---|")
     fm, fq, fp = r["feer_m"], r["feer_q"], r["config"]["models"]["feer"]
     lo_c, hi_c = f"misalignment_p{min(fp['band_percentiles'])}", f"misalignment_p{max(fp['band_percentiles'])}"
@@ -60,7 +60,7 @@ def build_report(r: dict) -> str:
         ("FEER, NIIP-stabilising norm", fm.get("misalignment_pct_niip", pd.Series(dtype=float)), None, "alternative norm"),
         ("FEER, legacy −2.5% norm", fm.get("misalignment_pct_static", pd.Series(dtype=float)), None, "v0.2 assumption, for comparison"),
         ("FEER conditional (experimental)", fm["misalignment_pct_conditional"], None, "ad hoc norm, not in composite"),
-        ("BEER, current (real INR/USD, DOLS)", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"],
+        ("BEER, current (real USD/INR, DOLS)", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"],
          "cointegrated" if r["beer_diag"]["engle_granger"]["cointegrated_5pct"] else "**not cointegrated**: descriptive only"),
         ("BEER, total (permanent fundamentals)", r["beer"]["misalignment_total_pct"], r["beer"]["fair_inr_total"],
          "fundamentals at one-sided HP trend"),
@@ -153,8 +153,8 @@ def build_report(r: dict) -> str:
                      "after accounting for the search, are suggestive rather than conclusive.\n")
 
     bd = r["beer_diag"]
-    L.append("### BEER (bilateral, real INR/USD)\n")
-    L.append("Real INR/USD with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding "
+    L.append("### BEER (bilateral, real USD/INR)\n")
+    L.append("Real USD/INR with PPP imposed, regressed by dynamic OLS on long-run fundamentals; expanding "
              f"window, first estimate {bd['first_estimate']}. Current BEER uses today's fundamentals; total BEER "
              "uses their one-sided HP trends.\n")
     L.append("| Spec | Sample | n | Coefficients (t, expected sign) | Engle-Granger p | Johansen rank |")
@@ -166,7 +166,7 @@ def build_report(r: dict) -> str:
                  f"{s['engle_granger']['pvalue']:.3f} | {s['johansen_rank']} |")
     L.append("\nCoefficient range across re-estimations: "
              + ", ".join(f"{k} {v[0]:+.2f} to {v[1]:+.2f}" for k, v in bd["coef_path"].items()) + ".\n")
-    L.append("Does the BEER gap predict INR/USD? (same out-of-sample test as the composite)\n")
+    L.append("Does the BEER gap predict USD/INR? (same out-of-sample test as the composite)\n")
     L.append("| h | OOS window | n | RMSE ratio vs drift | Clark-West p | α range |")
     L.append("|---|---|---|---|---|---|")
     for h, o in bd["oos"].items():
@@ -260,7 +260,7 @@ def build_report(r: dict) -> str:
 
     fd = r["flows_diag"]
     L.append("## Flow attribution (what moved the spot rate)\n")
-    L.append(f"Monthly INR/USD % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent "
+    L.append(f"Monthly USD/INR % change regressed on net FPI and FDI flows (US$ bn), dollar-index and Brent "
              f"% changes, {fd['sample'][0]} to {fd['sample'][1]} (n = {fd['nobs']}, R² {fd['r2']:.2f}, "
              "Newey-West t). Ex post, by reference month; it explains spot moves and does not enter the fair value. "
              "Positive = rupee weaker.\n")
@@ -288,7 +288,7 @@ def build_report(r: dict) -> str:
     if fi:
         L.append("### Identifying the flow effect\n")
         L.append(f"Monthly, {_mon(fi['sample'][0])}–{_mon(fi['sample'][1])} (n = {fi['n']}; one standard deviation of net "
-                 f"FPI = US${fi['fpi_sd_bn']:.1f} bn). Per US$1 bn of net inflow, % change of INR/USD (negative = rupee "
+                 f"FPI = US${fi['fpi_sd_bn']:.1f} bn). Per US$1 bn of net inflow, % change of USD/INR (negative = rupee "
                  "stronger). Ordering A treats the same-month co-movement as flows moving the rupee; ordering B as the "
                  "rupee moving flows (impact zero by construction). Both condition on same-month VIX, US 10-year yield and "
                  "dollar-index changes and on two lags of every variable. Local projections give the cumulative effect h "
@@ -608,7 +608,7 @@ def build_report(r: dict) -> str:
                      f"{v['overlap']} | {v.get('n_revised', 0)} | {v.get('n_unexpected', 0)} |")
         p = m.get("inr_usd_patch", {})
         if p.get("filled") or p.get("extended"):
-            L.append(f"\nINR/USD patched with rescaled FRED EXINUS: filled {p['filled'] or 'none'}, "
+            L.append(f"\nUSD/INR patched with rescaled FRED EXINUS: filled {p['filled'] or 'none'}, "
                      f"extended {p['extended'] or 'none'} (mean RBI–FRED gap {p['mean_abs_rel_diff']:.2%}).")
         L.append("")
 
@@ -628,7 +628,7 @@ def console_summary(r: dict) -> str:
     h = r["headline_h"]
     o = r["backtest"][h]["oos"]
     lines = [
-        f"INR/USD fair value · run {r['run_id']} · as of {ds.asof:%b %Y} · spot {ds.pit.loc[ds.asof, 'inr_usd']:.2f}",
+        f"USD/INR fair value · run {r['run_id']} · as of {ds.asof:%b %Y} · spot {ds.pit.loc[ds.asof, 'inr_usd']:.2f}",
         f"  Composite fair {fair:.2f}  misalignment {v:+.1f}% ({d})",
         f"  P(stress) filtered {r['regime_summary']['p_stress_now']:.2f}",
     ]
@@ -652,14 +652,14 @@ def charts(r: dict, out_dir: Path) -> list[str]:
     comp = r["composite"]
 
     fig, ax = plt.subplots(3, 1, figsize=(12, 11), sharex=True)
-    ax[0].plot(comp.index, comp["inr_usd"], label="INR/USD", lw=1.8)
+    ax[0].plot(comp.index, comp["inr_usd"], label="USD/INR", lw=1.8)
     ax[0].plot(comp.index, comp["fair_inr"], label="Composite fair (point-in-time)", ls="--")
     if "fair_inr_strong" in comp:
         ax[0].fill_between(comp.index, comp["fair_inr_strong"], comp["fair_inr_weak"], alpha=0.2,
                            label=f"Fair-value corridor ({comp.attrs.get('corridor', 'component bands')})")
     ax[0].plot(comp.index, r["beer"]["fair_inr"], label="BEER (current)", ls=":", alpha=0.8)
     ax[0].set_ylabel("INR per USD"); ax[0].legend(); ax[0].set_title(
-        f"INR/USD vs point-in-time fair values (REER component: {r['config']['composite'].get('reer_component', 'hp')})")
+        f"USD/INR vs point-in-time fair values (REER component: {r['config']['composite'].get('reer_component', 'hp')})")
     ax[1].axhline(0, color="k", lw=0.8)
     ax[1].plot(comp.index, r["reer"]["misalignment_pct"], label="REER gap (HP)")
     ax[1].plot(comp.index, r["panel"]["misalignment_pct"], label="REER panel anchor", ls="-.")

@@ -402,13 +402,13 @@ def fetch_cpi_2024(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_B
     return out
 
 
-# --------------------------------------------------------------------------- INR/USD from daily reference rates
+# --------------------------------------------------------------------------- USD/INR from daily reference rates
 
 DAILY_RATE = Spec("financial_markets/forex_rate_d_rn", {"currency": "USD"})
 
 
 def monthly_from_daily(daily: pd.Series, today: pd.Timestamp | None = None) -> pd.DataFrame:
-    """Monthly mean of RBI's daily INR/USD reference rate; the current (unfinished) month is dropped."""
+    """Monthly mean of RBI's daily USD/INR reference rate; the current (unfinished) month is dropped."""
     today = pd.Timestamp.today().normalize() if today is None else today
     m = daily.resample("MS").agg(["mean", "count"])
     m = m[m["count"] > 0]

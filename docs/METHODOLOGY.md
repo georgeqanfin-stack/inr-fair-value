@@ -1,6 +1,6 @@
 # Methodology
 
-Full method notes for the INR/USD fair value model, grouped by topic. The [README](../README.md)
+Full method notes for the USD/INR fair value model, grouped by topic. The [README](../README.md)
 is the overview; [REVIEW.md](REVIEW.md) is the argument for outside reviewers. The version
 in brackets after a heading is the release that introduced it ([CHANGELOG](../CHANGELOG.md)).
 
@@ -23,7 +23,7 @@ Every reading uses only data public at that month-end; revisions are checked sep
 
 **Point-in-time data.** `panel_reference_month` holds values by the month they
 refer to. `panel_point_in_time` holds what was public at each month-end, using
-the publication lags in the config: INR/USD, DXY, Brent, VIX, rates and reserves 0;
+the publication lags in the config: USD/INR, DXY, Brent, VIX, rates and reserves 0;
 REER, CPI and trade 1; monthly FPI/FDI 2; quarterly BoP 6 months after the quarter
 start; annual World Bank data 7 months after year end. Revisions are not modelled.
 
@@ -359,8 +359,8 @@ and the Korean won.
 
 These explain moves and pricing; they do not enter the fair value.
 
-**BEER (v0.4).** Following Clark & MacDonald, the bilateral *real* INR/USD rate
-(PPP imposed: log INR/USD minus log CPI India plus log CPI US) is regressed by
+**BEER (v0.4).** Following Clark & MacDonald, the bilateral *real* USD/INR rate
+(PPP imposed: log USD/INR minus log CPI India plus log CPI US) is regressed by
 dynamic OLS with Newey-West errors on long-run fundamentals: the log broad dollar
 index, India-vs-US relative productivity (World Bank GDP per capita, PPP) and the
 real interest differential (log Brent in an alternative spec). It is estimated on an
@@ -376,7 +376,7 @@ out-of-sample window (12-month Clark-West p = 0.10) but a higher RMSE than drift
 is reported, not used in the composite.
 
 **Flow attribution (v0.5).** The fair-value models say where the rupee should be;
-this asks what moved the spot rate. The monthly INR/USD % change is regressed on net
+this asks what moved the spot rate. The monthly USD/INR % change is regressed on net
 portfolio (FPI) and direct investment (FDI) flows in US$ bn, and on dollar-index and
 Brent % changes (2011 onward, Newey-West errors). Each month's move is split into
 those contributions, trend depreciation (the constant) and a residual, summed over
@@ -475,7 +475,7 @@ that the same machinery does detect a driver that really moves the odds.
 
 | Source | Series | How |
 |---|---|---|
-| RBI DBIE via the RBIH Data API | INR/USD, REER/NEER (40-currency), reserves, trade, quarterly BoP, monthly FDI/portfolio flows, weighted average call rate | Automatic, cached in `data/raw/dbie/` |
+| RBI DBIE via the RBIH Data API | USD/INR, REER/NEER (40-currency), reserves, trade, quarterly BoP, monthly FDI/portfolio flows, weighted average call rate | Automatic, cached in `data/raw/dbie/` |
 | RBI DBIE Excel downloads | Same series | Optional manual download to `data/raw/rbi_*.xlsx`; merged with the API |
 | FRED | US CPI, Fed funds, broad and major dollar indices, VIX, 10Y, Brent, Fed balance sheet, India call rate, OECD India CPI | Automatic, cached in `data/raw/fred/` |
 | World Bank | India GDP (current US$), remittances | Automatic, cached in `data/raw/wb_*.csv` |
@@ -487,7 +487,7 @@ that the same machinery does detect a driver that really moves the odds.
 | MOSPI, Labour Bureau (via the RBIH Data API) | CPI-Combined (base 2012) and back series, CPI-IW (bases 1982, 2001) | Automatic, cached in `data/raw/dbie/` |
 | MOSPI via RBI Bulletin (RBIH Data API) | CPI-Combined, 2024 = 100 (from Jan 2025), with the provisional flag | Automatic, cached in `data/raw/dbie/cpi_2024base.csv`; `data/raw/manual/mospi_cpi_2024base.csv` is the check and fallback |
 | RBI Bulletin (RBIH Data API) | BoP, BPM6 standard presentation (often a quarter ahead of the typed series) | Automatic, cached in `data/raw/dbie/bop_bpm6.csv`; used for the latest quarters only |
-| RBI (RBIH Data API) | Daily INR/USD reference rate, weekly FX reserves | Automatic; monthly averages fill gaps in, and extend, the monthly INR/USD series; weekly reserves fill gaps only |
+| RBI (RBIH Data API) | Daily USD/INR reference rate, weekly FX reserves | Automatic; monthly averages fill gaps in, and extend, the monthly USD/INR series; weekly reserves fill gaps only |
 
 **RBI data.** DBIE itself has no public API. The pipeline reads DBIE's series from
 the [Reserve Bank Innovation Hub](https://github.com/Reserve-Bank-Innovation-Hub/dbie.rbihub.in)'s
@@ -495,7 +495,7 @@ public, read-only Data API (`https://data-api.dbie.rbihub.in`), a daily mirror o
 DBIE's SDMX series run by an RBI subsidiary. It merges these with any DBIE Excel
 files in `data/raw`. Where both sources have a value, the later release wins (RBI
 revises recent months). Every run reports each series' coverage, which source was
-newer, and any disagreement outside the normal revision window. Missing INR/USD
+newer, and any disagreement outside the normal revision window. Missing USD/INR
 months, and months after RBI's latest, are filled with FRED's EXINUS rescaled to
 RBI's level, and the report says so. `[dbie] mode` in the config switches between
 `merge`, `api` and `xlsx`.

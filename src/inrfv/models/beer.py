@@ -1,8 +1,8 @@
-"""BEER: behavioural equilibrium for the bilateral INR/USD rate (Clark & MacDonald 1998).
+"""BEER: behavioural equilibrium for the bilateral USD/INR rate (Clark & MacDonald 1998).
 
-Long-run relation for the real INR/USD rate, with PPP imposed:
+Long-run relation for the real USD/INR rate, with PPP imposed:
 
-    q_t = log INR/USD_t - (log CPI India_t - log CPI US_t)
+    q_t = log USD/INR_t - (log CPI India_t - log CPI US_t)
     q_t = c + b' X_t + e_t
 
 X (config): log broad dollar index (b > 0: a stronger dollar weakens the rupee),
@@ -13,12 +13,12 @@ Short-lived drivers (VIX, portfolio flows) are deliberately left out of the long
 Estimated by dynamic OLS (levels plus leads and lags of the differenced regressors)
 with Newey-West errors, on an expanding window of data public at each month.
 
-* Current BEER: INR/USD* = exp(c + b' X_t + relative price level_t).
+* Current BEER: USD/INR* = exp(c + b' X_t + relative price level_t).
 * Total BEER:   the same with each fundamental at its permanent level, a one-sided
   HP trend (the Clark-MacDonald "total misalignment").
 * Band: coefficient uncertainty (HAC covariance) around the current BEER.
 
-The legacy version regressed log INR/USD on levels of DXY, the real rate gap, FPI/GDP,
+The legacy version regressed log USD/INR on levels of DXY, the real rate gap, FPI/GDP,
 Brent and VIX by OLS and read full-sample fitted values as fair value.
 
 On 2001-2026 data none of the tested specifications is cointegrated (see report), so

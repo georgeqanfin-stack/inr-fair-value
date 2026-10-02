@@ -1,3 +1,3 @@
-"""INR/USD hybrid fair value model."""
+"""USD/INR hybrid fair value model."""
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"

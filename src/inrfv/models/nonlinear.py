@@ -1,7 +1,7 @@
 """Nonlinear and time-varying adjustment, and structural breaks.
 
 The linear error-correction model (backtest.py) forecasts the h-month change in log
-INR/USD as a + b x ECT. Two classic reasons it might under-use the signal:
+USD/INR as a + b x ECT. Two classic reasons it might under-use the signal:
 
 * nonlinear adjustment: large misalignments revert faster than small ones
   (transaction costs, intervention bands; Taylor, Peel & Sarno 2001);

@@ -8,7 +8,7 @@ from inrfv.models import beer
 
 
 def synthetic_ds(rng, n=300, b_dxy=0.7, b_prod=-0.4, noise=0.01):
-    """Real INR/USD cointegrated with DXY and productivity; PPP holds in the long run."""
+    """Real USD/INR cointegrated with DXY and productivity; PPP holds in the long run."""
     idx = pd.date_range("2000-01-01", periods=n, freq="MS")
     log_dxy = 4.6 + np.cumsum(rng.normal(0, 0.01, n))
     years = range(1998, 2000 + n // 12 + 2)

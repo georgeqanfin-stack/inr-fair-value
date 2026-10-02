@@ -1,4 +1,4 @@
-# Reproducible environment for the INR/USD fair-value pipeline.
+# Reproducible environment for the USD/INR fair-value pipeline.
 #   docker build --build-arg GIT_REVISION=$(git rev-parse --short HEAD) -t inrfv .
 #   docker run --rm -v "$PWD/outputs:/app/outputs" inrfv                      # full run on the cached data
 #   docker run --rm inrfv python -m pytest -q                                # test suite

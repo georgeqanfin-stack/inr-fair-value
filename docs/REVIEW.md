@@ -1,4 +1,4 @@
-# INR/USD fair value: technical write-up for outside review
+# USD/INR fair value: technical write-up for outside review
 
 Version 1.1 · data as of September 2026 · run `20261002-001918` · repository
 [georgeqanfin-stack/inr-fair-value](https://github.com/georgeqanfin-stack/inr-fair-value)
@@ -50,9 +50,9 @@ uses only data public at the date it refers to.
 
 ## 2. Question and conventions
 
-- **Target:** the medium-term equilibrium of the rupee, expressed as a fair INR/USD
+- **Target:** the medium-term equilibrium of the rupee, expressed as a fair USD/INR
   rate. Misalignment is measured on the real effective rate. It is converted to
-  INR/USD by holding the dollar's share constant: fair = spot × exp(−gap).
+  USD/INR by holding the dollar's share constant: fair = spot × exp(−gap).
 - **Sign:** positive misalignment = rupee **weaker** than fair (undervalued).
 - **Frequency:** monthly readings, January 2000 onward. Each reading uses only data
   published by that month-end.
@@ -65,7 +65,7 @@ uses only data public at the date it refers to.
 
 | Source | Series | Publication lag applied |
 |---|---|---|
-| RBI via the RBIH Data API (a public mirror of the RBI's DBIE database) | INR/USD (daily reference rate, monthly mean), 40-currency REER/NEER, reserves, BoP (BPM6), IIP, FPI/FDI, intervention (Bulletin Table 4), forward premia, real GDP | Market data 0; REER 1 month; monthly flows and intervention 2 months; quarterly BoP 6 months after quarter start |
+| RBI via the RBIH Data API (a public mirror of the RBI's DBIE database) | USD/INR (daily reference rate, monthly mean), 40-currency REER/NEER, reserves, BoP (BPM6), IIP, FPI/FDI, intervention (Bulletin Table 4), forward premia, real GDP | Market data 0; REER 1 month; monthly flows and intervention 2 months; quarterly BoP 6 months after quarter start |
 | MOSPI via RBI Bulletin | CPI-Combined (2024 = 100; earlier bases linked) | 1 month |
 | FRED / ALFRED | US CPI (real-time vintages), Fed funds, DXY, Brent, VIX, US 10-year, BIS broad REERs for 19 EMs, US/euro-area GDP and potential | Real-time vintages where available, otherwise 1 month |
 | World Bank WDI | GDP per capita (PPP), government consumption, openness, terms of trade (19 EMs) | 7 months after year end (terms of trade 18) |
@@ -140,7 +140,7 @@ For each BoP quarter, using data public at its release:
 ### 4.3 Composite and error-correction test
 
 The composite misalignment is the equal-weighted average of the two log gaps. The
-error-correction test regresses the h-month change in log INR/USD on the lagged
+error-correction test regresses the h-month change in log USD/INR on the lagged
 composite gap. It is re-estimated each month on an expanding window, training only on
 fully realised targets.
 
@@ -163,7 +163,7 @@ past misses (section 5.4).
 |---|---|
 | One-sided HP REER gap | Cyclical by construction; composite built on it has α changing sign, CW p 1.00 |
 | India-only REER fundamentals anchor | Not cointegrated (Engle-Granger p 0.85, 12 variants 0.60–0.87); forecasts worse (ratio 1.37) |
-| BEER (real INR/USD on dollar, productivity, rates) | Not cointegrated (p 0.78–0.99) |
+| BEER (real USD/INR on dollar, productivity, rates) | Not cointegrated (p 0.78–0.99) |
 | Markov-switching regimes | Regime-conditional α does not differ; time-varying transition drivers do not help (section 7) |
 | Flow attribution, RBI intervention, forward premia | Explain past moves or market pricing ex post; they do not define equilibrium |
 

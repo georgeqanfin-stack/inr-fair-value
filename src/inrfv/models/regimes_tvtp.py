@@ -15,7 +15,7 @@ Tests, set before running:
 
 * full sample: likelihood-ratio test against the constant model, AIC and BIC;
 * out of sample (the deciding test): one-step-ahead predictive density of each month's
-  INR/USD return, from regime probabilities predicted with information up to the
+  USD/INR return, from regime probabilities predicted with information up to the
   previous month and parameters re-estimated every ``refit_every`` months. Mean log
   score difference vs the constant model with a Newey-West t-test (Amisano & Giacomini
   2007), and the AUC of the predicted stress probability for big-move months (|return|

@@ -216,7 +216,7 @@ def run(bop: pd.DataFrame, pit: pd.DataFrame, cfg: dict,
     monthly = rel[["quarter"] + keep].reindex(pit.index, method="ffill")
     monthly["gap_log"] = np.log1p(monthly["misalignment_pct"] / 100)
     monthly["fair_inr"] = pit["inr_usd"] * np.exp(-monthly["gap_log"])
-    # Higher misalignment -> lower (stronger) fair INR/USD.
+    # Higher misalignment -> lower (stronger) fair USD/INR.
     monthly["gap_log_lo"] = np.log1p(monthly[lo] / 100)
     monthly["gap_log_hi"] = np.log1p(monthly[hi] / 100)
     monthly["fair_inr_strong"] = pit["inr_usd"] * np.exp(-monthly["gap_log_hi"])

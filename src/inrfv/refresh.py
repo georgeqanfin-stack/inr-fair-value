@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-from . import report
+from . import dashboard, report
 from .config import load_config, path
 from .data import panel as panel_data
 from .data import schemas
@@ -313,6 +313,7 @@ def refresh(cfg: dict, commit: bool = False, today: date | None = None) -> int:
         links = {**NOTE_LINKS, "What changed": "refresh_summary.md"}
         (run_dir / "note.md").write_text(build_note(r, change=change, diffs=diffs, gate_warnings=warnings,
                                                     links=links), encoding="utf-8")
+        dashboard.write(r, run_dir, note_md=build_note(r, change=change, diffs=diffs, gate_warnings=warnings))
         write_manifest(run_dir, cfg, {"asof": asof, "warnings": r["warnings"],
                                       "refresh": {"data_changes": diffs, "gate_warnings": warnings}})
         targets = publish_reports(run_dir, root, asof)

@@ -1,7 +1,7 @@
 """Parsers for RBI DBIE Excel downloads.
 
 Columns are located by their header text, not by fixed position: DBIE layouts
-shift between downloads (the legacy notebooks read the SDR column as INR/USD
+shift between downloads (the legacy notebooks read the SDR column as USD/INR
 after one such shift). Each parser raises ``ParseError`` when a header it needs
 is missing rather than silently returning the wrong column.
 """

@@ -36,7 +36,7 @@ def _pct(gap):
     return None if gap is None or (isinstance(gap, float) and math.isnan(gap)) else (math.exp(gap) - 1) * 100
 
 
-def collect(r: dict) -> dict:
+def collect(r: dict, note_md: str | None = None) -> dict:
     """Everything the page shows, as plain JSON-able values."""
     comp, ds = r["composite"], r["dataset"]
     cfg = r["config"]
@@ -78,7 +78,7 @@ def collect(r: dict) -> dict:
         model("FEER, NIIP-stabilising norm", fm.get("misalignment_pct_niip"), None, "reported", "n/a",
               "Alternative norm: the deficit that keeps net foreign liabilities stable"),
         model("BEER, current", r["beer"]["misalignment_pct"], r["beer"]["fair_inr"], "reported", eg(r["beer_diag"]),
-              "Real INR/USD on the dollar index and relative productivity"),
+              "Real USD/INR on the dollar index and relative productivity"),
         model("REER anchor (India only)", r["anchor"]["misalignment_pct"], r["anchor"]["fair_inr"], used("anchor"),
               eg(r["anchor_diag"]), "Single-country fundamentals; too short a sample"),
     ]
@@ -105,7 +105,7 @@ def collect(r: dict) -> dict:
     g = r["regime_summary"]
     m = ds.meta
     ends = m.get("series_end", {})
-    fresh_keys = [("inr_usd", "INR/USD"), ("reer", "REER (RBI)"), ("cpi_india", "India CPI"), ("cpi_us", "US CPI"),
+    fresh_keys = [("inr_usd", "USD/INR"), ("reer", "REER (RBI)"), ("cpi_india", "India CPI"), ("cpi_us", "US CPI"),
                   ("exports_usd_mn", "Trade"), ("fpi_usd_mn", "Portfolio flows"), ("dxy", "Dollar index"),
                   ("brent", "Brent")]
     freshness = [{"series": lbl, "end": ends.get(k)} for k, lbl in fresh_keys if ends.get(k)]
@@ -130,7 +130,39 @@ def collect(r: dict) -> dict:
         "flows": flows_block(r.get("flows_diag")),
         "market": market_block(r.get("market")),
         "peers": peers_block(r.get("peers"), r["config"]),
+        "scenario": scenario_block(r),
+        "note": note_md,
     }
+
+
+def scenario_block(r: dict) -> dict | None:
+    """Inputs for the in-page what-if: the latest FEER quarter and the REER component gap.
+
+    The page recomputes the FEER gap as log(1 - (CA - norm) / semi / 100), with
+    semi = -(eta_x X + eta_m M) / 100 - share * income / 100 (feer.semi), and the
+    composite as w * REER gap + (1 - w) * FEER gap, so the defaults reproduce the headline.
+    """
+    q, comp, fp = r.get("feer_q"), r["composite"], r["config"]["models"]["feer"]
+    if q is None or "cad_underlying" not in q:
+        return None
+    q = q.dropna(subset=["misalignment_pct", "cad_underlying", "norm_central"])
+    last = comp.dropna(subset=["gap_reer", "inr_usd"])
+    if q.empty or last.empty:
+        return None
+    row, c = q.iloc[-1], last.iloc[-1]
+
+    def g(k):
+        return _num(row.get(k), 6)
+
+    return {"quarter": q.index[-1].strftime("%Y-%m"), "ca": g("cad_underlying"), "ca_reported": g("ca_pct_4q"),
+            "norm": g("norm_central"), "norm_niip": g("norm_niip"), "norm_static": g("norm_static"),
+            "x": g("exports_pct_gdp"), "m": g("imports_pct_gdp"), "inc": g("income_pct_gdp"),
+            "semi_fixed": g("semi_elasticity"), "eta_x": fp["eta_exports"], "eta_m": fp["eta_imports"],
+            "eta_unc": fp.get("eta_uncertainty", 0.5),
+            "share": fp.get("income_fc_share", 0.5) if fp.get("income_term", False) else 0.0,
+            "income_term": bool(fp.get("income_term", False)),
+            "gap_reer": _num(c["gap_reer"], 6), "spot": _num(c["inr_usd"], 4), "month": last.index[-1].strftime("%Y-%m"),
+            "feer_mis": _num(row["misalignment_pct"], 2)}
 
 
 def flows_block(fd: dict | None) -> dict | None:
@@ -185,13 +217,14 @@ def rbi_block(iv: dict | None) -> dict | None:
                         for k, w in iv["windows"].items()}}
 
 
-def build_page(r: dict) -> str:
-    data = json.dumps(collect(r), separators=(",", ":"), allow_nan=False)
+def build_page(r: dict, note_md: str | None = None) -> str:
+    data = json.dumps(collect(r, note_md), separators=(",", ":"), allow_nan=False)
     return TEMPLATE.replace("__DATA__", data.replace("</", "<\\/"))
 
 
-def write(r: dict, run_dir: Path) -> Path:
-    page = build_page(r)
+def write(r: dict, run_dir: Path, note_md: str | None = None) -> Path:
+    """``note_md``: the monthly note (Markdown, without its links line), shown on the page."""
+    page = build_page(r, note_md)
     doc = ("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n"
            "</head>\n<body>\n" + page + "\n</body>\n</html>\n")
@@ -293,6 +326,25 @@ ul.warn { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 1
 .flows .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 11.5px var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
 @media (max-width: 520px) { .flows .row { grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); } }
 footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
+.notebody { max-width: 72ch; color: var(--ink-2); }
+.notebody h3 { font: 600 .95rem/1.3 var(--f-body); color: var(--ink); margin: 20px 0 6px; }
+.notebody h3:first-child { margin-top: 8px; }
+.notebody p { margin: 0 0 10px; } .notebody strong { color: var(--ink); font-weight: 600; }
+.notebody ul { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 3px; }
+.notebody code { font: 12px var(--f-mono); background: var(--grid); padding: 1px 4px; border-radius: 3px; }
+.notebody details > summary { margin: 6px 0 4px; color: var(--accent); font-weight: 600; }
+.scen { display: grid; gap: 22px 36px; grid-template-columns: 1fr; margin-top: 14px; }
+@media (min-width: 820px) { .scen { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.ctl { display: grid; gap: 4px; margin-bottom: 16px; }
+.ctl label { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.ctl output { font: 500 13px var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.ctl input[type=range] { width: 100%; accent-color: var(--accent); }
+.ctl .hint { color: var(--ink-3); font-size: 11.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.chips button { font: 500 11.5px var(--f-mono); padding: 3px 9px; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink-2); cursor: pointer; }
+.chips button:hover, .chips button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.res .big { margin-top: 2px; } .res .delta { font: 500 13px var(--f-mono); color: var(--ink-3); }
+.res table { margin-top: 12px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -315,14 +367,19 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     <div class="facts" id="facts"></div>
   </section>
 
+  <section class="panel" id="notePanel" aria-labelledby="noteTitle">
+    <div class="bar"><h2 id="noteTitle">This month's note</h2><span class="meta" id="noteMeta"></span></div>
+    <div class="notebody" id="noteBody"></div>
+  </section>
+
   <section class="panel">
     <div class="bar">
-      <h2>INR/USD and composite fair value</h2>
+      <h2>USD/INR and composite fair value</h2>
       <div class="seg" role="group" aria-label="Time range" id="range">
         <button type="button" data-r="5">5Y</button><button type="button" data-r="10">10Y</button><button type="button" data-r="all">All</button>
       </div>
     </div>
-    <div class="legend"><span><i style="border-color:var(--ink)"></i>INR/USD spot</span><span><i style="border-color:var(--s1)"></i>Composite fair value</span><span><i class="area"></i>Fair-value range (10th–90th pct)</span></div>
+    <div class="legend"><span><i style="border-color:var(--ink)"></i>USD/INR spot</span><span><i style="border-color:var(--s1)"></i>Composite fair value</span><span><i class="area"></i>Fair-value range (10th–90th pct)</span></div>
     <div class="chart" id="chMain"></div>
     <details>
       <summary>Monthly values, last 24 months</summary>
@@ -339,7 +396,7 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     </section>
     <section class="panel">
       <h2 style="font:600 1rem/1.3 var(--f-body);margin:0">Probability of a stress regime</h2>
-      <p class="sub">Markov-switching model of monthly INR/USD moves, filtered with data available at each month.</p>
+      <p class="sub">Markov-switching model of monthly USD/INR moves, filtered with data available at each month.</p>
       <div class="chart" id="chStress"></div>
     </section>
   </div>
@@ -348,6 +405,22 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     <h2 style="font:600 1rem/1.3 var(--f-body);margin:0">Models</h2>
     <p class="sub">The composite averages the REER component and the FEER. The others are reported for context; a failed long-run test means the model describes where fundamentals point, not a level the rupee returns to.</p>
     <div class="tablewrap"><table id="tblModels"></table></div>
+  </section>
+
+  <section class="panel" id="scenPanel" aria-labelledby="scenTitle">
+    <div class="bar"><h2 id="scenTitle">What if? Test the assumptions</h2><div class="chips"><button type="button" id="scenReset">Reset to the model's values</button></div></div>
+    <p class="sub" id="scenSub"></p>
+    <div class="scen">
+      <div id="scenCtl"></div>
+      <div class="res" aria-live="polite">
+        <div class="eyebrow">Composite misalignment under these assumptions</div>
+        <div class="big" id="scenBig"></div>
+        <div class="delta" id="scenDelta"></div>
+        <div class="corridor" id="scenBar"></div>
+        <div class="tablewrap"><table id="scenTbl"></table></div>
+        <p class="sub" id="scenNote" style="margin-top:12px"></p>
+      </div>
+    </div>
   </section>
 
   <section class="panel" id="peerPanel">
@@ -540,7 +613,7 @@ $("tblMonths").innerHTML = `<thead><tr><th>Month</th><th class="n">Spot</th><th 
   + recent.map(r => `<tr><td>${monthName(r[0])}</td><td class="n">${fmt(r[1])}</td><td class="n">${fmt(r[2])}</td><td class="n">${fmt(r[3])}–${fmt(r[4])}</td><td class="n">${sgn(r[7])}%</td><td class="n">${r[8] === null ? "n/a" : (r[8] * 100).toFixed(0) + "%"}</td></tr>`).join("") + "</tbody>";
 const roleLbl = { headline: "Headline", composite: "In composite", reported: "Reported only", benchmark: "IMF check" };
 const statusLbl = { ok: '<span class="pill ok"><span class="dot"></span>Passes</span>', fail: '<span class="pill fail"><span class="dot"></span>Fails</span>', "n/a": '<span class="pill">Not applicable</span>' };
-$("tblModels").innerHTML = `<thead><tr><th>Model</th><th class="n">Misalignment</th><th class="n">Fair INR/USD</th><th>Use</th><th>Long-run test</th></tr></thead><tbody>`
+$("tblModels").innerHTML = `<thead><tr><th>Model</th><th class="n">Misalignment</th><th class="n">Fair USD/INR</th><th>Use</th><th>Long-run test</th></tr></thead><tbody>`
   + D.models.map(mm => `<tr class="${mm.role === "headline" ? "head" : ""}"><td>${mm.name}<span class="note">${mm.note}${mm.asof ? ` · ${mm.asof}` : ""}</span></td><td class="n">${sgn(mm.misalignment)}%</td><td class="n">${fmt(mm.fair)}</td><td>${roleLbl[mm.role]}</td><td>${statusLbl[mm.status]}</td></tr>`).join("") + "</tbody>";
 $("tblBt").innerHTML = `<thead><tr><th>Horizon</th><th class="n">RMSE ratio</th><th class="n">Clark-West p</th><th class="n">Hit rate</th><th class="n">Naive</th></tr></thead><tbody>`
   + D.backtest.map(b => `<tr><td>${b.h} month${b.h > 1 ? "s" : ""}<span class="note">${b.window[0]} to ${b.window[1]}, n=${b.n}</span></td><td class="n">${fmt(b.rmse, 3)}</td><td class="n">${fmt(b.cw, 3)}</td><td class="n">${fmt(b.hit, 0)}%</td><td class="n">${fmt(b.naive, 0)}%</td></tr>`).join("") + "</tbody>";
@@ -554,7 +627,7 @@ let flowWin = null;
 function drawFlows() {
   const w = F.windows.find(x => x.months === flowWin) || F.windows[0];
   document.querySelectorAll("#flowWin button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.m === w.months)));
-  $("flowSub").textContent = `${monthName(w.start)} to ${monthName(w.end)}: INR/USD moved ${sgn(w.actual)}%. Each bar is that driver's share of the move, in percentage points; positive means it pushed the rupee weaker.`;
+  $("flowSub").textContent = `${monthName(w.start)} to ${monthName(w.end)}: USD/INR moved ${sgn(w.actual)}%. Each bar is that driver's share of the move, in percentage points; positive means it pushed the rupee weaker.`;
   const rows = [{ label: "Actual move", v: w.actual, total: true }, ...w.parts.map(p => ({ label: p.label, v: p.v, resid: p.key === "residual" }))];
   const m = Math.max(...rows.map(r => Math.abs(r.v || 0)), 0.5);
   const host = $("flowBars"); host.innerHTML = "";
@@ -624,6 +697,108 @@ if (F && F.windows.length) {
   document.querySelectorAll("#flowWin button").forEach(b => b.addEventListener("click", () => { flowWin = +b.dataset.m; try { localStorage.setItem("inrfv-flowwin", flowWin); } catch (e) {} drawFlows(); }));
   drawFlows();
 } else { $("flowPanel").hidden = true; }
+
+// ---------- this month's note (Markdown subset: headings, paragraphs, bullets, bold, code, links)
+function mdInline(t) {
+  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>').replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+}
+function mdBlocks(lines) {
+  const out = []; let para = [], list = [];
+  const pflush = () => { if (para.length) out.push(`<p>${mdInline(para.join(" "))}</p>`); para = []; };
+  const lflush = () => { if (list.length) out.push(`<ul>${list.map(x => `<li>${mdInline(x)}</li>`).join("")}</ul>`); list = []; };
+  lines.forEach(l => {
+    if (/^## /.test(l)) { pflush(); lflush(); out.push(`<h3>${mdInline(l.slice(3))}</h3>`); }
+    else if (/^- /.test(l)) { pflush(); list.push(l.slice(2)); }
+    else if (!l.trim() || /^---+$/.test(l.trim())) { pflush(); lflush(); }
+    else { lflush(); para.push(l.trim()); }
+  });
+  pflush(); lflush(); return out.join("");
+}
+if (D.note) {
+  const lines = D.note.replace(/\r/g, "").split("\n").filter(l => !/^# /.test(l));
+  const metaIdx = lines.findIndex(l => /^Data to /.test(l));
+  if (metaIdx >= 0) { $("noteMeta").textContent = lines[metaIdx].replace(/`/g, ""); lines.splice(metaIdx, 1); }
+  const heads = lines.reduce((a, l, i) => (/^## /.test(l) ? a.concat(i) : a), []);
+  const cut = heads.length > 2 ? heads[2] : lines.length;          // the reading + since the last note stay open
+  $("noteBody").innerHTML = mdBlocks(lines.slice(0, cut))
+    + (cut < lines.length ? `<details><summary>Read the full note: ${heads.slice(2).map(i => mdInline(lines[i].slice(3))).join(" · ")}</summary>${mdBlocks(lines.slice(cut))}</details>` : "");
+} else { $("notePanel").hidden = true; }
+
+// ---------- what if: recompute the FEER and the composite in the page
+const SC = D.scenario;
+if (SC) {
+  const base = { norm: SC.norm, ca: SC.ca, eta: 1, share: SC.share, w: 0.5 };
+  const st = { ...base };
+  const lo = (v, d) => Math.floor((v - d) * 10) / 10, hi = (v, d) => Math.ceil((v + d) * 10) / 10;
+  const ctls = [
+    { k: "norm", label: "Current-account norm, % of GDP", min: -5, max: 1, step: 0.1, f: v => sgn(v, 1),
+      hint: "The deficit India can sustain. Model: the IMF's published norm.",
+      chips: [["IMF", SC.norm], SC.norm_niip !== null && ["NIIP-stabilising", SC.norm_niip], SC.norm_static !== null && ["Legacy fixed", SC.norm_static]].filter(Boolean) },
+    { k: "ca", label: "Underlying current account, % of GDP", min: lo(SC.ca, 3), max: hi(SC.ca, 3), step: 0.05, f: v => sgn(v, 2),
+      hint: `Four quarters to the quarter starting ${monthName(SC.quarter)}, oil and cycle adjusted; as reported ${sgn(SC.ca_reported, 2)}.` },
+    { k: "eta", label: "Trade elasticities, × the IMF's", min: 1 - SC.eta_unc, max: 1 + SC.eta_unc, step: 0.05, f: v => "×" + v.toFixed(2),
+      hint: `How strongly trade responds to the exchange rate (EBA: exports ${SC.eta_x}, imports ${SC.eta_m}). Lower means a bigger move is needed to close a gap.` },
+    SC.income_term && { k: "share", label: "Share of net income paid in foreign currency", min: 0, max: 1, step: 0.05, f: v => (v * 100).toFixed(0) + "%",
+      hint: "Unknown; the model uses the midpoint." },
+    { k: "w", label: "Weight on the REER component", min: 0, max: 1, step: 0.05, f: v => (v * 100).toFixed(0) + "%",
+      hint: "The rest goes to the FEER. Weights learned from each component's track record settle near 50%." },
+  ].filter(Boolean);
+  ctls.forEach(c => { if (st[c.k] < c.min) c.min = st[c.k]; if (st[c.k] > c.max) c.max = st[c.k]; });
+  $("scenCtl").innerHTML = ctls.map(c => `<div class="ctl"><label for="sc_${c.k}"><span>${c.label}</span><output id="so_${c.k}" for="sc_${c.k}"></output></label>`
+    + `<input type="range" id="sc_${c.k}" min="${c.min}" max="${c.max}" step="${c.step}">`
+    + (c.chips ? `<div class="chips">${c.chips.map(([t, v]) => `<button type="button" data-k="${c.k}" data-v="${v}">${t} ${sgn(v, 1)}</button>`).join("")}</div>` : "")
+    + `<span class="hint">${c.hint}</span></div>`).join("");
+  const feerGap = (s) => {
+    const k = s.eta;
+    const semi = (SC.x !== null && SC.m !== null) ? -(SC.eta_x * k * SC.x + SC.eta_m * k * SC.m) / 100 - s.share * (SC.inc || 0) / 100 : SC.semi_fixed * k;
+    const a = 1 - (s.ca - s.norm) / semi / 100;
+    return a > 0 ? Math.log(a) : null;
+  };
+  const compGap = (s) => { const f = feerGap(s); return f === null ? null : s.w * SC.gap_reer + (1 - s.w) * f; };
+  const pct = (g) => g === null ? null : (Math.exp(g) - 1) * 100;
+  const g0 = compGap(base), f0 = SC.spot * Math.exp(-g0);
+  function drawScen() {
+    ctls.forEach(c => { $("sc_" + c.k).value = st[c.k]; $("so_" + c.k).textContent = c.f(+st[c.k]); });
+    const g = compGap(st), m = pct(g), fair = g === null ? null : SC.spot * Math.exp(-g);
+    $("scenBig").innerHTML = m === null ? "n/a" : `${sgn(m)}<span class="unit">%</span>`;
+    const dm = m === null ? null : m - pct(g0);
+    $("scenDelta").textContent = dm === null ? "" : Math.abs(dm) < 0.05 ? "Same as the model's reading" : `${sgn(dm)} points against the model's ${sgn(pct(g0))}%`;
+    $("scenTbl").innerHTML = `<thead><tr><th></th><th class="n">Model</th><th class="n">Your case</th></tr></thead><tbody>`
+      + `<tr><td>FEER misalignment</td><td class="n">${sgn(pct(feerGap(base)))}%</td><td class="n">${sgn(pct(feerGap(st)))}%</td></tr>`
+      + `<tr><td>REER component (held)</td><td class="n">${sgn(pct(SC.gap_reer))}%</td><td class="n">${sgn(pct(SC.gap_reer))}%</td></tr>`
+      + `<tr class="head"><td>Composite</td><td class="n">${sgn(pct(g0))}%</td><td class="n">${sgn(m)}%</td></tr>`
+      + `<tr><td>Fair value, INR per USD</td><td class="n">${fmt(f0)}</td><td class="n">${fmt(fair)}</td></tr></tbody>`;
+    const host = $("scenBar"); host.innerHTML = "";
+    if (fair !== null) {
+      const W = host.clientWidth || 500, H = 58;
+      const pts = [fair, f0, SC.spot].concat(D.corridor[0] !== null ? D.corridor : []);
+      const a = Math.min(...pts), b = Math.max(...pts), pad = (b - a) * 0.12 || 1, x0 = a - pad, x1 = b + pad;
+      const x = (v) => 8 + (v - x0) / (x1 - x0) * (W - 16);
+      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Your fair value ${fmt(fair)} against the model's ${fmt(f0)} and spot ${fmt(SC.spot)}` }, host);
+      el("line", { x1: 8, x2: W - 8, y1: 28, y2: 28, stroke: css("--rule"), "stroke-width": 2 }, svg);
+      if (D.corridor[0] !== null) el("rect", { x: x(D.corridor[0]), y: 22, width: Math.max(2, x(D.corridor[1]) - x(D.corridor[0])), height: 12, rx: 3, fill: css("--band") }, svg);
+      el("line", { x1: x(f0), x2: x(f0), y1: 18, y2: 38, stroke: css("--s1"), "stroke-width": 2 }, svg);
+      el("line", { x1: x(fair), x2: x(fair), y1: 14, y2: 42, stroke: css("--accent"), "stroke-width": 3 }, svg);
+      el("circle", { cx: x(SC.spot), cy: 28, r: 6, fill: css("--ink"), stroke: css("--surface"), "stroke-width": 2 }, svg);
+      const t = (txt, xx, y, anchor, col) => { const e = el("text", { x: xx, y, "text-anchor": anchor, fill: col, style: "font:11px var(--f-mono)" }, svg); e.textContent = txt; };
+      const edge = (xx) => xx < 50 ? "start" : xx > W - 50 ? "end" : "middle";
+      t(`yours ${fmt(fair)}`, x(fair), 10, edge(x(fair)), css("--accent"));
+      t(`model ${fmt(f0)}`, x(f0), 54, Math.abs(x(f0) - x(fair)) < 4 ? edge(x(f0)) : (x(f0) < x(fair) ? "end" : "start"), css("--s1"));
+      t(`spot ${fmt(SC.spot)}`, x(SC.spot), Math.abs(x(SC.spot) - x(fair)) < 90 ? 54 : 10, edge(x(SC.spot)), css("--ink"));
+    }
+  }
+  ctls.forEach(c => $("sc_" + c.k).addEventListener("input", (e) => { st[c.k] = +e.target.value; drawScen(); }));
+  document.querySelectorAll("#scenCtl .chips button").forEach(b => b.addEventListener("click", () => { st[b.dataset.k] = +b.dataset.v; drawScen(); }));
+  $("scenReset").addEventListener("click", () => { Object.assign(st, base); drawScen(); });
+  $("scenSub").textContent = `Move the assumptions behind the fair value and watch the reading change. Uses the latest balance-of-payments data and the REER component as of ${monthName(SC.month)}, `
+    + "with the panel anchor held at its estimate. Recomputed in your browser with the model's own formulas, so the starting values reproduce the headline.";
+  $("scenNote").textContent = "The shaded band is the model's 80% range, which already allows for uncertainty in the norm, elasticities, data and weights; here you move one assumption at a time to see which ones matter. "
+    + (SC.norm_niip !== null ? `The norm matters most: the NIIP-stabilising norm (${sgn(SC.norm_niip, 1)}% of GDP) would take the FEER reading from ${sgn(pct(feerGap(base)))}% to ${sgn(pct(feerGap({ ...base, norm: SC.norm_niip })))}%.` : "");
+  let srt; window.addEventListener("resize", () => { clearTimeout(srt); srt = setTimeout(drawScen, 120); });
+  drawScen();
+} else { $("scenPanel").hidden = true; }
 
 $("foot").innerHTML = `Fair values use only data published by each month-end. The REER component is the <strong>${D.reer_component === "panel" ? "panel anchor" : D.reer_component}</strong>; the FEER uses the IMF's current-account norms for India as they were published. Positive misalignment means the rupee is weaker than fair value.`;
 

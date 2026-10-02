@@ -25,7 +25,7 @@ def run(tmp_path_factory):
 
 def test_report_and_dashboard_written(run):
     r, out = run
-    assert (out / "report.md").read_text(encoding="utf-8").startswith("# INR/USD fair value")
+    assert (out / "report.md").read_text(encoding="utf-8").startswith("# USD/INR fair value")
     html = (out / "dashboard.html").read_text(encoding="utf-8")
     assert html.startswith("<!doctype html>") and "<title>Rupee Fair Value Monitor</title>" in html
     assert "__DATA__" not in html
@@ -42,6 +42,20 @@ def test_dashboard_data_matches_the_run(run):
     assert len(data["series"]) == r["composite"]["ect"].notna().sum()
     assert {m["role"] for m in data["models"]} >= {"headline", "composite", "reported"}
     assert all(len(row) == 9 for row in data["series"])
+
+
+def test_dashboard_what_if_defaults_reproduce_the_headline_and_note_is_embedded(run):
+    import numpy as np
+    r, out = run
+    html = (out / "dashboard.html").read_text(encoding="utf-8")
+    data = json.loads(re.search(r"const D = (\{.*?\});\n", html, re.S).group(1))
+    sc = data["scenario"]
+    semi = -(sc["eta_x"] * sc["x"] + sc["eta_m"] * sc["m"]) / 100 - sc["share"] * sc["inc"] / 100   # as the page does
+    g_feer = np.log1p(-(sc["ca"] - sc["norm"]) / semi / 100)
+    assert (np.exp(g_feer) - 1) * 100 == pytest.approx(sc["feer_mis"], abs=0.01)
+    g = 0.5 * sc["gap_reer"] + 0.5 * g_feer
+    assert sc["spot"] * np.exp(-g) == pytest.approx(data["fair"], abs=0.01)
+    assert data["note"].startswith("# ") and "## The reading" in data["note"] and "](dashboard.html)" not in data["note"]
 
 
 def test_note_numbers_match_the_run(run):

@@ -1,10 +1,10 @@
-"""Flow attribution: what moved INR/USD month to month.
+"""Flow attribution: what moved USD/INR month to month.
 
 The fair-value models say where the rupee should be; this module asks what moved the
-spot rate. A monthly regression, by reference month, of the INR/USD log change on
+spot rate. A monthly regression, by reference month, of the USD/INR log change on
 net portfolio (FPI) and direct investment (FDI) flows and on the global drivers:
 
-    100 * dlog INR/USD_t = c + b_fpi FPI_t + b_fdi FDI_t + b_dxy 100 dlog DXY_t
+    100 * dlog USD/INR_t = c + b_fpi FPI_t + b_fdi FDI_t + b_dxy 100 dlog DXY_t
                              + b_oil 100 dlog Brent_t + e_t
 
 with flows in US$ bn (positive = inflow) and Newey-West standard errors. Each month's
@@ -156,7 +156,7 @@ def run(panel: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, dict]:
         "windows": windows, "direction": direction_tests(x, lags),
         "latest_flows_month": x.index[-1].strftime("%Y-%m"),
         "rbi": None,
-        "units": "INR/USD % change (log x 100; positive = rupee weaker); flows in US$ bn, positive = inflow",
+        "units": "USD/INR % change (log x 100; positive = rupee weaker); flows in US$ bn, positive = inflow",
     }
     iv = intervention(panel, x, res, contrib, p["windows"], lags, p.get("dollar_price"))
     if iv is not None:

@@ -1,4 +1,4 @@
-# INR/USD Fair Value Model
+# USD/INR Fair Value Model
 
 [![tests](https://github.com/georgeqanfin-stack/inr-fair-value/actions/workflows/tests.yml/badge.svg)](https://github.com/georgeqanfin-stack/inr-fair-value/actions/workflows/tests.yml)
 
@@ -9,7 +9,7 @@ currencies and out-of-sample forecasts. Every number uses only data that was pub
 the date it describes. Data: RBI, MOSPI, FRED, BIS and World Bank, January 2000 onward.
 
 **Live monitor: [georgeqanfin-stack.github.io/inr-fair-value](https://georgeqanfin-stack.github.io/inr-fair-value/)**,
-updated after each monthly refresh. **Version 1.1.** History in [CHANGELOG.md](CHANGELOG.md).
+updated after each monthly refresh. **Version 1.2.** History in [CHANGELOG.md](CHANGELOG.md).
 
 ## Current reading
 
@@ -17,7 +17,7 @@ Data as of **September 2026** (run of 2 Oct 2026). For later months see the
 [live monitor](https://georgeqanfin-stack.github.io/inr-fair-value/) or
 [`reports/latest/note.md`](reports/latest/note.md), which the monthly refresh rewrites.
 
-| | Misalignment | Fair INR/USD |
+| | Misalignment | Fair USD/INR |
 |---|---|---|
 | **Composite** (equal-weighted) | **+15.7%** | **82.50** |
 | REER component: panel anchor, 19 EMs | +18.4% | 80.57 |
@@ -119,7 +119,7 @@ The refresh also publishes these to `reports/latest/` and `reports/<YYYY-MM>/`.
 1. Backs up `data/raw` and re-downloads every automatic source.
 2. Runs quality gates. **Hard failures** restore the backup and exit with code 1:
    cached history that disappeared, a schema violation, or an implausible monthly move
-   in INR/USD, the REER or the dollar index. **Warnings** do not stop the run: overdue
+   in USD/INR, the REER or the dollar index. **Warnings** do not stop the run: overdue
    manual inputs, RBI source disagreements outside the revision window, stale series.
 3. Re-pins `data/raw/MANIFEST.sha256`, runs the pipeline, writes `refresh_summary.md`
    (new and revised observations, gates, how the headline moved and why), publishes

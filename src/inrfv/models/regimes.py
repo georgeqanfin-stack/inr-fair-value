@@ -1,4 +1,4 @@
-"""Calm/stress regimes for INR/USD returns.
+"""Calm/stress regimes for USD/INR returns.
 
 * Markov-switching mean and variance (2 regimes). The probability used anywhere
   downstream is the *filtered* probability computed with parameters estimated

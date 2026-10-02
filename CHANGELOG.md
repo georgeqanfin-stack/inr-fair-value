@@ -4,6 +4,7 @@ Newest first. Method details for each release are in [docs/METHODOLOGY.md](docs/
 
 | Version | Added |
 |---|---|
+| 1.2 | Live monitor on GitHub Pages, rebuilt after each monthly refresh; the monthly note and a what-if panel (norm, current account, elasticities, income share, weights) inside the dashboard; quoted as USD/INR throughout |
 | 1.1 | Corridor recalibrated (conformal, against its own ex-post misses): one-year-out coverage 66% → 78% |
 | 1.0 | Engineering: ruff, mypy, coverage gate (85%), data schemas as a refresh gate, Docker image built and tested in CI. Roadmap complete |
 | 0.18 | Flow effect identified: recursive orderings, local projections, 2SLS with global push instruments |
@@ -15,7 +16,7 @@ Newest first. Method details for each release are in [docs/METHODOLOGY.md](docs/
 | 0.12 | Composite weights tested: equal vs performance vs inverse-variance; equal kept by a pre-set rule |
 | 0.11 | Peer currencies: gaps for all 19, India's rank, crisis episodes, cross-section vs the IMF |
 | 0.10 | IMF track record: EBA assessments 2017–2025 vs this model; ALFRED US CPI live |
-| 0.9 | Automatic inputs: CPI 2024=100 and BPM6 BoP from RBI Bulletin tables, INR/USD from RBI daily rates, reserves gaps from weekly data; 2026 IMF norm; smarter gates |
+| 0.9 | Automatic inputs: CPI 2024=100 and BPM6 BoP from RBI Bulletin tables, USD/INR from RBI daily rates, reserves gaps from weekly data; 2026 IMF norm; smarter gates |
 | 0.8 | Data vintages: revision check on every run, past-vintage runner, ALFRED US CPI (with a FRED key) |
 | 0.7 | Forward premia: implied forwards, UIP test, spread over the policy gap, forward-based BEER |
 | 0.6 | RBI FX intervention and forward book; [roadmap to 9/10](ROADMAP.md) |

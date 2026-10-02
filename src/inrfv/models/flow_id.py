@@ -1,6 +1,6 @@
 """Identifying the effect of portfolio flows on the rupee.
 
-The flow attribution (flows.py) regresses the monthly INR/USD change on same-month net
+The flow attribution (flows.py) regresses the monthly USD/INR change on same-month net
 FPI flows: about -0.13% per US$1 bn of inflow. Flows and the rupee feed each other
 (lead-lag tests run both ways), so that is an association. No clean, free instrument
 exists (EM-wide fund-flow data are proprietary), so the effect is bounded from several
@@ -21,7 +21,7 @@ angles, monthly, 2011 onward (RBI's BoP basis for FPI):
 * Local projections (Jorda 2005): the cumulative rupee change from month t to t+h on
   the identified FPI shock (ordering A), h = 0..H, Newey-West errors with h+1 lags.
 
-Signs follow the attribution: per US$1 bn of net inflow, % change of INR/USD
+Signs follow the attribution: per US$1 bn of net inflow, % change of USD/INR
 (negative = rupee stronger).
 """
 

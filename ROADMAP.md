@@ -69,7 +69,7 @@ revision effect.
 **4. Manual and stale inputs (done).** CPI 2024=100 now comes from the RBI Bulletin
 CPI table (the manual MOSPI file is a check and fallback; 20/20 months match); the
 BPM6 BoP table brings Jan–Mar 2026 (the overdue quarter) and later revisions, used
-for the revision window only; INR/USD gaps and Sep 2026 come from RBI's daily
+for the revision window only; USD/INR gaps and Sep 2026 come from RBI's daily
 reference rates (FRED patch no longer needed); reserves gaps from weekly data. The
 2026 IMF norm (−2.3, ESR Table 2.11) was added; the norm gate now fires each August
 until the new ESR row is in. No automatic source exists for the IMF norm. Found and

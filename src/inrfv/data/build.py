@@ -138,7 +138,7 @@ def load_rbi_sources(cfg: dict, refresh: bool, warnings: list[str], meta: dict) 
     meta["rbi_reconciliation"] = recon
     intervention = dbie.fetch_intervention(path(cfg, "dbie_cache"), refresh=refresh, base=base)
     cpi_2024 = dbie.fetch_cpi_2024(path(cfg, "dbie_cache"), refresh=refresh, base=base)
-    # INR/USD: months missing from RBI's monthly table (and months after it) come from the
+    # USD/INR: months missing from RBI's monthly table (and months after it) come from the
     # average of RBI's own daily reference rates, which match the monthly table to 0.04%.
     daily = dbie.fetch_inr_daily(path(cfg, "dbie_cache"), refresh=refresh, base=base)["mean"]
     inr = monthly["inr_usd"]
@@ -164,7 +164,7 @@ def fill_inside(monthly: pd.Series, other: pd.Series) -> tuple[pd.Series, list[s
 
 
 def dbie_gaps(monthly: dict[str, pd.Series], start: pd.Timestamp) -> dict[str, list[str]]:
-    """Missing months inside each RBI monthly series from ``start`` (INR/USD is patched separately)."""
+    """Missing months inside each RBI monthly series from ``start`` (USD/INR is patched separately)."""
     return {k: g for k, s in monthly.items()
             if k != "inr_usd" and (g := dbie.monthly_gaps(s[s.index >= start]))}
 
@@ -174,7 +174,7 @@ def _carry(s: pd.Series, months: int) -> pd.Series:
 
 
 def patch_inr_with_fred(inr: pd.Series, fred_inr: pd.Series, extend: bool, lookback: int = 12) -> tuple[pd.Series, dict]:
-    """Fill interior gaps (and optionally extend) RBI INR/USD with FRED's monthly rate, rescaled.
+    """Fill interior gaps (and optionally extend) RBI USD/INR with FRED's monthly rate, rescaled.
 
     FRED's EXINUS (noon buying rates in New York) differs slightly from RBI's reference
     rate, so each patched month is scaled by the mean RBI/FRED ratio over the preceding
@@ -333,7 +333,7 @@ def flat_runs(s: pd.Series, min_len: int = 3) -> list[tuple[str, str, float]]:
 # --------------------------------------------------------------------------- GDP (PIT)
 
 def annual_gdp_inr(gdp_usd: pd.Series, inr_usd: pd.Series) -> pd.Series:
-    """Nominal INR GDP by calendar year = USD GDP x average INR/USD of that year."""
+    """Nominal INR GDP by calendar year = USD GDP x average USD/INR of that year."""
     fx = inr_usd.groupby(inr_usd.index.year).agg(["mean", "count"])
     fx = fx.loc[fx["count"] >= 6, "mean"]
     return (gdp_usd * fx).dropna()
@@ -377,13 +377,13 @@ def build_dataset(cfg: dict, refresh: bool = False) -> Dataset:
     rm = src["monthly"]
     f = load_fred(cfg, refresh)
 
-    # INR/USD: patch interior gaps (and optionally the edge) with rescaled FRED EXINUS.
+    # USD/INR: patch interior gaps (and optionally the edge) with rescaled FRED EXINUS.
     inr = rm["inr_usd"]
     if "inr_usd_fred" in f:
         inr, inr_patch = patch_inr_with_fred(inr, f["inr_usd_fred"], cfg.get("dbie", {}).get("extend_inr_with_fred", False))
         meta["inr_usd_patch"] = inr_patch
         if inr_patch["filled"] or inr_patch["extended"]:
-            warnings.append(f"INR/USD uses rescaled FRED EXINUS for {', '.join(inr_patch['filled'] + inr_patch['extended'])} "
+            warnings.append(f"USD/INR uses rescaled FRED EXINUS for {', '.join(inr_patch['filled'] + inr_patch['extended'])} "
                             f"(RBI data missing; typical RBI-FRED gap {inr_patch['mean_abs_rel_diff']:.2%}).")
     for k, v in dbie_gaps(rm, pd.Timestamp(cfg["sample"]["start"])).items():
         warnings.append(f"{k} has missing months inside its range: {', '.join(v[:6])}{' …' if len(v) > 6 else ''}.")

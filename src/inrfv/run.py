@@ -56,7 +56,7 @@ def run_pipeline(cfg: dict, refresh: bool = False, run_dir=None) -> dict:
 
     lag_months = (pd.Timestamp.today().to_period("M") - ds.asof.to_period("M")).n
     if lag_months > 2:
-        warnings.append(f"RBI INR/USD ends {ds.asof:%b %Y}, {lag_months} months ago: download fresh DBIE files "
+        warnings.append(f"RBI USD/INR ends {ds.asof:%b %Y}, {lag_months} months ago: download fresh DBIE files "
                         "to move the as-of date forward.")
 
     reer = structural.run(ds.pit, cfg)
@@ -167,7 +167,7 @@ def save(r: dict, run_dir) -> None:
     if charts:
         md += "\n## Charts\n\n" + "\n".join(f"![{c}]({c})" for c in charts) + "\n"
     (run_dir / "report.md").write_text(md, encoding="utf-8")
-    dashboard.write(r, run_dir)
+    dashboard.write(r, run_dir, note_md=note.build_note(r))
     (run_dir / "note.md").write_text(note.build_note(r, links=NOTE_LINKS), encoding="utf-8")
 
 

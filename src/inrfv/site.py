@@ -78,7 +78,7 @@ def render(md_text: str, title: str, page: str) -> str:
     body = markdown.markdown(relink(md_text), extensions=["tables", "fenced_code", "toc"])
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f"<title>{html.escape(title)} · INR/USD fair value</title><style>{STYLE}</style></head>"
+            f"<title>{html.escape(title)} · USD/INR fair value</title><style>{STYLE}</style></head>"
             f"<body>{nav(page)}<main>{body}<footer>Published from <a href=\"{REPO}\">{REPO.split('/', 3)[3]}</a>. "
             f"Every figure comes from the last monthly refresh.</footer></main></body></html>\n")
 

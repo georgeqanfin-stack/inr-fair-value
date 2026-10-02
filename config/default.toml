@@ -1,4 +1,4 @@
-# INR/USD fair value pipeline configuration.
+# USD/INR fair value pipeline configuration.
 # Every modelling assumption lives here so a run is fully described by
 # (code version, this file, data/raw checksums). The run manifest records all three.
 
@@ -28,7 +28,7 @@ cpi_india_oecd    = "INDCPIALLMINMEI"  # OECD CPI total for India, ends Mar 2025
 inr_usd_fred      = "EXINUS"           # INR per USD, Fed H.10 monthly average; patches gaps in the RBI rate
 
 # How to collapse higher-frequency FRED data to months. Market series use monthly
-# averages to match the RBI monthly-average INR/USD rate.
+# averages to match the RBI monthly-average USD/INR rate.
 [fred.monthly_agg]
 dxy_broad         = "mean"
 dxy_major         = "mean"
@@ -45,7 +45,7 @@ mode                 = "merge"
 base_url             = "https://data-api.dbie.rbihub.in"
 reconcile_rel_tol    = 0.005   # sources "agree" within 0.5%
 revision_window      = 24      # months at the end of the older source where RBI revisions are expected
-extend_inr_with_fred = true    # extend INR/USD past RBI's last month with rescaled FRED EXINUS
+extend_inr_with_fred = true    # extend USD/INR past RBI's last month with rescaled FRED EXINUS
 
 # Slow-moving monthly levels (REER, NEER, reserves, exports, imports) keep their latest
 # published value for up to this many months when a release is late.
@@ -267,7 +267,7 @@ short = ["rel_prod", "log_tot", "gov_cons", "openness"]
 prod_nfa = ["rel_prod", "nfa"]
 
 [models.beer]
-# Real INR/USD (PPP imposed) on long-run fundamentals, dynamic OLS; see models/beer.py.
+# Real USD/INR (PPP imposed) on long-run fundamentals, dynamic OLS; see models/beer.py.
 central_spec          = "core"
 dols_k                = 3        # months of leads and lags of the differenced regressors
 hac_lags              = 12
@@ -286,7 +286,7 @@ oil   = ["log_dxy", "rel_prod", "real_rate_diff", "log_brent"]
 fwd   = ["log_dxy", "rel_prod", "real_fwd_diff"]   # market (forward-implied) real rate differential
 
 [models.flows]
-# Flow attribution (models/flows.py): monthly INR/USD % change on net FPI and FDI flows
+# Flow attribution (models/flows.py): monthly USD/INR % change on net FPI and FDI flows
 # (US$ bn), dollar index and Brent % changes; Newey-West errors. Ex post, by reference
 # month: explains spot moves, does not enter the fair value.
 regressors = ["fpi", "fdi", "dxy", "brent"]

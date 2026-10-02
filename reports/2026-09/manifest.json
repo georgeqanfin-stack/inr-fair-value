@@ -1,11 +1,14 @@
 {
-  "run_id": "20261002-133250",
-  "created": "2026-10-02T13:35:27",
+  "run_id": "20261002-142217",
+  "created": "2026-10-02T14:25:28",
   "inrfv_version": "1.2.0",
-  "git_revision": "2839dc4-dirty",
+  "git_revision": "4b32e25-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
-  "config_hash": "ffc20284fa28",
+  "config_hash": "6b28cf07ad33",
   "config": {
+    "publication": {
+      "author": "George P Babu, Quantitative Researcher"
+    },
     "paths": {
       "raw": "data/raw",
       "fred_cache": "data/raw/fred",
@@ -499,7 +502,7 @@
   "platform": "Windows-11-10.0.26200-SP0",
   "raw_checksums": {
     "alfred/CPIAUCSL.csv": "9d42869cf45487ce4722dd0ad7a850fa9e4acd3fdc50411ff47a03c49af45684",
-    "dbie/_fetch.json": "1be0b20bf961f879910858726370322e1214d5b14ba5951dc119ada2a6d8b8b1",
+    "dbie/_fetch.json": "b94a9d6e2499b82b85d7fc0bc9af8227be5ecd2eb1a3deb97ca4e271559d7ce4",
     "dbie/bop.banking_capital.csv": "cb2fb953ac3ecaf5b30b8d805314159c2ddee3fbeb7c7d93206703955142ddeb",
     "dbie/bop.capital_account.csv": "962f2828bf4ae7f72c83b5fa4445986324eb887cfe887fe0e28f179382318594",
     "dbie/bop.current_account.csv": "421cfec3d0de3181cd9c576819163f2734924f83274a94790fbb9dcea36767e9",

@@ -13,6 +13,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from . import net
+
 FREDGRAPH_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}"
 
 
@@ -22,7 +24,7 @@ def _download(sid: str, api_key: str | None) -> pd.Series:
 
         s = Fred(api_key=api_key).get_series(sid)
     else:
-        r = requests.get(FREDGRAPH_URL.format(sid=sid), timeout=60)
+        r = net.get(FREDGRAPH_URL.format(sid=sid), timeout=60)
         r.raise_for_status()
         df = pd.read_csv(io.StringIO(r.text), na_values=["."])
         df.columns = ["date", "value"]

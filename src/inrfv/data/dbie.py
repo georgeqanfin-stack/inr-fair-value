@@ -28,6 +28,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+from . import net
+
 DEFAULT_BASE = "https://data-api.dbie.rbihub.in"
 PAGE = 5000
 
@@ -156,14 +158,14 @@ def fetch(name: str, cache_dir: Path, refresh: bool = False, base: str = DEFAULT
         df = pd.read_csv(cache, parse_dates=["date"])
         return df.set_index("date")["value"].rename(name)
     spec = SERIES[name]
-    s = to_series(_get_rows(base, spec, session or requests.Session()), spec, name)
+    s = to_series(_get_rows(base, spec, session or net.session()), spec, name)
     cache_dir.mkdir(parents=True, exist_ok=True)
     s.rename("value").to_frame().to_csv(cache, date_format="%Y-%m-%d")
     return s
 
 
 def fetch_all(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_BASE) -> dict[str, pd.Series]:
-    session = requests.Session()
+    session = net.session()
     session.headers["User-Agent"] = "inrfv (https://github.com/georgeqanfin-stack/inr-fair-value)"
     downloaded = refresh or any(not (cache_dir / f"{n}.csv").exists() for n in SERIES)
     out = {name: fetch(name, cache_dir, refresh, base, session) for name in SERIES}
@@ -285,7 +287,7 @@ def fetch_intervention(cache_dir: Path, refresh: bool = False, base: str = DEFAU
     cache = cache_dir / "rbi_intervention.csv"
     if cache.exists() and not refresh:
         return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
-    rows = _get_rows(base, Spec(INTERVENTION_TABLE, order="row_no"), session or requests.Session())
+    rows = _get_rows(base, Spec(INTERVENTION_TABLE, order="row_no"), session or net.session())
     out = parse_intervention(rows)
     cache_dir.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, date_format="%Y-%m-%d")
@@ -357,7 +359,7 @@ def fetch_bop_bpm6(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_B
     cache = cache_dir / "bop_bpm6.csv"
     if cache.exists() and not refresh:
         return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
-    out = parse_bop_bpm6(_get_rows(base, Spec(BOP_BPM6_TABLE, order="row_no"), session or requests.Session()))
+    out = parse_bop_bpm6(_get_rows(base, Spec(BOP_BPM6_TABLE, order="row_no"), session or net.session()))
     cache_dir.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, date_format="%Y-%m-%d")
     return out
@@ -396,7 +398,7 @@ def fetch_cpi_2024(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_B
     cache = cache_dir / "cpi_2024base.csv"
     if cache.exists() and not refresh:
         return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
-    out = parse_cpi_2024(_get_rows(base, Spec(CPI_TABLE, order="row_no"), session or requests.Session()))
+    out = parse_cpi_2024(_get_rows(base, Spec(CPI_TABLE, order="row_no"), session or net.session()))
     cache_dir.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, date_format="%Y-%m-%d")
     return out
@@ -421,7 +423,7 @@ def fetch_inr_daily(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_
     cache = cache_dir / "inr_usd_daily_avg.csv"
     if cache.exists() and not refresh:
         return pd.read_csv(cache, parse_dates=["date"]).set_index("date")
-    rows = _get_rows(base, DAILY_RATE, session or requests.Session())
+    rows = _get_rows(base, DAILY_RATE, session or net.session())
     daily = pd.Series(pd.to_numeric(rows["obs_value"], errors="coerce").to_numpy(),
                       index=pd.to_datetime(rows["time_period"])).dropna().sort_index()
     out = monthly_from_daily(daily)
@@ -442,7 +444,7 @@ def fetch_reserves_weekly(cache_dir: Path, refresh: bool = False, base: str = DE
     cache = cache_dir / "fx_reserves_weekly.csv"
     if cache.exists() and not refresh:
         return pd.read_csv(cache, parse_dates=["date"]).set_index("date")["value"]
-    rows = _get_rows(base, WEEKLY_RESERVES, session or requests.Session())
+    rows = _get_rows(base, WEEKLY_RESERVES, session or net.session())
     s = pd.Series(pd.to_numeric(rows["obs_value"], errors="coerce").to_numpy() * _MN,
                   index=pd.DatetimeIndex(pd.to_datetime(rows["time_period"]), name="date"), name="value")
     s = s.dropna().sort_index()
@@ -489,7 +491,7 @@ def fetch_real_gdp(cache_dir: Path, refresh: bool = False, base: str = DEFAULT_B
     cache = cache_dir / "gdp_real_quarterly.csv"
     if cache.exists() and not refresh:
         return pd.read_csv(cache, parse_dates=["date"]).set_index("date")["gdp_real"]
-    s = session or requests.Session()
+    s = session or net.session()
     typed = _get_rows(base, Spec(GDP_TYPED, {"class_exp_rn": "CEXP_GDP_MARK_CST", "prc_typ_rn": "CNST_PRC"}), s)
     typed["date"] = pd.to_datetime(typed["time_period"]).dt.to_period("Q").dt.start_time
     wide = typed.assign(v=pd.to_numeric(typed["obs_value"], errors="coerce")).pivot_table(

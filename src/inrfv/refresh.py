@@ -37,8 +37,8 @@ from dotenv import load_dotenv
 
 from . import dashboard, report
 from .config import load_config, path
+from .data import net, schemas
 from .data import panel as panel_data
-from .data import schemas
 from .data.build import build_dataset
 from .io import new_run_dir, write_manifest, write_raw_manifest
 from .note import build_note
@@ -288,10 +288,12 @@ def refresh(cfg: dict, commit: bool = False, today: date | None = None) -> int:
 
     try:
         print("Fetching sources...")
+        net.reset()
         ds = build_dataset(cfg, refresh=True)
         panel_data.load(cfg, refresh=True)
         diffs = diff_snapshots(before, snapshot(raw))
         failures, warnings = quality_gates(cfg, diffs, ds, today)
+        warnings += list(net.FALLBACKS)
         if failures:
             restore()
             md = summary_md(diffs, failures, warnings, None, None, None)

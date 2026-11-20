@@ -22,6 +22,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from . import net
+
 PAGE = "https://www.brookings.edu/articles/the-external-wealth-of-nations-database/"
 NAMES = {  # EWN country name -> ISO3
     "India": "IND", "China,P.R.: Mainland": "CHN", "Brazil": "BRA", "Mexico": "MEX",
@@ -36,7 +38,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (inr-fair-value research pipeline)"}
 
 
 def latest_url(page: str = PAGE) -> str:
-    r = requests.get(page, headers=HEADERS, timeout=60)
+    r = net.get(page, headers=HEADERS, timeout=60)
     r.raise_for_status()
     links = sorted(set(re.findall(r'https://[^"\']+EWN[^"\']+\.xlsx', r.text)))
     if not links:
@@ -66,15 +68,16 @@ def load(countries: list[str], cache_dir: Path, refresh: bool = False) -> pd.Dat
             xlsx = cache_dir / url.rsplit("/", 1)[-1]
             if not xlsx.exists():
                 cache_dir.mkdir(parents=True, exist_ok=True)
-                r = requests.get(url, headers=HEADERS, timeout=300)
+                r = net.get(url, headers=HEADERS, timeout=300)
                 r.raise_for_status()
                 xlsx.write_bytes(r.content)
             df = parse(xlsx, countries)
             df.to_csv(csv, index=False, float_format="%.6g")
             (cache_dir / "SOURCE.txt").write_text(url + "\n")
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError) as e:
             if not csv.exists():
                 raise
+            net.fallback("EWN (Brookings)", e)
     df = pd.read_csv(csv)
     absent = set(countries) - set(df["country"])
     if absent:

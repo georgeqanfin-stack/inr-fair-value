@@ -7,6 +7,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from . import net
+
 WB_URL = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}"
 
 
@@ -14,9 +16,15 @@ def fetch_annual(country: str, indicator: str, cache: Path, refresh: bool = Fals
     """Annual series indexed by integer year."""
     if cache.exists() and not refresh:
         return read_cached(cache)
-    r = requests.get(WB_URL.format(country=country, indicator=indicator),
-                     params={"format": "json", "per_page": "1000"}, timeout=60)
-    r.raise_for_status()
+    try:
+        r = net.get(WB_URL.format(country=country, indicator=indicator),
+                    params={"format": "json", "per_page": "1000"}, timeout=60)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        if not cache.exists():
+            raise
+        net.fallback(f"World Bank {indicator} ({country})", e)
+        return read_cached(cache)
     rows = {int(d["date"]): d["value"] for d in r.json()[1] if d["value"] is not None}
     s = pd.Series(rows, dtype=float).sort_index()
     out = pd.DataFrame({"value": s.values},
@@ -33,9 +41,15 @@ def fetch_panel(countries: list[str], indicator: str, cache: Path, refresh: bool
     """
     if cache.exists() and not refresh:
         return pd.read_csv(cache)
-    r = requests.get(WB_URL.format(country=";".join(countries), indicator=indicator),
-                     params={"format": "json", "per_page": "20000"}, timeout=120)
-    r.raise_for_status()
+    try:
+        r = net.get(WB_URL.format(country=";".join(countries), indicator=indicator),
+                    params={"format": "json", "per_page": "20000"}, timeout=120)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        if not cache.exists():
+            raise
+        net.fallback(f"World Bank panel {indicator}", e)
+        return pd.read_csv(cache)
     payload = r.json()
     if len(payload) < 2 or payload[1] is None:
         raise ValueError(f"World Bank returned no data for {indicator}")

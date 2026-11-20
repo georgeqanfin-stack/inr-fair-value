@@ -1,6 +1,6 @@
 # USD/INR fair value: run report
 
-inrfv 1.2.0 · run `20261120-080204` · as of **Oct 2026** (latest month with RBI USD/INR) · spot **95.52**
+inrfv 1.2.0 · run `20261120-220138` · as of **Oct 2026** (latest month with RBI USD/INR) · spot **95.52**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -16,7 +16,7 @@ All figures are point-in-time: each value uses only data published by that month
 | FEER, NIIP-stabilising norm | Oct 2026 | +0.9% | n/a | alternative norm |
 | FEER, legacy −2.5% norm | Oct 2026 | +14.3% | n/a | v0.2 assumption, for comparison |
 | FEER conditional (experimental) | Jun 2026 | +0.6% | n/a | ad hoc norm, not in composite |
-| BEER, current (real USD/INR, DOLS) | Oct 2026 | +22.3% | 78.13 | **not cointegrated**: descriptive only |
+| BEER, current (real USD/INR, DOLS) | Oct 2026 | +22.4% | 78.07 | **not cointegrated**: descriptive only |
 | BEER, total (permanent fundamentals) | Oct 2026 | +21.0% | 78.96 | fundamentals at one-sided HP trend |
 | Composite (REER+FEER) | Oct 2026 | +15.6% | 82.64 | drives the ECM |
 
@@ -72,9 +72,9 @@ Real USD/INR with PPP imposed, regressed by dynamic OLS on long-run fundamentals
 
 | Spec | Sample | n | Coefficients (t, expected sign) | Engle-Granger p | Johansen rank |
 |---|---|---|---|---|---|
-| core (central) | 2000-02–2026-10 | 314 | log_dxy +0.723 (+10.0, +), rel_prod -0.403 (-9.5, -), real_rate_diff -0.002 (-0.5, -) | 0.953 | 0 |
+| core (central) | 2000-02–2026-10 | 314 | log_dxy +0.723 (+10.0, +), rel_prod -0.403 (-9.5, -), real_rate_diff -0.002 (-0.5, -) | 0.954 | 0 |
 | dxy | 2000-02–2026-10 | 315 | log_dxy +0.441 (+2.4, +) | 0.766 | 0 |
-| oil | 2000-02–2026-10 | 314 | log_dxy +1.052 (+7.7, +), rel_prod -0.543 (-11.6, -), real_rate_diff -0.001 (-0.3, -), log_brent +0.120 (+3.4, +) | 0.956 | 0 |
+| oil | 2000-02–2026-10 | 314 | log_dxy +1.053 (+7.7, +), rel_prod -0.543 (-11.6, -), real_rate_diff -0.001 (-0.3, -), log_brent +0.120 (+3.4, +) | 0.957 | 0 |
 | fwd | 2000-02–2026-08 | 312 | log_dxy +0.723 (+9.5, +), rel_prod -0.407 (-9.8, -), real_fwd_diff -0.002 (-0.6, -) | 0.978 | 0 |
 
 Coefficient range across re-estimations: log_dxy +0.29 to +0.72, rel_prod -0.93 to -0.40, real_rate_diff -0.00 to +0.01.
@@ -116,7 +116,7 @@ Switching odds driven by last month's VIX change, Brent change, FPI flows and RB
 | Brent (% change) | -543.6 | 1103.3 | 1133.4 | 0.66 | -1.9431 | -0.0032 | -0.46 | 0.68 | 0.65 |
 | FPI flows | -542.3 | 1100.6 | 1130.8 | 0.18 | -1.9664 | -0.0266 | -0.84 | 0.80 | 0.65 |
 | RBI intervention | -543.1 | 1102.1 | 1132.3 | 0.37 | -1.9588 | -0.0189 | -1.04 | 0.85 | 0.65 |
-| VIX (change), Brent (% change), FPI flows, RBI intervention | -541.8 | 1111.5 | 1164.2 | 0.80 | -2.4652 | -0.5253 | -2.27 | 0.99 | 0.58 |
+| VIX (change), Brent (% change), FPI flows, RBI intervention | -541.8 | 1111.5 | 1164.2 | 0.80 | -2.4623 | -0.5225 | -2.27 | 0.99 | 0.59 |
 
 Choice: **constant**.
 
@@ -352,11 +352,11 @@ The headline was re-run on the earlier RBI vintage (DBIE Excel files in data/raw
 
 Point-in-time composite readings changed in 31 of 268 months (Jul 2004–Oct 2026): mean absolute change 0.016 pp, largest 0.48 pp (Jun 2026); by component, REER 0.000 pp and FEER 0.027 pp on average. Latest common month Oct 2026: +16.05% on the earlier vintage, +15.59% now. This is a lower bound on the revision effect (the earlier files are themselves partly revised); `python -m inrfv.vintages run <git-rev>` re-runs any committed vintage.
 
-US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised series the mean absolute difference is 0.036 pp (largest 0.36 pp).
+US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised series the mean absolute difference is 0.035 pp (largest 0.22 pp).
 
 ## Diagnostics
 
-- BEER Engle-Granger (4 vars, n=321): stat -1.56, 5% critical -4.13, p = 0.953.
+- BEER Engle-Granger (4 vars, n=321): stat -1.54, 5% critical -4.13, p = 0.954.
 - Johansen PPP [log INR, log CPI India, log CPI US]: rank 0 of 3 (sequential trace, 5%, k_ar_diff=1, n=320).
 - DXY splice: ratio 1.1937; log change at seam 2006-01: -2.40%.
 - India CPI: official MOSPI CPI-Combined (inflation as published at the time). Segments: CPI-IW chained 1988-10–2010-12; MOSPI 2012 back series x LF 2011-01–2012-12; MOSPI 2012 x LF 2013-01–2025-12; MOSPI 2024 (chained) 2026-01–2026-09. Linking factor 2012→2024 0.5267 (2025 overlap ratio 0.5267); CPI-IW 1982→2001 factor 4.63. Inflation vs the old OECD series: corr 0.966, mean |diff| 0.41pp.
@@ -366,7 +366,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-11-20T08:01:47+00:00, mirror loaded 2026-11-20T07:52:43.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-11-20T16:30:41+00:00, mirror loaded 2026-11-20T16:22:43.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

@@ -1,6 +1,6 @@
 # USD/INR fair value note, October 2026
 
-Data to October 2026 · run `20261120-080204` · written 20 Nov 2026
+Data to October 2026 · run `20261120-220138` · written 20 Nov 2026
 
 ## The reading
 
@@ -10,17 +10,11 @@ The two components agree: the productivity-based REER anchor puts the rupee +18.
 
 ## Since the last note
 
-From Sep 2026 to Oct 2026 the rupee weakened from 95.41 to 95.52 per dollar, and composite fair value moved from 82.50 to 82.64. Misalignment went from +15.7% to +15.6%: the REER component contributed -0.1 points and the FEER +0.0.
+No new month of exchange-rate data since the last note (Oct 2026); the reading is unchanged at +15.6%.
 
 New and revised data this month:
 
-- **US and market data (FRED)**: 94 new observations, now to Nov 2026; 126 revised.
-- **BIS panel REERs**: 57 new observations, now to Oct 2026; 2304 revised.
-- **trade**: 4 new observations, now to Aug 2026; 6 revised (largest 2.7% at Apr 2026).
-- **foreign investment flows**: 2 new observations, now to Jul 2026; 3 revised (largest 142.2% at Jun 2026).
-- **RBI reference rate**: 2 new observations, now to Sep 2026.
-- **RBI NEER**: 1 new observation, now to Aug 2026.
-- **RBI REER**: 1 new observation, now to Aug 2026; 1 revised.
+- **US and market data (FRED)**: 1 new observation, now to Nov 2026.
 
 ## Risk regime
 
@@ -40,7 +34,7 @@ Over the same months the RBI sold a net US$28.4 bn, counting forwards. Valued at
 
 Out of sample (Jun 2010 to Oct 2025), the misalignment signal has a slightly lower forecast error than a random walk with drift at a 12-month horizon (forecast error ratio 0.965, Clark-West p = 0.12), but the difference is not statistically significant. Read the misalignment as a valuation gauge, not a timing signal.
 
-Also: the market-based BEER (+22.3%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test; the productivity anchor passes its long-run test (p 0.023) but not once the 12 specifications tried are allowed for (p 0.25), so its equilibrium is suggestive.
+Also: the market-based BEER (+22.4%) fails its long-run test, so it is shown for context only; the India-only REER model fails its long-run test; the productivity anchor passes its long-run test (p 0.023) but not once the 12 specifications tried are allowed for (p 0.25), so its equilibrium is suggestive.
 
 Letting large gaps revert faster, or letting the adjustment drift, did not forecast better out of sample.
 

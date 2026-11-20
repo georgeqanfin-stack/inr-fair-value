@@ -48,12 +48,20 @@ def latest_url(page: str = PAGE) -> str:
 
 def parse(xlsx: Path, countries: list[str]) -> pd.DataFrame:
     df = pd.read_excel(xlsx, sheet_name="Dataset")
-    missing = set(COLUMNS) - set(df.columns)
+    # Headers are matched without regard to case or spacing: the Oct 2026 release renamed
+    # "Country" to "country" and "Year" to "date".
+    norm = {str(c).strip().lower(): c for c in df.columns}
+    country = norm.get("country")
+    year = next((norm[k] for k in ("year", "date") if k in norm), None)
+    wanted = {norm.get(k.lower()): v for k, v in COLUMNS.items()}
+    missing = [k for k in COLUMNS if norm.get(k.lower()) is None] + [n for n, c in (("country", country), ("year", year)) if c is None]
     if missing:
-        raise ValueError(f"EWN workbook layout changed; missing columns {sorted(missing)}")
-    df["country"] = df["Country"].map(NAMES)
+        raise ValueError(f"EWN workbook layout changed; missing columns {missing}")
+    df = df.rename(columns={country: "_name", year: "year", **wanted})
+    df["country"] = df["_name"].astype(str).str.strip().map(NAMES)
     df = df[df["country"].isin(countries)]
-    out = df[["country", "Year"] + list(COLUMNS)].rename(columns={"Year": "year", **COLUMNS})
+    out = df[["country", "year"] + list(COLUMNS.values())].copy()
+    out["year"] = pd.to_numeric(out["year"], errors="coerce").astype("Int64")
     for c in COLUMNS.values():
         out[c] = pd.to_numeric(out[c], errors="coerce") * 100
     return out.sort_values(["country", "year"]).reset_index(drop=True)
@@ -74,7 +82,7 @@ def load(countries: list[str], cache_dir: Path, refresh: bool = False) -> pd.Dat
             df = parse(xlsx, countries)
             df.to_csv(csv, index=False, float_format="%.6g")
             (cache_dir / "SOURCE.txt").write_text(url + "\n")
-        except (requests.RequestException, ValueError) as e:
+        except (requests.RequestException, ValueError, KeyError) as e:
             if not csv.exists():
                 raise
             net.fallback("EWN (Brookings)", e)

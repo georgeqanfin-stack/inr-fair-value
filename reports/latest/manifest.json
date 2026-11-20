@@ -1,8 +1,8 @@
 {
-  "run_id": "20261015-105328",
-  "created": "2026-10-15T10:58:59",
+  "run_id": "20261120-080204",
+  "created": "2026-11-20T08:04:30",
   "inrfv_version": "1.2.0",
-  "git_revision": "07b04e9-dirty",
+  "git_revision": "df7283e-dirty",
   "config_source": "/home/runner/work/inr-fair-value/inr-fair-value/config/default.toml",
   "config_hash": "a6c49fdce6fc",
   "config": {
@@ -499,11 +499,11 @@
       "headline_horizon": 12
     }
   },
-  "python": "3.12.15",
-  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python": "3.12.16",
+  "platform": "Linux-7.0.0-1020-azure-x86_64-with-glibc2.43",
   "raw_checksums": {
     "alfred/CPIAUCSL.csv": "9d42869cf45487ce4722dd0ad7a850fa9e4acd3fdc50411ff47a03c49af45684",
-    "dbie/_fetch.json": "2c7cf3de3ae5a7e846ab068ab42185a7cdb9065812ac48cc82be7baa89e5e53a",
+    "dbie/_fetch.json": "129cd37f2b1fb14a13a6df02ec01d426d8b44155b823cb95b59b34ea0b4b92bc",
     "dbie/bop.banking_capital.csv": "cb2fb953ac3ecaf5b30b8d805314159c2ddee3fbeb7c7d93206703955142ddeb",
     "dbie/bop.capital_account.csv": "962f2828bf4ae7f72c83b5fa4445986324eb887cfe887fe0e28f179382318594",
     "dbie/bop.current_account.csv": "421cfec3d0de3181cd9c576819163f2734924f83274a94790fbb9dcea36767e9",
@@ -525,60 +525,60 @@
     "dbie/cpi.combined_2012_bs.csv": "353ba43d201dbed2441f750d73b1893200a8a77e9bf1595060e1b056c431835a",
     "dbie/cpi.iw_1982.csv": "15be71b967987697820e9abec38bc10b8d777e742292c86e08fced26409fcaee",
     "dbie/cpi.iw_2001.csv": "5991ab8a5169b3751cac431451fd35c74e709b611a7489ae624bd5afb4df8c28",
-    "dbie/cpi_2024base.csv": "054b972477cf0714b3c3de5330c1f685fecad054b09bfbeeae90cda7d53b8b0f",
-    "dbie/exports_usd_mn.csv": "7be448111476617931a1e3daf89e52f1b8227e4042d2968569069d017cf475dd",
-    "dbie/fdi_usd_mn.csv": "11492f749f581c63a4477e4a28f6c9e2de2a3f00668c82c3796edec26cc55c33",
-    "dbie/fpi_usd_mn.csv": "6ae81a437a18c2a61612606b4bb7910ff36e025f102556bebd92d70e3ff98f29",
+    "dbie/cpi_2024base.csv": "1299741daef8eb5a1a6883247c9c8cbc5bf43db240df120f6c039b0ba56e16a4",
+    "dbie/exports_usd_mn.csv": "0ea376bd09fdbac91d3b3575ce86f925e569477f9d597eff5998b348f267f33d",
+    "dbie/fdi_usd_mn.csv": "6dc849d992b2bad75847d3aa753dfcc9fb7ae8191ead1c419fc0a8795a79a8ae",
+    "dbie/fpi_usd_mn.csv": "9c795e1368eba307a344766c15e3db4fdead2889465470d44dcc54c92fcdc584",
     "dbie/fwd_premium_1m.csv": "1c1861ea1c70c3b6d3dbf35699874c870808180289f040588d135b2b4b5b272b",
     "dbie/fwd_premium_3m.csv": "ad7868d9e760cb07e7daf20559f316621d7d66e7f4d3269f4a2ea758da8c14b6",
     "dbie/fwd_premium_6m.csv": "422d9785bb8ee4de6e5047da03f648b3e894941682d1909162b77b2025efd1b5",
     "dbie/fx_reserves_usd_mn.csv": "91c49bc55dd4478975e338291dd1a84a35e3626cfb1dac9da7253e750458592f",
     "dbie/fx_reserves_weekly.csv": "f9d18bbf9253ab9d9400e91dc27cde7cf3daf4aa23b016b83820425593ac5162",
     "dbie/gdp_real_quarterly.csv": "a4e4ee7e155cc4007aed577b4a494e30b70b413953a5ccdf0cc5819063664a8b",
-    "dbie/imports_usd_mn.csv": "2b3d0bb1afc3b498dc4f491975eaa9d4b1423d782069b639bbf714668f0acb6b",
-    "dbie/inr_usd.csv": "24ed726d4f56c2bb47b937d63ae09452132508a19b519d3dc91300018e5d4dde",
-    "dbie/inr_usd_daily_avg.csv": "1e3b6f423380cf8fa91418191422bcd99754f405afcab63bf9da45b1475eeb27",
-    "dbie/neer.csv": "facdad70e99e57d27c0fbe9a6f8d3b7c30068d467a4d35b9f7cdc46ded96b1c4",
+    "dbie/imports_usd_mn.csv": "f9d4b3340dffff09c7e8dc457f19e32dd880fca1831c40044392e527ced10eef",
+    "dbie/inr_usd.csv": "0483bede86c648682497bf896b2eb3351992010d1ce8f3db36c606eb3253a69e",
+    "dbie/inr_usd_daily_avg.csv": "7ab01e6015fa04a992c578670e9326c0525f1a513df58f032da1d5268ee54f1b",
+    "dbie/neer.csv": "63562d16bdf5b1d19f59011851b817ced0fc53840cfb9f2cb6fc869618008230",
     "dbie/oil_exports_usd_mn.csv": "0a60d9bda3abc0a33695385a878be44283953fc6df07e779e74701c7a34eff39",
     "dbie/oil_imports_usd_mn.csv": "490b03857657bd86e996ec437ed27bcf3654c98a437f6e626303b0f64c75cf5e",
-    "dbie/rbi_intervention.csv": "55e91b313d58259c75c53e34a793acf8e401d7979730e5692b15e12b9b97127c",
-    "dbie/reer.csv": "b8bb13ce2aa2656a31941deafba07921f11a3a159b1872cc33630ed52724c26a",
+    "dbie/rbi_intervention.csv": "2d023d396a1f5b1741051ef8d3a163b4757add32121624588b8bf4360fe05ec6",
+    "dbie/reer.csv": "64475432b9d22e870600410235f8c3c8a734fdbc2a8a0e39c9e063dbc4f38645",
     "dbie/wacr.csv": "86792f915f05059e22f3f895ef1e13bade3c8b9436bc33bec21268e7f0df4b46",
-    "ewn/SOURCE.txt": "d463ce6f12357ec9171b632e2becf149baccd12857e7b42ad8dc88fa27c73271",
-    "ewn/ewn_nfa.csv": "97489455b06477ff5c828aea0025276a73d669f994a41e8846f22d75bae0c601",
-    "fred/CLVMNACSCAB1GQEA19.csv": "486a58938d070f18b8399f42150077c3c3fc330cda0e495d175fd448ce1c5bef",
-    "fred/CPIAUCSL.csv": "657739836c1e04227d08602c3918bc80bbc250c2e10afae8735abf3b10ceb0aa",
-    "fred/DCOILBRENTEU.csv": "32bb70d6a7c28521f14e6d88d341ed717d253966c7ecd89ce766f3f261fe5083",
-    "fred/DTWEXBGS.csv": "8396fb76c82b524b29b03ea84541637afbff37e04813032eb70832991831cb1f",
+    "ewn/SOURCE.txt": "0dc542125026a8af2498e9eccca9a99d49c00665a49e4b3af8e7edef366af544",
+    "ewn/ewn_nfa.csv": "e5efecd89e8a2b3ba929f0d945aa02c0e02215a46fe803b34d56bbeb589a8207",
+    "fred/CLVMNACSCAB1GQEA19.csv": "0656bf9cc4f1b4e63c9b9626c8cccd9d8037d4e5e93752cadd5a16f23fd0e68c",
+    "fred/CPIAUCSL.csv": "6f68121fc37f7a6fbadd711529f36e629d67350bfeb133c682ce825623be8715",
+    "fred/DCOILBRENTEU.csv": "1b4a4bbe521ee589ce1f520f12c2a83d4de16af9b61520ddff54e860307c38c1",
+    "fred/DTWEXBGS.csv": "70d199e483d2e4325b90bba9b13e2597a4fdf85a19be38bb096505b448f37d48",
     "fred/DTWEXM.csv": "1d0e0d8d68b573eabc46e94d23953faba4b4ad1c92b28a961fc89d1b22227ef8",
-    "fred/EXINUS.csv": "82461c3de93183e1ea4f4f00e47429f5e6fd94ad7863493f0b3dfbefb63dc8c4",
-    "fred/FEDFUNDS.csv": "e1a642d652d0a17161e12199a437dc4e200c715c59f2eb890ebb23d04724cdf5",
-    "fred/GDPC1.csv": "e38187fca75eff25bc5d35a874ea50d71bf615c46e08d4a1195f9334b414a965",
+    "fred/EXINUS.csv": "10d17e66180062a65b39975168ebde1e10afd21a7ed27d4bb39d4a73c7b33c9a",
+    "fred/FEDFUNDS.csv": "abaf8aac94e837c8a2516b69ee445d8e46ffc1236d932621e4f85771933ca23d",
+    "fred/GDPC1.csv": "258c824ac1a9e1624cd3430f32a927efc43081e763f93dd78f92516826ea24b7",
     "fred/GDPPOT.csv": "e070e437c7a29749129f31e27e9454655155fff4f0f6f6c58ef2e3e8cc8094de",
-    "fred/GS10.csv": "de21481ee87593803b499157367e4c109ae7cce4042e99c09ae87933c042ba49",
+    "fred/GS10.csv": "c2511a82eb648a0f973e1815993e6f691a61fe6e356ec51fcad62fd435718319",
     "fred/INDCPIALLMINMEI.csv": "15c7bdc92de6665e69816fef969b8e2fec8e5afb00cd9f80f49ce7b0ccabb4f4",
-    "fred/IRSTCI01INM156N.csv": "2c9dc3f50e658c802ee7539e4f840abe0616c9278ded79f2a2c0b6390337bcaf",
-    "fred/RBBRBIS.csv": "e166da06a0e52b8bd7555ac9856c3db7e1396991b147b51be3264182d2e02461",
-    "fred/RBCLBIS.csv": "eaa88ed5b18033e1e8280b54306686b32988c2198e924b9b2b2ae60ca0624c80",
-    "fred/RBCNBIS.csv": "e705295b6f0d6581e0bca892bcd04bc9e5c9829e5453d71ec93d291aea6cfed4",
-    "fred/RBCOBIS.csv": "3a1a12a3a02cd598373041197cec66cb0a347166ca16b4e2214b9b4381213912",
-    "fred/RBCZBIS.csv": "4762592c731688f1eb8c13a4b1d3d04cb298237b6ba63042b8176966759abef2",
-    "fred/RBHUBIS.csv": "bfad56f6850cebf314dfff43be815b756c78ad6af0b14f55537c7c103ae3ca3d",
-    "fred/RBIDBIS.csv": "a76612889dc6a846220489f187277d07437bfc0c9b26a0cdd2684dc692731bda",
-    "fred/RBILBIS.csv": "9088b4c2bbc50c789409404e37e9d5b04cec65a3c858acb6affa2f9faf277bf6",
-    "fred/RBINBIS.csv": "b47d925be09920211f2654f3d7ad63e10682a2880965eba8e2de74a80a6072b4",
-    "fred/RBKRBIS.csv": "38fc1a8c6a2dcf29946dbdd9ce543f6b2ca4652e96b7ae87ba3857b56b675828",
-    "fred/RBMXBIS.csv": "b442f1b28fb2b08af374f24f1a3384d2237dd1ee3f96466ed8ebe97215531f7c",
-    "fred/RBMYBIS.csv": "dd3095cda0dde31c9b88474eda9a4bb0c1fda85a6984a3e50714122605e38f98",
-    "fred/RBPEBIS.csv": "1fb7a3c9f116092cdff244714b2067fb40eebf73ecab7d143b3a24dbad27b1a9",
-    "fred/RBPHBIS.csv": "7c59626456d143171fddc6ba193657eb65cefc700d5f5cc39831a6cd445317eb",
-    "fred/RBPLBIS.csv": "1f0330322fb1d3480211002d9d75501296fb5fede6644e0a7a8e15bbf361007c",
-    "fred/RBROBIS.csv": "4f41f9ffef6f4200a14ea5ed04c0eccae0dbdddcbb8e99913d5a756c243e2182",
-    "fred/RBTHBIS.csv": "d8eb6895845119efafc2cf1636e215b95996bed1422a598b291e86c8317bf0bf",
-    "fred/RBTRBIS.csv": "2a3d27f0911313065fe3338e2aa7af82b68233b244b9cbe654b816437c955a50",
-    "fred/RBZABIS.csv": "93f9c7b14c7d0eb1aa991cb2944213ceb76425536a711c68f6c290f886ccc382",
-    "fred/VIXCLS.csv": "2bb15495bc15ca954b71eaaa71524760ad3648de9421ebeb38e274f0e58736e5",
-    "fred/WALCL.csv": "368a8fd001284e129d419f61c5b53ea24552845efe3f1bcb00923a523a777e3b",
+    "fred/IRSTCI01INM156N.csv": "f630d5de3f113c6277dd6fd7fb8a6bef6a556e8ed38811039f64c492963e0c92",
+    "fred/RBBRBIS.csv": "0312c602606c491f8a552eda631643707d8b8e2b52da2d71328a5b1f78ba41db",
+    "fred/RBCLBIS.csv": "fb1c5f60249afc327881724e959f9907d45dfa9b06ee523708c6ce20b39cc450",
+    "fred/RBCNBIS.csv": "35307a975b2c0676aab1b44a61bdfc0e3d5fed1f2d0305524fde913e958d98ee",
+    "fred/RBCOBIS.csv": "a63b39a07d34313ab498498a3d74eb57ae949de5189131982c5b4cab378719bb",
+    "fred/RBCZBIS.csv": "60ccbe0ac3af6401b517d02eb8a2093cc35bfde397b9929b23ad51795e9c8a71",
+    "fred/RBHUBIS.csv": "2217484308fcf6ad03f0f300a99a98a6f3b14eba42d6cda1efa524decff7f66a",
+    "fred/RBIDBIS.csv": "3f692efc057735d0a0edb5b689187cbc0e6024ac77747b4578c44dece56515c7",
+    "fred/RBILBIS.csv": "ee0f04dd99cf42671a04740ba72126d9c29eb048ac5e305ea34697145a9135da",
+    "fred/RBINBIS.csv": "aefd4118c5a7bb904e708d5c329e412c22e7bc2d650f158acf51ad59007b332e",
+    "fred/RBKRBIS.csv": "a48af884a7798823a2e540d9b58b798b993c3cbfc614ee06b2b8effc39d47f22",
+    "fred/RBMXBIS.csv": "f7868c919daca2e84e6222ef67008008740e8c072aa47334edfd70d5fce93563",
+    "fred/RBMYBIS.csv": "94fa37e3a8d1c5e3c412d699e08ac7f561105deea596af6391df80564c0f9066",
+    "fred/RBPEBIS.csv": "6856f640687793d2be69fbc4060de8588d33f99137dabdfc67ee5e7a57ff54ed",
+    "fred/RBPHBIS.csv": "d4391465eb5ac61a06f9eb0a4928b1df111be85983e34b5553585c3ffaa5e6d2",
+    "fred/RBPLBIS.csv": "f243d1646e539f5131c7950902f85609b5bbe59ed8108ad2c81a73913395b953",
+    "fred/RBROBIS.csv": "b344c8aedbbb33c238607eaa62a529c612309d56ea688eccdb5e56919d2b65f5",
+    "fred/RBTHBIS.csv": "1a8ed96e26fdac63366ec3d4a9e5eb787e395ec2eea717d46bd5ba546a627fc2",
+    "fred/RBTRBIS.csv": "f1a9baa6e7aeb95d524789fc3ffea18b151d2c13d6faccf47d4b437febd980f3",
+    "fred/RBZABIS.csv": "a09aa604a4dd0b4881ce665f5ebfa90095452bbea5d37a182150401535347278",
+    "fred/VIXCLS.csv": "07bad6eb1b7e6175f8c279f9d3f517a53f64b898b8258c8c44ee0937ae0e6fa6",
+    "fred/WALCL.csv": "5300f3828132186b6eb0b37786ebcbecbc2f0525024f898b5ad58725bc40f4e6",
     "fred_raw.csv": "93ac4c38403d379a27cb6aa075402ed9b5c99ee48acfadf7e12b98b1d46a37bb",
     "india_fred_raw.csv": "bb6d785b5f0050cec4a06451502fa4010196483784182cbb04790a1924cf21e2",
     "manual/README.md": "c09afdd75d0fa750742b4a13c66345b4092d7808c232185784735fbb4d66e986",
@@ -621,71 +621,568 @@
     "added": [],
     "removed": []
   },
-  "asof": "2026-09",
+  "asof": "2026-10",
   "warnings": [
+    "Latest BoP quarter is Jan 2026 (quarter start); the next one was due by Oct 2026. Download a fresh BoP file from DBIE or wait for the RBIH API to update.",
     "REER anchor fundamentals are not cointegrated with the REER (Engle-Granger p=0.85); the anchor is reported, not relied on.",
-    "BEER residuals are not cointegrated (Engle-Granger p=0.97); treat the BEER fair value as descriptive."
+    "BEER residuals are not cointegrated (Engle-Granger p=0.95); treat the BEER fair value as descriptive."
   ],
   "refresh": {
     "data_changes": {
-      "fred/CPIAUCSL.csv": {
-        "rows_before": 955,
-        "rows_after": 956,
+      "dbie/exports_usd_mn.csv": {
+        "rows_before": 435,
+        "rows_after": 437,
+        "new": 2,
+        "lost": 0,
+        "revised": 3,
+        "new_range": [
+          "2026-07",
+          "2026-08"
+        ],
+        "max_revision": {
+          "at": "2026-04",
+          "before": 43712.90064,
+          "after": 42534.267521,
+          "pct": 2.6963049848983855
+        }
+      },
+      "dbie/fdi_usd_mn.csv": {
+        "rows_before": 184,
+        "rows_after": 185,
+        "new": 1,
+        "lost": 0,
+        "revised": 3,
+        "new_range": [
+          "2026-07",
+          "2026-07"
+        ],
+        "max_revision": {
+          "at": "2026-06",
+          "before": 2077.373789778,
+          "after": -876.816210222,
+          "pct": 142.20791725285517
+        }
+      },
+      "dbie/fpi_usd_mn.csv": {
+        "rows_before": 184,
+        "rows_after": 185,
         "new": 1,
         "lost": 0,
         "revised": 0,
         "new_range": [
-          "2026-09",
+          "2026-07",
+          "2026-07"
+        ]
+      },
+      "dbie/imports_usd_mn.csv": {
+        "rows_before": 435,
+        "rows_after": 437,
+        "new": 2,
+        "lost": 0,
+        "revised": 3,
+        "new_range": [
+          "2026-07",
+          "2026-08"
+        ],
+        "max_revision": {
+          "at": "2026-06",
+          "before": 70822.89811,
+          "after": 70780.454157,
+          "pct": 0.05992970371541678
+        }
+      },
+      "dbie/inr_usd.csv": {
+        "rows_before": 411,
+        "rows_after": 413,
+        "new": 2,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-08",
           "2026-09"
         ]
       },
-      "fred/DCOILBRENTEU.csv": {
-        "rows_before": 9097,
-        "rows_after": 9102,
-        "new": 5,
+      "dbie/neer.csv": {
+        "rows_before": 268,
+        "rows_after": 269,
+        "new": 1,
         "lost": 0,
         "revised": 0,
         "new_range": [
-          "2026-09",
-          "2026-10"
+          "2026-08",
+          "2026-08"
         ]
       },
-      "fred/DTWEXBGS.csv": {
-        "rows_before": 5198,
-        "rows_after": 5208,
-        "new": 10,
+      "dbie/reer.csv": {
+        "rows_before": 268,
+        "rows_after": 269,
+        "new": 1,
         "lost": 0,
-        "revised": 0,
+        "revised": 1,
         "new_range": [
-          "2026-09",
-          "2026-10"
-        ]
+          "2026-08",
+          "2026-08"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 91.7818761,
+          "after": 91.76105442,
+          "pct": 0.02268604749082004
+        }
       },
-      "fred/VIXCLS.csv": {
-        "rows_before": 9285,
-        "rows_after": 9294,
-        "new": 9,
+      "fred/CLVMNACSCAB1GQEA19.csv": {
+        "rows_before": 126,
+        "rows_after": 127,
+        "new": 1,
         "lost": 0,
-        "revised": 0,
+        "revised": 126,
         "new_range": [
-          "2026-10",
-          "2026-10"
-        ]
+          "2026-07",
+          "2026-07"
+        ],
+        "max_revision": {
+          "at": "2024-07",
+          "before": 2855957.5,
+          "after": 2866454.3,
+          "pct": 0.36754048335802664
+        }
       },
-      "fred/WALCL.csv": {
-        "rows_before": 1242,
-        "rows_after": 1243,
+      "fred/CPIAUCSL.csv": {
+        "rows_before": 956,
+        "rows_after": 957,
         "new": 1,
         "lost": 0,
         "revised": 0,
         "new_range": [
           "2026-10",
           "2026-10"
+        ]
+      },
+      "fred/DCOILBRENTEU.csv": {
+        "rows_before": 9102,
+        "rows_after": 9132,
+        "new": 30,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      },
+      "fred/DTWEXBGS.csv": {
+        "rows_before": 5208,
+        "rows_after": 5231,
+        "new": 23,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      },
+      "fred/EXINUS.csv": {
+        "rows_before": 645,
+        "rows_after": 646,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/FEDFUNDS.csv": {
+        "rows_before": 867,
+        "rows_after": 868,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/GDPC1.csv": {
+        "rows_before": 318,
+        "rows_after": 319,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-07",
+          "2026-07"
+        ]
+      },
+      "fred/GS10.csv": {
+        "rows_before": 882,
+        "rows_after": 883,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/IRSTCI01INM156N.csv": {
+        "rows_before": 703,
+        "rows_after": 706,
+        "new": 3,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ]
+      },
+      "fred/RBBRBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 96,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 114.34,
+          "after": 114.29,
+          "pct": 0.04372922861640472
+        }
+      },
+      "fred/RBCLBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 97,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 107.36,
+          "after": 107.33,
+          "pct": 0.02794336810730359
+        }
+      },
+      "fred/RBCNBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 199,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 89.52,
+          "after": 89.58,
+          "pct": 0.06702412868632962
+        }
+      },
+      "fred/RBCOBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 91,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 123.37,
+          "after": 123.3,
+          "pct": 0.05673988814136936
+        }
+      },
+      "fred/RBCZBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 47,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 129.06,
+          "after": 128.92,
+          "pct": 0.10847667751434588
+        }
+      },
+      "fred/RBHUBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 63,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 116.68,
+          "after": 116.59,
+          "pct": 0.07713404182379449
+        }
+      },
+      "fred/RBIDBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 210,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 92.29,
+          "after": 92.34,
+          "pct": 0.05417705060136217
+        }
+      },
+      "fred/RBILBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 60,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 108.14,
+          "after": 107.93,
+          "pct": 0.1941927131496151
+        }
+      },
+      "fred/RBINBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 88,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 90.99,
+          "after": 91.32,
+          "pct": 0.36267721727662194
+        }
+      },
+      "fred/RBKRBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 231,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 85.07,
+          "after": 85.11,
+          "pct": 0.0470201010932247
+        }
+      },
+      "fred/RBMXBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 104,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 141.72,
+          "after": 141.65,
+          "pct": 0.049393169630252025
+        }
+      },
+      "fred/RBMYBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 196,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 106.07,
+          "after": 106.02,
+          "pct": 0.047138682002448536
+        }
+      },
+      "fred/RBPEBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 71,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 110.36,
+          "after": 110.33,
+          "pct": 0.027183762232694034
+        }
+      },
+      "fred/RBPHBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 199,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-06",
+          "before": 98.07,
+          "after": 98.15,
+          "pct": 0.08157438564292088
+        }
+      },
+      "fred/RBPLBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 49,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 130.34,
+          "after": 130.21,
+          "pct": 0.09973914377780838
+        }
+      },
+      "fred/RBROBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 34,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 121.88,
+          "after": 121.78,
+          "pct": 0.08204791598292938
+        }
+      },
+      "fred/RBTHBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 236,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 97.72,
+          "after": 97.66,
+          "pct": 0.061399918133444815
+        }
+      },
+      "fred/RBTRBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 81,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 107.47,
+          "after": 107.34,
+          "pct": 0.12096398995067967
+        }
+      },
+      "fred/RBZABIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 152,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 114.49,
+          "after": 113.72,
+          "pct": 0.6725478207703696
+        }
+      },
+      "fred/VIXCLS.csv": {
+        "rows_before": 9294,
+        "rows_after": 9320,
+        "new": 26,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      },
+      "fred/WALCL.csv": {
+        "rows_before": 1243,
+        "rows_after": 1249,
+        "new": 6,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
         ]
       }
     },
     "gate_warnings": [
-      "MOSPI CPI ends Aug 2026 in both the RBI API and data/raw/manual/mospi_cpi_2024base.csv; Sep 2026 should be out. If the API lags, add it from https://www.mospi.gov.in/themes/product/9-consumer-price-index-cpi (Annexure IV)."
+      "MOSPI CPI ends Sep 2026 in both the RBI API and data/raw/manual/mospi_cpi_2024base.csv; Oct 2026 should be out. If the API lags, add it from https://www.mospi.gov.in/themes/product/9-consumer-price-index-cpi (Annexure IV)."
     ]
   }
 }

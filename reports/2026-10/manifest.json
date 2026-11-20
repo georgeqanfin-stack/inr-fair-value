@@ -1,0 +1,1188 @@
+{
+  "run_id": "20261120-080204",
+  "created": "2026-11-20T08:04:30",
+  "inrfv_version": "1.2.0",
+  "git_revision": "df7283e-dirty",
+  "config_source": "/home/runner/work/inr-fair-value/inr-fair-value/config/default.toml",
+  "config_hash": "a6c49fdce6fc",
+  "config": {
+    "publication": {
+      "author": "George P Babu, Quantitative Researcher",
+      "refresh_day": 15
+    },
+    "paths": {
+      "raw": "data/raw",
+      "fred_cache": "data/raw/fred",
+      "dbie_cache": "data/raw/dbie",
+      "manual": "data/raw/manual",
+      "runs": "outputs/runs"
+    },
+    "sample": {
+      "start": "2000-01-01"
+    },
+    "fred": {
+      "series": {
+        "cpi_us": "CPIAUCSL",
+        "fed_funds_rate": "FEDFUNDS",
+        "dxy_broad": "DTWEXBGS",
+        "dxy_major": "DTWEXM",
+        "vix": "VIXCLS",
+        "us_10y_yield": "GS10",
+        "brent": "DCOILBRENTEU",
+        "fed_balance_sheet": "WALCL",
+        "india_stir": "IRSTCI01INM156N",
+        "cpi_india_oecd": "INDCPIALLMINMEI",
+        "inr_usd_fred": "EXINUS"
+      },
+      "monthly_agg": {
+        "dxy_broad": "mean",
+        "dxy_major": "mean",
+        "vix": "mean",
+        "brent": "mean",
+        "fed_balance_sheet": "last"
+      }
+    },
+    "dbie": {
+      "mode": "merge",
+      "base_url": "https://data-api.dbie.rbihub.in",
+      "reconcile_rel_tol": 0.005,
+      "revision_window": 24,
+      "extend_inr_with_fred": true
+    },
+    "alfred": {
+      "enabled": true
+    },
+    "vintages": {
+      "revision_check": true
+    },
+    "pit": {
+      "carry_forward_months": 2
+    },
+    "dxy_splice": {
+      "overlap_months": 12
+    },
+    "worldbank": {
+      "gdp_india_usd": [
+        "IN",
+        "NY.GDP.MKTP.CD",
+        "wb_gdp_india.csv"
+      ],
+      "remittances_usd": [
+        "IN",
+        "BX.TRF.PWKR.CD.DT",
+        "wb_remittances.csv"
+      ],
+      "gdp_pc_ppp_india": [
+        "IND",
+        "NY.GDP.PCAP.PP.KD",
+        "wb_gdp_pc_ppp_india.csv"
+      ],
+      "gdp_pc_ppp_world": [
+        "WLD",
+        "NY.GDP.PCAP.PP.KD",
+        "wb_gdp_pc_ppp_world.csv"
+      ],
+      "gdp_pc_ppp_usa": [
+        "USA",
+        "NY.GDP.PCAP.PP.KD",
+        "wb_gdp_pc_ppp_usa.csv"
+      ],
+      "tot_india": [
+        "IND",
+        "TT.PRI.MRCH.XD.WD",
+        "wb_tot_india.csv"
+      ]
+    },
+    "cpi_india": {
+      "source": "official",
+      "linking_factor_2024": 0.5267,
+      "cpiiw_factor_1982_2001": 4.63
+    },
+    "rates": {
+      "india_policy_source": "india_stir",
+      "repo_file": "rbi_policy_repo_rate.csv"
+    },
+    "data_checks": {
+      "verified_flat_runs": [
+        "mospi_cpi:2025-08:2025-10"
+      ]
+    },
+    "publication_lag": {
+      "inr_usd": 0,
+      "reer": 1,
+      "neer": 1,
+      "fx_reserves_usd_mn": 0,
+      "dxy": 0,
+      "vix": 0,
+      "brent": 0,
+      "fed_funds_rate": 0,
+      "us_10y_yield": 0,
+      "fed_balance_sheet": 0,
+      "india_policy_rate": 0,
+      "cpi_us": 1,
+      "cpi_india": 1,
+      "exports_usd_mn": 1,
+      "imports_usd_mn": 1,
+      "fpi_usd_mn": 2,
+      "fdi_usd_mn": 2,
+      "fwd_premium": 0,
+      "rbi_intervention": 2,
+      "bop_quarterly": 6,
+      "annual_worldbank": 7
+    },
+    "gdp": {
+      "growth_lookback_years": 3
+    },
+    "models": {
+      "structural": {
+        "hp_lambda": 129600,
+        "min_obs": 36
+      },
+      "feer": {
+        "central_norm": "imf_path",
+        "norm_path_file": "imf_ca_norm_india.csv",
+        "imf_norm": -2.0,
+        "imf_norm_se": 0.7,
+        "static_norm": -2.5,
+        "niip_growth_years": 5,
+        "eta_exports": 0.46,
+        "eta_imports": 0.25,
+        "eta_uncertainty": 0.5,
+        "fallback_semi_elasticity": -0.16,
+        "income_term": true,
+        "income_fc_share": 0.5,
+        "cyclical_adjustment": true,
+        "cyclical_coefficient": -0.3564,
+        "oil_norm_months": 60,
+        "window_quarters": 4,
+        "carry_quarters": 2,
+        "band_draws": 2000,
+        "band_percentiles": [
+          10,
+          50,
+          90
+        ],
+        "seed": 7
+      },
+      "reer_anchor": {
+        "min_quarters": 32,
+        "dols_k": 1,
+        "hac_lags": 4,
+        "worldbank_release_lag": 7,
+        "tot_release_lag": 18,
+        "band_draws": 2000,
+        "band_percentiles": [
+          10,
+          90
+        ],
+        "seed": 11
+      },
+      "panel_anchor": {
+        "central_spec": "prod",
+        "dols_k": 1,
+        "min_years": 10,
+        "release_lag": 7,
+        "tot_release_lag": 18,
+        "nfa_release_lag": 16,
+        "reer_lag": 1,
+        "band_draws": 2000,
+        "band_percentiles": [
+          10,
+          90
+        ],
+        "seed": 13,
+        "coint_candidates": [
+          "rel_prod",
+          "gov_cons",
+          "openness",
+          "log_tot",
+          "nfa"
+        ],
+        "coint_primary": "group_adf",
+        "coint_reps": 999,
+        "specs": {
+          "prod": [
+            "rel_prod"
+          ],
+          "long": [
+            "rel_prod",
+            "gov_cons",
+            "openness"
+          ],
+          "short": [
+            "rel_prod",
+            "log_tot",
+            "gov_cons",
+            "openness"
+          ],
+          "prod_nfa": [
+            "rel_prod",
+            "nfa"
+          ]
+        }
+      },
+      "beer": {
+        "central_spec": "core",
+        "dols_k": 3,
+        "hac_lags": 12,
+        "min_obs": 96,
+        "refit_every": 3,
+        "hp_lambda": 129600,
+        "worldbank_release_lag": 7,
+        "band_draws": 1000,
+        "band_percentiles": [
+          10,
+          90
+        ],
+        "seed": 17,
+        "specs": {
+          "core": [
+            "log_dxy",
+            "rel_prod",
+            "real_rate_diff"
+          ],
+          "dxy": [
+            "log_dxy"
+          ],
+          "oil": [
+            "log_dxy",
+            "rel_prod",
+            "real_rate_diff",
+            "log_brent"
+          ],
+          "fwd": [
+            "log_dxy",
+            "rel_prod",
+            "real_fwd_diff"
+          ]
+        }
+      },
+      "flows": {
+        "regressors": [
+          "fpi",
+          "fdi",
+          "dxy",
+          "brent"
+        ],
+        "start": "2011-01",
+        "hac_lags": 3,
+        "windows": [
+          3,
+          12
+        ]
+      },
+      "market": {
+        "hac_lags": 6
+      },
+      "nonlinear": {
+        "enabled": true,
+        "rolling_months": 120,
+        "min_rmse_gain": 0.01,
+        "robustness_windows": [
+          72,
+          96,
+          120,
+          144,
+          180
+        ],
+        "break_reps": 199,
+        "break_block": 12,
+        "seed": 29
+      },
+      "flow_id": {
+        "start": "2011-03",
+        "lags": 2,
+        "horizons": 6,
+        "instruments": [
+          "vix",
+          "us10y"
+        ]
+      },
+      "regimes": {
+        "min_obs": 96,
+        "refit_every": 12,
+        "seed": 42
+      },
+      "regimes_tvtp": {
+        "min_obs": 96,
+        "refit_every": 12,
+        "switch_p": 0.1,
+        "seed": 42
+      }
+    },
+    "panel": {
+      "countries": [
+        "IND",
+        "CHN",
+        "BRA",
+        "MEX",
+        "IDN",
+        "TUR",
+        "ZAF",
+        "KOR",
+        "THA",
+        "MYS",
+        "PHL",
+        "CHL",
+        "COL",
+        "PER",
+        "POL",
+        "HUN",
+        "CZE",
+        "ISR",
+        "ROU"
+      ],
+      "iso2": {
+        "IND": "IN",
+        "CHN": "CN",
+        "BRA": "BR",
+        "MEX": "MX",
+        "IDN": "ID",
+        "TUR": "TR",
+        "ZAF": "ZA",
+        "KOR": "KR",
+        "THA": "TH",
+        "MYS": "MY",
+        "PHL": "PH",
+        "CHL": "CL",
+        "COL": "CO",
+        "PER": "PE",
+        "POL": "PL",
+        "HUN": "HU",
+        "CZE": "CZ",
+        "ISR": "IL",
+        "ROU": "RO"
+      },
+      "indicators": {
+        "gdp_pc_ppp": "NY.GDP.PCAP.PP.KD",
+        "tot": "TT.PRI.MRCH.XD.WD",
+        "gov_cons": "NE.CON.GOVT.ZS",
+        "openness": "NE.TRD.GNFS.ZS"
+      },
+      "nfa": {
+        "measure": "nfa_ewn"
+      }
+    },
+    "peers": {
+      "episodes": [
+        {
+          "country": "TUR",
+          "label": "2018 lira crisis",
+          "before": [
+            "2010-01",
+            "2013-12"
+          ],
+          "after": [
+            "2018-08",
+            "2019-12"
+          ],
+          "expect": "weaker"
+        },
+        {
+          "country": "BRA",
+          "label": "2015 recession and real sell-off",
+          "before": [
+            "2011-01",
+            "2014-06"
+          ],
+          "after": [
+            "2015-06",
+            "2016-06"
+          ],
+          "expect": "weaker"
+        },
+        {
+          "country": "ZAF",
+          "label": "Dec 2015 rand sell-off",
+          "before": [
+            "2011-01",
+            "2012-12"
+          ],
+          "after": [
+            "2015-12",
+            "2016-12"
+          ],
+          "expect": "weaker"
+        },
+        {
+          "country": "MEX",
+          "label": "Nov 2016 peso fall",
+          "before": [
+            "2013-01",
+            "2014-12"
+          ],
+          "after": [
+            "2016-11",
+            "2017-06"
+          ],
+          "expect": "weaker"
+        },
+        {
+          "country": "MEX",
+          "label": "2023-24 'super peso' rally",
+          "before": [
+            "2016-11",
+            "2017-06"
+          ],
+          "after": [
+            "2023-06",
+            "2024-06"
+          ],
+          "expect": "stronger"
+        },
+        {
+          "country": "CHN",
+          "label": "Aug 2015 renminbi devaluation",
+          "before": [
+            "2014-07",
+            "2015-07"
+          ],
+          "after": [
+            "2015-09",
+            "2016-12"
+          ],
+          "expect": "weaker"
+        },
+        {
+          "country": "IND",
+          "label": "2013 taper tantrum",
+          "before": [
+            "2012-01",
+            "2013-04"
+          ],
+          "after": [
+            "2013-08",
+            "2013-12"
+          ],
+          "expect": "weaker"
+        }
+      ]
+    },
+    "uncertainty": {
+      "panel_boot_draws": 300,
+      "draws": 2000,
+      "ca_measurement_sd": 0.2,
+      "weight_schemes": [
+        "equal",
+        "performance",
+        "inverse_variance"
+      ],
+      "headline_corridor": "bootstrap",
+      "seed": 23,
+      "recalibration": {
+        "enabled": true,
+        "methods": [
+          "scale",
+          "shift_scale"
+        ],
+        "nominal": 0.8,
+        "min_years": 3,
+        "prefer_gap": 0.05
+      }
+    },
+    "composite": {
+      "reer_component": "panel",
+      "weight_reer": 0.5,
+      "weight_feer": 0.5,
+      "weight_rule": {
+        "min_rmse_gain": 0.01
+      }
+    },
+    "backtest": {
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "min_train": 60,
+      "headline_horizon": 12
+    }
+  },
+  "python": "3.12.16",
+  "platform": "Linux-7.0.0-1020-azure-x86_64-with-glibc2.43",
+  "raw_checksums": {
+    "alfred/CPIAUCSL.csv": "9d42869cf45487ce4722dd0ad7a850fa9e4acd3fdc50411ff47a03c49af45684",
+    "dbie/_fetch.json": "129cd37f2b1fb14a13a6df02ec01d426d8b44155b823cb95b59b34ea0b4b92bc",
+    "dbie/bop.banking_capital.csv": "cb2fb953ac3ecaf5b30b8d805314159c2ddee3fbeb7c7d93206703955142ddeb",
+    "dbie/bop.capital_account.csv": "962f2828bf4ae7f72c83b5fa4445986324eb887cfe887fe0e28f179382318594",
+    "dbie/bop.current_account.csv": "421cfec3d0de3181cd9c576819163f2734924f83274a94790fbb9dcea36767e9",
+    "dbie/bop.fdi_bop.csv": "6c3355d10c5dbb18ca69087d0702394a05679bf9aee5dc37da417abe02f93314",
+    "dbie/bop.loans.csv": "a8bc7b0e9ac778e94a3cb1727e388bfdcc223631fa2458061936c3d313137323",
+    "dbie/bop.merch_balance.csv": "e4b049dbac7286b7e4ca63dc8143df383e42905411d695ee72bb18d2936fb87a",
+    "dbie/bop.portfolio_bop.csv": "7d71923649ef2135e4b04cfe66f513f04a497a5fcae119f76c39b3055d36c784",
+    "dbie/bop.private_transfers.csv": "4ffa0be7540777bb73fb51a306630c44479df67b0514cf9845901f40a30502b2",
+    "dbie/bop.reserve_change.csv": "44d4d60ab000aa4303240e77d1ee38a5fa50853a7f6a0727c0ad6e8aba4272e4",
+    "dbie/bop_bpm6.csv": "f74b9b30c6604d389d79a6a00762805d972eb27e5467e025f49272eb3ee1d52d",
+    "dbie/bopx.goods_credit.csv": "db2b9913676fc2a603a032ad39e788cd340188b9c81e05207af540874a968d07",
+    "dbie/bopx.goods_debit.csv": "e6f5c635e10851e6cb2911aaf950302b8e5a35b66e9017d16a89e33e0a7cdb22",
+    "dbie/bopx.niip.csv": "da57ff8840cbafd22a90e1a22cb5862a25bc7b0f5f7a03b158c8fdd136b7f232",
+    "dbie/bopx.niip_bpm5.csv": "b22ae8d2dab77b6b7af9bf8d8c62815e5e82f31e204c04999292c32ce96ec919",
+    "dbie/bopx.primary_income.csv": "cfcd47087b2d033d573c1925fa0043a70ae2f3f4067927930a98d4936f5b2735",
+    "dbie/bopx.services_credit.csv": "984e49da01eda1afa2627c95416cc7ec7da0c06a35c7d7d6fe3ecf19eaf16971",
+    "dbie/bopx.services_debit.csv": "d7ea8c6c6e950a1b079df58a595ec6a60bb59b50ad1c1d4e8b77fdb44d10a64f",
+    "dbie/cpi.combined_2012.csv": "c493bce94e686ce878ee15338990c0dec1132390c04957c1439f964b5819aa1c",
+    "dbie/cpi.combined_2012_bs.csv": "353ba43d201dbed2441f750d73b1893200a8a77e9bf1595060e1b056c431835a",
+    "dbie/cpi.iw_1982.csv": "15be71b967987697820e9abec38bc10b8d777e742292c86e08fced26409fcaee",
+    "dbie/cpi.iw_2001.csv": "5991ab8a5169b3751cac431451fd35c74e709b611a7489ae624bd5afb4df8c28",
+    "dbie/cpi_2024base.csv": "1299741daef8eb5a1a6883247c9c8cbc5bf43db240df120f6c039b0ba56e16a4",
+    "dbie/exports_usd_mn.csv": "0ea376bd09fdbac91d3b3575ce86f925e569477f9d597eff5998b348f267f33d",
+    "dbie/fdi_usd_mn.csv": "6dc849d992b2bad75847d3aa753dfcc9fb7ae8191ead1c419fc0a8795a79a8ae",
+    "dbie/fpi_usd_mn.csv": "9c795e1368eba307a344766c15e3db4fdead2889465470d44dcc54c92fcdc584",
+    "dbie/fwd_premium_1m.csv": "1c1861ea1c70c3b6d3dbf35699874c870808180289f040588d135b2b4b5b272b",
+    "dbie/fwd_premium_3m.csv": "ad7868d9e760cb07e7daf20559f316621d7d66e7f4d3269f4a2ea758da8c14b6",
+    "dbie/fwd_premium_6m.csv": "422d9785bb8ee4de6e5047da03f648b3e894941682d1909162b77b2025efd1b5",
+    "dbie/fx_reserves_usd_mn.csv": "91c49bc55dd4478975e338291dd1a84a35e3626cfb1dac9da7253e750458592f",
+    "dbie/fx_reserves_weekly.csv": "f9d18bbf9253ab9d9400e91dc27cde7cf3daf4aa23b016b83820425593ac5162",
+    "dbie/gdp_real_quarterly.csv": "a4e4ee7e155cc4007aed577b4a494e30b70b413953a5ccdf0cc5819063664a8b",
+    "dbie/imports_usd_mn.csv": "f9d4b3340dffff09c7e8dc457f19e32dd880fca1831c40044392e527ced10eef",
+    "dbie/inr_usd.csv": "0483bede86c648682497bf896b2eb3351992010d1ce8f3db36c606eb3253a69e",
+    "dbie/inr_usd_daily_avg.csv": "7ab01e6015fa04a992c578670e9326c0525f1a513df58f032da1d5268ee54f1b",
+    "dbie/neer.csv": "63562d16bdf5b1d19f59011851b817ced0fc53840cfb9f2cb6fc869618008230",
+    "dbie/oil_exports_usd_mn.csv": "0a60d9bda3abc0a33695385a878be44283953fc6df07e779e74701c7a34eff39",
+    "dbie/oil_imports_usd_mn.csv": "490b03857657bd86e996ec437ed27bcf3654c98a437f6e626303b0f64c75cf5e",
+    "dbie/rbi_intervention.csv": "2d023d396a1f5b1741051ef8d3a163b4757add32121624588b8bf4360fe05ec6",
+    "dbie/reer.csv": "64475432b9d22e870600410235f8c3c8a734fdbc2a8a0e39c9e063dbc4f38645",
+    "dbie/wacr.csv": "86792f915f05059e22f3f895ef1e13bade3c8b9436bc33bec21268e7f0df4b46",
+    "ewn/SOURCE.txt": "0dc542125026a8af2498e9eccca9a99d49c00665a49e4b3af8e7edef366af544",
+    "ewn/ewn_nfa.csv": "e5efecd89e8a2b3ba929f0d945aa02c0e02215a46fe803b34d56bbeb589a8207",
+    "fred/CLVMNACSCAB1GQEA19.csv": "0656bf9cc4f1b4e63c9b9626c8cccd9d8037d4e5e93752cadd5a16f23fd0e68c",
+    "fred/CPIAUCSL.csv": "6f68121fc37f7a6fbadd711529f36e629d67350bfeb133c682ce825623be8715",
+    "fred/DCOILBRENTEU.csv": "1b4a4bbe521ee589ce1f520f12c2a83d4de16af9b61520ddff54e860307c38c1",
+    "fred/DTWEXBGS.csv": "70d199e483d2e4325b90bba9b13e2597a4fdf85a19be38bb096505b448f37d48",
+    "fred/DTWEXM.csv": "1d0e0d8d68b573eabc46e94d23953faba4b4ad1c92b28a961fc89d1b22227ef8",
+    "fred/EXINUS.csv": "10d17e66180062a65b39975168ebde1e10afd21a7ed27d4bb39d4a73c7b33c9a",
+    "fred/FEDFUNDS.csv": "abaf8aac94e837c8a2516b69ee445d8e46ffc1236d932621e4f85771933ca23d",
+    "fred/GDPC1.csv": "258c824ac1a9e1624cd3430f32a927efc43081e763f93dd78f92516826ea24b7",
+    "fred/GDPPOT.csv": "e070e437c7a29749129f31e27e9454655155fff4f0f6f6c58ef2e3e8cc8094de",
+    "fred/GS10.csv": "c2511a82eb648a0f973e1815993e6f691a61fe6e356ec51fcad62fd435718319",
+    "fred/INDCPIALLMINMEI.csv": "15c7bdc92de6665e69816fef969b8e2fec8e5afb00cd9f80f49ce7b0ccabb4f4",
+    "fred/IRSTCI01INM156N.csv": "f630d5de3f113c6277dd6fd7fb8a6bef6a556e8ed38811039f64c492963e0c92",
+    "fred/RBBRBIS.csv": "0312c602606c491f8a552eda631643707d8b8e2b52da2d71328a5b1f78ba41db",
+    "fred/RBCLBIS.csv": "fb1c5f60249afc327881724e959f9907d45dfa9b06ee523708c6ce20b39cc450",
+    "fred/RBCNBIS.csv": "35307a975b2c0676aab1b44a61bdfc0e3d5fed1f2d0305524fde913e958d98ee",
+    "fred/RBCOBIS.csv": "a63b39a07d34313ab498498a3d74eb57ae949de5189131982c5b4cab378719bb",
+    "fred/RBCZBIS.csv": "60ccbe0ac3af6401b517d02eb8a2093cc35bfde397b9929b23ad51795e9c8a71",
+    "fred/RBHUBIS.csv": "2217484308fcf6ad03f0f300a99a98a6f3b14eba42d6cda1efa524decff7f66a",
+    "fred/RBIDBIS.csv": "3f692efc057735d0a0edb5b689187cbc0e6024ac77747b4578c44dece56515c7",
+    "fred/RBILBIS.csv": "ee0f04dd99cf42671a04740ba72126d9c29eb048ac5e305ea34697145a9135da",
+    "fred/RBINBIS.csv": "aefd4118c5a7bb904e708d5c329e412c22e7bc2d650f158acf51ad59007b332e",
+    "fred/RBKRBIS.csv": "a48af884a7798823a2e540d9b58b798b993c3cbfc614ee06b2b8effc39d47f22",
+    "fred/RBMXBIS.csv": "f7868c919daca2e84e6222ef67008008740e8c072aa47334edfd70d5fce93563",
+    "fred/RBMYBIS.csv": "94fa37e3a8d1c5e3c412d699e08ac7f561105deea596af6391df80564c0f9066",
+    "fred/RBPEBIS.csv": "6856f640687793d2be69fbc4060de8588d33f99137dabdfc67ee5e7a57ff54ed",
+    "fred/RBPHBIS.csv": "d4391465eb5ac61a06f9eb0a4928b1df111be85983e34b5553585c3ffaa5e6d2",
+    "fred/RBPLBIS.csv": "f243d1646e539f5131c7950902f85609b5bbe59ed8108ad2c81a73913395b953",
+    "fred/RBROBIS.csv": "b344c8aedbbb33c238607eaa62a529c612309d56ea688eccdb5e56919d2b65f5",
+    "fred/RBTHBIS.csv": "1a8ed96e26fdac63366ec3d4a9e5eb787e395ec2eea717d46bd5ba546a627fc2",
+    "fred/RBTRBIS.csv": "f1a9baa6e7aeb95d524789fc3ffea18b151d2c13d6faccf47d4b437febd980f3",
+    "fred/RBZABIS.csv": "a09aa604a4dd0b4881ce665f5ebfa90095452bbea5d37a182150401535347278",
+    "fred/VIXCLS.csv": "07bad6eb1b7e6175f8c279f9d3f517a53f64b898b8258c8c44ee0937ae0e6fa6",
+    "fred/WALCL.csv": "5300f3828132186b6eb0b37786ebcbecbc2f0525024f898b5ad58725bc40f4e6",
+    "fred_raw.csv": "93ac4c38403d379a27cb6aa075402ed9b5c99ee48acfadf7e12b98b1d46a37bb",
+    "india_fred_raw.csv": "bb6d785b5f0050cec4a06451502fa4010196483784182cbb04790a1924cf21e2",
+    "manual/README.md": "c09afdd75d0fa750742b4a13c66345b4092d7808c232185784735fbb4d66e986",
+    "manual/imf_ca_norm_india.csv": "a7bab661d1ce210db7f7502d3764ab0167a5b4b0534111b7861783a508f24489",
+    "manual/imf_eba_india.csv": "e24f1e0b441bddd97d704b2437c053991508a7b1e94bd07357a70d8d1db70e46",
+    "manual/imf_eba_panel.csv": "66b61791622652fbfc4ee51d95244f27f81b0d6a6191fc3ff97015dfb1bab7eb",
+    "manual/mospi_cpi_2024base.csv": "16e8f24c65bcdb52a4a962d1dc087e8c4b8c104706bd27ad09e6c4b43ebae829",
+    "manual/rbi_policy_repo_rate.csv": "fb80eb2cdbcfc18ddb21bee9b1d7f75b663cd3938a133980b9471533337fe191",
+    "manual/rbi_repo_rate_changes.csv": "1446b5d647737395c6aa503fde0e622863e4f5e81dc1f8fe390c4c992b6047b8",
+    "parsed_cab.csv": "1ca6cab23204486d294da0b4198be6691fba440226961a7cb275642f8bb022cd",
+    "parsed_fpi_inr.csv": "7bb1ac62f5635810cf2f53cca13c5c60e66e57b39f043a05f0745f78f06747cb",
+    "parsed_fpi_usd.csv": "8357eece0c452b879d09becf715b9e4105e817dff81b8406614d51fdf12fb632",
+    "parsed_inr_usd.csv": "13d3a44d410dd2e9e0b31b4c5a7d0ae189f23bb74a3ea820a5da8542fb91e62a",
+    "parsed_reer.csv": "fdfedac05faca166bd3d9e854015afdeb22006d0d1b124ad21c5ad36d165d6dc",
+    "parsed_reserves.csv": "0760806afbb5263034d71a045fb315bc3edfd2d6409c23d4d7492be90f0c95f5",
+    "parsed_trade.csv": "49d22fe9f2e74dcb0849ac29864a234ef1e60d02df2f67344fd48e27d699b7a7",
+    "rbi_cab.xlsx": "259269ddf3d5d619e3c398b008328c84211ea1bbf99805c7145aa25e03aa1ae3",
+    "rbi_fpi_flows.xlsx": "35743329db6357be5ea35d5c217dce8a6f039a6829c239f2c30a5f020c466013",
+    "rbi_inr_usd.xlsx": "c8a31c055e2326af21a8413c191fbffc5d60e0770f9fe58a2f85201cdc9d34ca",
+    "rbi_reer.xlsx": "ac735c39b1635e0002ed5fe65a10211c1d917dc122cd184a7d64f8718b7b9be1",
+    "rbi_reserves.xlsx": "b4fd98119eff380a4c2a8d0c0d69f52376847be4ae6bd6f64dbd89cc483b5ba3",
+    "rbi_trade.xlsx": "11c7731f4f42dd7663267feb9b522391d43d1b5b1c814a63275b3799a179bbb4",
+    "wb_gdp_india.csv": "698727f704f23a72eb4a90f6a181da9cbf14f0056d6c83777aaecc86f9f28c3d",
+    "wb_gdp_pc_india.csv": "07eca39914ce47ef76c5cadd463f931a7341f8ca297cab152f26558b00b05450",
+    "wb_gdp_pc_ppp_india.csv": "a3a49649c153a750633cd7eb410fb8bda06cbeee38b5497184a1bb136ada5dc9",
+    "wb_gdp_pc_ppp_usa.csv": "cc13ee5492346cd6337b29b0ed7aab0d72963843b3ccd41b5a788b423698fa6a",
+    "wb_gdp_pc_ppp_world.csv": "7aa89f5a2eb8557c4d04974d7681df7bb1c3022a5b02f213bc5aa10921450c18",
+    "wb_gdp_pc_us.csv": "b67e5e951a4fb55ec6ca694860c01ba2869f85a11ce3a521883cf7c56f52b967",
+    "wb_gdp_us.csv": "5fcb00fec9be62aead07cb8da232de95301cd63e8f5f1607cce8def36b0e9466",
+    "wb_remittances.csv": "7297a42be96fdaf6cb509ca7c853bfff6532ec7bae9fec9030303f66c2714f9e",
+    "wb_tot_india.csv": "4428bb575bfe0aca04d9702f4d1daad4adc10f8bc2866a4032fa8d8cf0704910",
+    "worldbank_panel/NE.CON.GOVT.ZS.csv": "6b5fd12cd0fd9d8129dc314df5d20ed56bf625171c58b83b9725db3e9ce1b265",
+    "worldbank_panel/NE.TRD.GNFS.ZS.csv": "f8127ccd66bc247ccf7c0ba5522f0176882490c7e7bff265879d26817d2fbddd",
+    "worldbank_panel/NY.GDP.PCAP.PP.KD.csv": "1a39e79e0b8f3c96f4fc6e7ee520b04e69fadb2c68f5542880c1815ec6be3eab",
+    "worldbank_panel/TT.PRI.MRCH.XD.WD.csv": "e3183cb59d12d58bc711159fd464eeb7caa5670845dc99c4bff94460cbc24ef4"
+  },
+  "raw_manifest_check": {
+    "missing_manifest": [],
+    "changed": [],
+    "added": [],
+    "removed": []
+  },
+  "asof": "2026-10",
+  "warnings": [
+    "Latest BoP quarter is Jan 2026 (quarter start); the next one was due by Oct 2026. Download a fresh BoP file from DBIE or wait for the RBIH API to update.",
+    "REER anchor fundamentals are not cointegrated with the REER (Engle-Granger p=0.85); the anchor is reported, not relied on.",
+    "BEER residuals are not cointegrated (Engle-Granger p=0.95); treat the BEER fair value as descriptive."
+  ],
+  "refresh": {
+    "data_changes": {
+      "dbie/exports_usd_mn.csv": {
+        "rows_before": 435,
+        "rows_after": 437,
+        "new": 2,
+        "lost": 0,
+        "revised": 3,
+        "new_range": [
+          "2026-07",
+          "2026-08"
+        ],
+        "max_revision": {
+          "at": "2026-04",
+          "before": 43712.90064,
+          "after": 42534.267521,
+          "pct": 2.6963049848983855
+        }
+      },
+      "dbie/fdi_usd_mn.csv": {
+        "rows_before": 184,
+        "rows_after": 185,
+        "new": 1,
+        "lost": 0,
+        "revised": 3,
+        "new_range": [
+          "2026-07",
+          "2026-07"
+        ],
+        "max_revision": {
+          "at": "2026-06",
+          "before": 2077.373789778,
+          "after": -876.816210222,
+          "pct": 142.20791725285517
+        }
+      },
+      "dbie/fpi_usd_mn.csv": {
+        "rows_before": 184,
+        "rows_after": 185,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-07",
+          "2026-07"
+        ]
+      },
+      "dbie/imports_usd_mn.csv": {
+        "rows_before": 435,
+        "rows_after": 437,
+        "new": 2,
+        "lost": 0,
+        "revised": 3,
+        "new_range": [
+          "2026-07",
+          "2026-08"
+        ],
+        "max_revision": {
+          "at": "2026-06",
+          "before": 70822.89811,
+          "after": 70780.454157,
+          "pct": 0.05992970371541678
+        }
+      },
+      "dbie/inr_usd.csv": {
+        "rows_before": 411,
+        "rows_after": 413,
+        "new": 2,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-08",
+          "2026-09"
+        ]
+      },
+      "dbie/neer.csv": {
+        "rows_before": 268,
+        "rows_after": 269,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-08",
+          "2026-08"
+        ]
+      },
+      "dbie/reer.csv": {
+        "rows_before": 268,
+        "rows_after": 269,
+        "new": 1,
+        "lost": 0,
+        "revised": 1,
+        "new_range": [
+          "2026-08",
+          "2026-08"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 91.7818761,
+          "after": 91.76105442,
+          "pct": 0.02268604749082004
+        }
+      },
+      "fred/CLVMNACSCAB1GQEA19.csv": {
+        "rows_before": 126,
+        "rows_after": 127,
+        "new": 1,
+        "lost": 0,
+        "revised": 126,
+        "new_range": [
+          "2026-07",
+          "2026-07"
+        ],
+        "max_revision": {
+          "at": "2024-07",
+          "before": 2855957.5,
+          "after": 2866454.3,
+          "pct": 0.36754048335802664
+        }
+      },
+      "fred/CPIAUCSL.csv": {
+        "rows_before": 956,
+        "rows_after": 957,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/DCOILBRENTEU.csv": {
+        "rows_before": 9102,
+        "rows_after": 9132,
+        "new": 30,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      },
+      "fred/DTWEXBGS.csv": {
+        "rows_before": 5208,
+        "rows_after": 5231,
+        "new": 23,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      },
+      "fred/EXINUS.csv": {
+        "rows_before": 645,
+        "rows_after": 646,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/FEDFUNDS.csv": {
+        "rows_before": 867,
+        "rows_after": 868,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/GDPC1.csv": {
+        "rows_before": 318,
+        "rows_after": 319,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-07",
+          "2026-07"
+        ]
+      },
+      "fred/GS10.csv": {
+        "rows_before": 882,
+        "rows_after": 883,
+        "new": 1,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-10"
+        ]
+      },
+      "fred/IRSTCI01INM156N.csv": {
+        "rows_before": 703,
+        "rows_after": 706,
+        "new": 3,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ]
+      },
+      "fred/RBBRBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 96,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 114.34,
+          "after": 114.29,
+          "pct": 0.04372922861640472
+        }
+      },
+      "fred/RBCLBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 97,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 107.36,
+          "after": 107.33,
+          "pct": 0.02794336810730359
+        }
+      },
+      "fred/RBCNBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 199,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 89.52,
+          "after": 89.58,
+          "pct": 0.06702412868632962
+        }
+      },
+      "fred/RBCOBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 91,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 123.37,
+          "after": 123.3,
+          "pct": 0.05673988814136936
+        }
+      },
+      "fred/RBCZBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 47,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 129.06,
+          "after": 128.92,
+          "pct": 0.10847667751434588
+        }
+      },
+      "fred/RBHUBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 63,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-01",
+          "before": 116.68,
+          "after": 116.59,
+          "pct": 0.07713404182379449
+        }
+      },
+      "fred/RBIDBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 210,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 92.29,
+          "after": 92.34,
+          "pct": 0.05417705060136217
+        }
+      },
+      "fred/RBILBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 60,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 108.14,
+          "after": 107.93,
+          "pct": 0.1941927131496151
+        }
+      },
+      "fred/RBINBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 88,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 90.99,
+          "after": 91.32,
+          "pct": 0.36267721727662194
+        }
+      },
+      "fred/RBKRBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 231,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 85.07,
+          "after": 85.11,
+          "pct": 0.0470201010932247
+        }
+      },
+      "fred/RBMXBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 104,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 141.72,
+          "after": 141.65,
+          "pct": 0.049393169630252025
+        }
+      },
+      "fred/RBMYBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 196,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 106.07,
+          "after": 106.02,
+          "pct": 0.047138682002448536
+        }
+      },
+      "fred/RBPEBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 71,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 110.36,
+          "after": 110.33,
+          "pct": 0.027183762232694034
+        }
+      },
+      "fred/RBPHBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 199,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-06",
+          "before": 98.07,
+          "after": 98.15,
+          "pct": 0.08157438564292088
+        }
+      },
+      "fred/RBPLBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 49,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 130.34,
+          "after": 130.21,
+          "pct": 0.09973914377780838
+        }
+      },
+      "fred/RBROBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 34,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-02",
+          "before": 121.88,
+          "after": 121.78,
+          "pct": 0.08204791598292938
+        }
+      },
+      "fred/RBTHBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 236,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 97.72,
+          "after": 97.66,
+          "pct": 0.061399918133444815
+        }
+      },
+      "fred/RBTRBIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 81,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-03",
+          "before": 107.47,
+          "after": 107.34,
+          "pct": 0.12096398995067967
+        }
+      },
+      "fred/RBZABIS.csv": {
+        "rows_before": 391,
+        "rows_after": 394,
+        "new": 3,
+        "lost": 0,
+        "revised": 152,
+        "new_range": [
+          "2026-08",
+          "2026-10"
+        ],
+        "max_revision": {
+          "at": "2026-07",
+          "before": 114.49,
+          "after": 113.72,
+          "pct": 0.6725478207703696
+        }
+      },
+      "fred/VIXCLS.csv": {
+        "rows_before": 9294,
+        "rows_after": 9320,
+        "new": 26,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      },
+      "fred/WALCL.csv": {
+        "rows_before": 1243,
+        "rows_after": 1249,
+        "new": 6,
+        "lost": 0,
+        "revised": 0,
+        "new_range": [
+          "2026-10",
+          "2026-11"
+        ]
+      }
+    },
+    "gate_warnings": [
+      "MOSPI CPI ends Sep 2026 in both the RBI API and data/raw/manual/mospi_cpi_2024base.csv; Oct 2026 should be out. If the API lags, add it from https://www.mospi.gov.in/themes/product/9-consumer-price-index-cpi (Annexure IV)."
+    ]
+  }
+}

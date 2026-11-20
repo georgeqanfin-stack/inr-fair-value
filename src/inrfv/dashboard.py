@@ -379,7 +379,7 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
 
   <section class="panel verdict" aria-label="Current reading">
     <div>
-      <div class="eyebrow">Composite misalignment</div>
+      <div class="eyebrow" id="misLbl">Composite misalignment</div>
       <div class="big" id="bigMis"></div>
       <p class="lede" id="lede"></p>
       <div class="corridor" id="corridor" aria-label="Spot rate against the fair-value range"></div>
@@ -490,7 +490,7 @@ const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
 
 // ---------- header, verdict, facts
-const under = D.misalignment > 0;
+let under = D.misalignment > 0;
 if (D.author) { const [nm, ...role] = D.author.split(","); $("byline").innerHTML = `Built and maintained by <strong>${mdInline(nm.trim())}</strong>${role.length ? ", " + mdInline(role.join(",").trim()) : ""}`; } else { $("byline").hidden = true; }
 if (D.refresh_day) {
   // Next scheduled run: day refresh_day of the month at 06:00 UTC (the GitHub Actions schedule).
@@ -503,14 +503,27 @@ if (D.refresh_day) {
   $("sched").hidden = false;
 }
 $("meta").textContent = `Data to ${monthName(D.asof)} · inrfv ${D.version} · run ${D.run_id} · built ${D.generated}`;
-$("bigMis").innerHTML = `${sgn(D.misalignment)}<span class="unit">%</span>`;
-$("lede").innerHTML = `At <strong>${fmt(D.spot)}</strong> per dollar, the rupee is <strong>${Math.abs(D.misalignment).toFixed(1)}% ${under ? "weaker" : "stronger"}</strong> than its composite fair value of <strong>${fmt(D.fair)}</strong>. `
-  + `The fair-value range from model uncertainty is <strong>${fmt(D.corridor[0])}–${fmt(D.corridor[1])}</strong>; the spot rate is ${D.spot > D.corridor[1] ? "above the whole range" : D.spot < D.corridor[0] ? "below the whole range" : "inside it"}.`;
+// Latest daily rate (injected by the site build; see data/latest.py). The fair value moves
+// with monthly fundamentals, so the latest spot is compared with the latest fair value.
+const LV = (window.INRFV_LATEST && window.INRFV_LATEST.date > D.asof + "-31") ? window.INRFV_LATEST : null;
+const dayName = (iso) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const SPOT = LV ? LV.rate : D.spot;
+const MIS = LV ? (SPOT / D.fair - 1) * 100 : D.misalignment;
+$("bigMis").innerHTML = `${sgn(MIS)}<span class="unit">%</span>`;
+if (LV) $("misLbl").textContent = `Composite misalignment · at today's rate, ${dayName(LV.date)}`;
+const spotWhere = SPOT > D.corridor[1] ? "above the whole range" : SPOT < D.corridor[0] ? "below the whole range" : "inside it";
+$("lede").innerHTML = (LV
+  ? `At <strong>${fmt(SPOT)}</strong> per dollar (${dayName(LV.date)}, ${LV.source}), the rupee is <strong>${Math.abs(MIS).toFixed(1)}% ${MIS > 0 ? "weaker" : "stronger"}</strong> than its composite fair value of <strong>${fmt(D.fair)}</strong>, estimated from fundamentals to ${monthName(D.asof)}. `
+  : `At <strong>${fmt(SPOT)}</strong> per dollar, the rupee is <strong>${Math.abs(MIS).toFixed(1)}% ${MIS > 0 ? "weaker" : "stronger"}</strong> than its composite fair value of <strong>${fmt(D.fair)}</strong>. `)
+  + `The fair-value range from model uncertainty is <strong>${fmt(D.corridor[0])}–${fmt(D.corridor[1])}</strong>; the spot rate is ${spotWhere}.`
+  + (LV ? ` <span class="sub" style="display:block;margin-top:8px">Model reading on the ${monthName(D.asof)} average (${fmt(D.spot)}): ${sgn(D.misalignment)}%. Today's figure is indicative: the fair value is re-estimated monthly, the spot rate daily.</span>` : "");
+under = MIS > 0;
 const stressLbl = D.stress.now > 0.5 ? "stress" : "calm";
 const facts = [
   ["Verdict", `<span class="pill ${under ? "under" : ""}"><span class="dot"></span>${under ? "Undervalued" : "Overvalued"}</span>`, "Composite, REER + FEER"],
   ["Regime", `<span class="pill ${stressLbl}"><span class="dot"></span>${stressLbl === "stress" ? "Stress" : "Calm"} · ${fmt(D.stress.now * 100, 0)}%</span>`, `Stress odds in 12 months: ${fmt(D.stress.h12 * 100, 0)}%`],
-  ["Spot", fmt(D.spot), `INR per USD, ${monthName(D.asof)}`],
+  ...(LV ? [["Spot today", fmt(SPOT), `${dayName(LV.date)} · ${LV.source}`], ["Monthly average", fmt(D.spot), `INR per USD, ${monthName(D.asof)} (the model's input)`]]
+        : [["Spot", fmt(D.spot), `INR per USD, ${monthName(D.asof)}`]]),
   ["Fair value", fmt(D.fair), `Range ${fmt(D.corridor[0])}–${fmt(D.corridor[1])}`],
 ];
 if (D.market) {
@@ -528,14 +541,15 @@ $("facts").innerHTML = facts.map(([k, v, s]) => `<div class="fact"><div class="e
 function drawCorridor() {
   const host = $("corridor"); host.innerHTML = "";
   const W = host.clientWidth || 600, H = 54;
-  const lo = Math.min(D.corridor[0], D.spot), hi = Math.max(D.corridor[1], D.spot);
+  const lo = Math.min(D.corridor[0], D.spot, SPOT), hi = Math.max(D.corridor[1], D.spot, SPOT);
   const pad = (hi - lo) * 0.12 || 1, x0 = lo - pad, x1 = hi + pad;
   const x = (v) => 8 + (v - x0) / (x1 - x0) * (W - 16);
-  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Fair value range ${D.corridor[0]} to ${D.corridor[1]}, central ${D.fair}, spot ${D.spot}` }, host);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Fair value range ${D.corridor[0]} to ${D.corridor[1]}, central ${D.fair}, spot ${SPOT}` }, host);
   el("line", { x1: 8, x2: W - 8, y1: 24, y2: 24, stroke: css("--rule"), "stroke-width": 2 }, svg);
   el("rect", { x: x(D.corridor[0]), y: 16, width: Math.max(2, x(D.corridor[1]) - x(D.corridor[0])), height: 16, rx: 3, fill: css("--band") }, svg);
   el("line", { x1: x(D.fair), x2: x(D.fair), y1: 12, y2: 36, stroke: css("--s1"), "stroke-width": 2 }, svg);
-  el("circle", { cx: x(D.spot), cy: 24, r: 6, fill: css("--ink"), stroke: css("--surface"), "stroke-width": 2 }, svg);
+  if (LV) el("circle", { cx: x(D.spot), cy: 24, r: 5, fill: css("--surface"), stroke: css("--ink-3"), "stroke-width": 1.5 }, svg);
+  el("circle", { cx: x(SPOT), cy: 24, r: 6, fill: css("--ink"), stroke: css("--surface"), "stroke-width": 2 }, svg);
   const t = (txt, xx, y, anchor, col) => { const e = el("text", { x: xx, y, "text-anchor": anchor, fill: col, style: "font:11px var(--f-mono)" }, svg); e.textContent = txt; };
   if (x(D.corridor[1]) - x(D.corridor[0]) < 130) {   // narrow screens: one label under the band
     const mid = (x(D.corridor[0]) + x(D.corridor[1])) / 2;
@@ -545,7 +559,9 @@ function drawCorridor() {
     t(`${fmt(D.corridor[1])}`, x(D.corridor[1]), 50, "end", css("--ink-3"));
   }
   t(`fair ${fmt(D.fair)}`, x(D.fair), 9, "middle", css("--s1"));
-  t(`spot ${fmt(D.spot)}`, Math.min(x(D.spot), W - 8), 50, x(D.spot) > W - 60 ? "end" : "middle", css("--ink"));
+  const edge = (xx) => xx > W - 60 ? "end" : xx < 60 ? "start" : "middle";
+  t(`${LV ? "today" : "spot"} ${fmt(SPOT)}`, Math.min(x(SPOT), W - 8), 50, edge(x(SPOT)), css("--ink"));
+  if (LV) t(`${monthName(D.asof).split(" ")[0]} avg ${fmt(D.spot)}`, Math.min(x(D.spot), W - 8), 9, edge(x(D.spot)), css("--ink-3"));
 }
 
 // ---------- generic time-series chart

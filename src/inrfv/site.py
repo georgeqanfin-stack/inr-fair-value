@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import re
 import shutil
 from pathlib import Path
@@ -85,6 +86,15 @@ def render(md_text: str, title: str, page: str, author: str | None = None) -> st
             f"Every figure comes from the last monthly refresh.</footer></main></body></html>\n")
 
 
+def with_latest(text: str, live: dict | None) -> str:
+    """Inject the latest daily rate (data/latest.py) ahead of the dashboard's own script."""
+    if not live:
+        return text
+    tag = f"<script>window.INRFV_LATEST = {json.dumps(live)};</script>\n"
+    marker = "<script>\nconst D = "
+    return text.replace(marker, tag + marker, 1) if marker in text else text
+
+
 def dashboard(text: str) -> str:
     """The dashboard with a links row after its footer."""
     links = " · ".join(f'<a href="{page}">{html.escape(t)}</a>' for _, page, t in PAGES)
@@ -93,7 +103,8 @@ def dashboard(text: str) -> str:
     return text.replace(marker, marker + row, 1) if marker in text else text
 
 
-def build(out: Path, root: Path = ROOT) -> list[str]:
+def build(out: Path, root: Path = ROOT, live: bool = False) -> list[str]:
+    """``live``: also fetch the latest daily USD/INR rate and show it against the fair value."""
     latest = root / "reports" / "latest"
     try:
         import tomllib
@@ -104,7 +115,17 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
         shutil.rmtree(out)
     out.mkdir(parents=True)
     written = ["index.html"]
-    (out / "index.html").write_text(dashboard((latest / "dashboard.html").read_text(encoding="utf-8")), encoding="utf-8")
+    page = (latest / "dashboard.html").read_text(encoding="utf-8")
+    rate = None
+    if live:
+        from .data import latest as latest_rate
+        m = re.search(r'"spot":([0-9.]+)', page)
+        rate = latest_rate.fetch(reference=float(m.group(1)) if m else None)
+        if rate:
+            (out / "latest.json").write_text(json.dumps(rate), encoding="utf-8")
+            written.append("latest.json")
+        print(f"latest rate: {rate}")
+    (out / "index.html").write_text(dashboard(with_latest(page, rate)), encoding="utf-8")
     for src, page, title in PAGES:
         p = root / src
         if p.exists():
@@ -122,8 +143,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m inrfv.site", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default="_site", help="output directory (default _site)")
+    ap.add_argument("--live", action="store_true", help="fetch the latest daily USD/INR rate (needs network)")
     args = ap.parse_args(argv)
-    written = build(Path(args.out))
+    written = build(Path(args.out), live=args.live)
     print(f"wrote {len(written)} files to {args.out}: {', '.join(written)}")
     return 0
 

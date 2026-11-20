@@ -4,7 +4,9 @@ name: pages
 # monthly note, full report, refresh summary and method documents beside it
 # (src/inrfv/site.py). Runs after each monthly refresh (called from
 # monthly-refresh.yml, since a push made by a workflow does not start other
-# workflows), on pushes that change what the site shows, and by hand.
+# workflows), on pushes that change what the site shows, by hand, and every weekday at
+# 16:30 UTC to show the day's USD/INR rate (ECB reference rate, published ~15:00 UTC)
+# against the fair value. The daily build only fetches that rate; it commits nothing.
 
 on:
   push:
@@ -16,6 +18,8 @@ on:
       - ".github/workflows/pages.yml"
   workflow_dispatch:
   workflow_call:
+  schedule:
+    - cron: "30 16 * * 1-5"
 
 permissions:
   contents: read
@@ -37,7 +41,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-site.txt
-      - run: python -m inrfv.site --out _site
+      - run: python -m inrfv.site --out _site --live
         env:
           PYTHONPATH: src
       - uses: actions/configure-pages@v6

@@ -33,3 +33,15 @@ def test_refresh_day_matches_the_workflow_schedule():
     day = tomllib.loads((ROOT / "config" / "default.toml").read_text(encoding="utf-8"))["publication"]["refresh_day"]
     cron = re.search(r'cron: "(\S+) (\S+) (\S+) ', (ROOT / ".github" / "workflows" / "monthly-refresh.yml").read_text(encoding="utf-8"))
     assert cron and cron.group(1, 2) == ("0", "6") and int(cron.group(3)) == day
+
+
+def test_latest_rate_is_injected_and_bad_prints_are_rejected(monkeypatch):
+    from inrfv.data import latest
+    page = "<html><script>\nconst D = {\"spot\":95.5};</script>"
+    out = site.with_latest(page, {"rate": 92.68, "date": "2026-11-20", "source": "ECB"})
+    assert out.index("INRFV_LATEST") < out.index("const D = ") and '"rate": 92.68' in out
+    assert site.with_latest(page, None) == page
+    monkeypatch.setattr(latest, "SOURCES", [("bad", lambda s: (60.0, "2026-11-20")), ("good", lambda s: (92.7, "2026-11-20"))])
+    assert latest.fetch(reference=95.5, session=object())["source"] == "good"      # 60 is >10% off: skipped
+    monkeypatch.setattr(latest, "SOURCES", [("down", lambda s: (_ for _ in ()).throw(OSError("timeout")))])
+    assert latest.fetch(reference=95.5, session=object()) is None

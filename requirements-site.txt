@@ -1,2 +1,3 @@
 # Static site build for GitHub Pages (python -m inrfv.site), on top of requirements.txt.
 markdown==3.11
+requests==2.34.2

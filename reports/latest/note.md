@@ -1,6 +1,6 @@
 # USD/INR fair value note, October 2026
 
-Data to October 2026 · run `20261120-220138` · written 20 Nov 2026
+Data to October 2026 · run `20261121-122314` · written 21 Nov 2026
 
 ## The reading
 
@@ -12,9 +12,7 @@ The two components agree: the productivity-based REER anchor puts the rupee +18.
 
 No new month of exchange-rate data since the last note (Oct 2026); the reading is unchanged at +15.6%.
 
-New and revised data this month:
-
-- **US and market data (FRED)**: 1 new observation, now to Nov 2026.
+No source published new or revised data since the last refresh.
 
 ## Risk regime
 

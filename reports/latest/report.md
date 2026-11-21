@@ -1,6 +1,6 @@
 # USD/INR fair value: run report
 
-inrfv 1.2.0 · run `20261120-220138` · as of **Oct 2026** (latest month with RBI USD/INR) · spot **95.52**
+inrfv 1.2.0 · run `20261121-122314` · as of **Oct 2026** (latest month with RBI USD/INR) · spot **95.52**
 
 All figures are point-in-time: each value uses only data published by that month-end. Positive misalignment = INR undervalued (weaker than fair).
 
@@ -366,7 +366,7 @@ US CPI inflation: ALFRED real-time vintages from Jan 2000; versus the revised se
 
 ## RBI data sources
 
-RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-11-20T16:30:41+00:00, mirror loaded 2026-11-20T16:22:43.
+RBIH Data API merged with DBIE Excel (later vintage preferred). API fetched 2026-11-21T06:52:19+00:00, mirror loaded 2026-11-21T06:42:43.
 
 | Series | API range | Excel range | Later vintage | Overlap | Revised | Unexpected diffs |
 |---|---|---|---|---|---|---|

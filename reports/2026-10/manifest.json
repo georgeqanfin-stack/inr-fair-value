@@ -1,8 +1,8 @@
 {
-  "run_id": "20261120-220138",
-  "created": "2026-11-20T22:11:20",
+  "run_id": "20261121-122314",
+  "created": "2026-11-21T12:26:27",
   "inrfv_version": "1.2.0",
-  "git_revision": "b52e712-dirty",
+  "git_revision": "eae334a-dirty",
   "config_source": "Z:\\DATA ANSC\\OLD\\inr-fair-value\\config\\default.toml",
   "config_hash": "a6c49fdce6fc",
   "config": {
@@ -503,7 +503,7 @@
   "platform": "Windows-11-10.0.26300-SP0",
   "raw_checksums": {
     "alfred/CPIAUCSL.csv": "97f93a24c0fb6edda60fdef723ae75bba2b9cf1b03c0f54a172a5244604f9558",
-    "dbie/_fetch.json": "948e83cea78ef04b75010b92fcffb2dc49e5bebdcdf5e40343b84d67c325dcfe",
+    "dbie/_fetch.json": "83465f0b795960205174177cef73e621e06a5b4cfa654b7d9f2104a0cd47cc01",
     "dbie/bop.banking_capital.csv": "cb2fb953ac3ecaf5b30b8d805314159c2ddee3fbeb7c7d93206703955142ddeb",
     "dbie/bop.capital_account.csv": "962f2828bf4ae7f72c83b5fa4445986324eb887cfe887fe0e28f179382318594",
     "dbie/bop.current_account.csv": "421cfec3d0de3181cd9c576819163f2734924f83274a94790fbb9dcea36767e9",
@@ -628,19 +628,7 @@
     "BEER residuals are not cointegrated (Engle-Granger p=0.95); treat the BEER fair value as descriptive."
   ],
   "refresh": {
-    "data_changes": {
-      "fred/VIXCLS.csv": {
-        "rows_before": 9320,
-        "rows_after": 9321,
-        "new": 1,
-        "lost": 0,
-        "revised": 0,
-        "new_range": [
-          "2026-11",
-          "2026-11"
-        ]
-      }
-    },
+    "data_changes": {},
     "gate_warnings": [
       "MOSPI CPI ends Sep 2026 in both the RBI API and data/raw/manual/mospi_cpi_2024base.csv; Oct 2026 should be out. If the API lags, add it from https://www.mospi.gov.in/themes/product/9-consumer-price-index-cpi (Annexure IV)."
     ]

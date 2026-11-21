@@ -1,6 +1,6 @@
-# Data refresh 20 Nov 2026
+# Data refresh 21 Nov 2026
 
-Run `20261120-220138` · as of **2026-10**
+Run `20261121-122314` · as of **2026-10**
 
 ## Headline
 
@@ -16,6 +16,5 @@ Composite misalignment +15.6% → **+15.6%** (2026-10 → 2026-10); fair value 8
 
 ## Data changes
 
-| File | New obs | New range | Revised | Largest revision | Lost |
-|---|---|---|---|---|---|
-| fred/VIXCLS.csv | 1 | 2026-11–2026-11 | 0 |  | 0 |
+No cached series changed.
+

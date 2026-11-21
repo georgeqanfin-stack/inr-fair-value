@@ -401,6 +401,7 @@ footer { color: var(--ink-3); font-size: 12.5px; max-width: 80ch; }
     </div>
     <div class="legend"><span><i style="border-color:var(--ink)"></i>USD/INR spot</span><span><i style="border-color:var(--s1)"></i>Composite fair value</span><span><i class="area"></i>Fair-value range (10th–90th pct)</span></div>
     <div class="chart" id="chMain"></div>
+    <p class="sub" id="chMainNote" hidden></p>
     <details>
       <summary>Monthly values, last 24 months</summary>
       <div class="tablewrap"><table id="tblMonths"></table></div>
@@ -589,7 +590,10 @@ function lineChart(host, rows, opts) {
   });
   const years = [...new Set(rows.map(r => r[0].slice(0, 4)))];
   const every = Math.max(1, Math.ceil(years.length / Math.max(2, Math.floor(iw / 70))));
-  years.forEach((yr, k) => { if (k % every) return; const i = rows.findIndex(r => r[0].startsWith(yr)); const t = el("text", { x: x(i), y: H - 6, "text-anchor": "middle" }, svg); t.textContent = yr; });
+  let lastX = -1e9;   // skip a year label that would collide with the previous one; a partial first year gives way
+  if (years.length > 1 && rows.filter(r => r[0].startsWith(years[0])).length < 6) years.shift();
+  years.forEach((yr, k) => { if (k % every) return; const i = rows.findIndex(r => r[0].startsWith(yr)); if (x(i) - lastX < 40) return;
+    lastX = x(i); const t = el("text", { x: x(i), y: H - 6, "text-anchor": "middle" }, svg); t.textContent = yr; });
   if (opts.band) {
     let d = "", back = [];
     rows.forEach((r, i) => { const b = opts.band(r); if (!b || b[0] === null) return; d += (d ? "L" : "M") + x(i).toFixed(1) + "," + y(b[1]).toFixed(1); back.push(x(i).toFixed(1) + "," + y(b[0]).toFixed(1)); });
@@ -620,7 +624,7 @@ function lineChart(host, rows, opts) {
     cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
     opts.series.forEach((s, k) => { const v = s.get(r); if (v === null) { dots[k].setAttribute("visibility", "hidden"); return; }
       dots[k].setAttribute("cx", x(i)); dots[k].setAttribute("cy", y(v)); dots[k].setAttribute("visibility", "visible"); });
-    tip.innerHTML = `<b>${monthName(r[0])}</b>` + opts.tip(r);
+    tip.innerHTML = `<b>${rowName(r[0])}</b>` + opts.tip(r);
     tip.hidden = false;
     const px = x(i) / W * box.width, tw = tip.offsetWidth;
     tip.style.left = (px + 14 + tw > box.width ? px - tw - 14 : px + 14) + "px"; tip.style.top = "8px";
@@ -631,13 +635,17 @@ function lineChart(host, rows, opts) {
 
 // ---------- charts with range control
 const S = D.series; // [ym, inr, fair, strong, weak, reerPct, feerPct, compPct, pStress]
+// Today's rate as a last point on the spot chart: the fair value and range are the latest monthly estimate.
+const TODAY = LV ? [[LV.date, LV.rate, D.fair, D.corridor[0], D.corridor[1], null, null, MIS, null]] : [];
+if (LV) { $("chMainNote").textContent = `Monthly averages to ${monthName(D.asof)}; the last point is today's rate (${dayName(LV.date)}, ${LV.source}) against the latest fair value. The fair value itself is re-estimated monthly.`; $("chMainNote").hidden = false; }
+const rowName = (k) => k.length > 7 ? `${dayName(k)} (today)` : monthName(k);
 let range = "10";
 try { range = localStorage.getItem("inrfv-range") || range; } catch (e) {}
 function rowsFor(r) { if (r === "all") return S; const last = S[S.length - 1][0], y0 = +last.slice(0, 4) - +r; return S.filter(x => x[0] >= `${y0}${last.slice(4)}`); }
 function render() {
   document.querySelectorAll("#range button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.r === range)));
   const rows = rowsFor(range);
-  lineChart($("chMain"), rows, {
+  lineChart($("chMain"), rows.concat(TODAY), {
     aria: "INR per USD and composite fair value with its range", yFmt: v => v.toFixed(0), height: 320, labelRoom: 64,
     band: r => [r[3], r[4]],
     series: [{ get: r => r[1], color: "--ink", label: v => fmt(v), dy: -6 }, { get: r => r[2], color: "--s1", label: v => fmt(v), dy: 8 }],
@@ -660,9 +668,9 @@ function render() {
 document.querySelectorAll("#range button").forEach(b => b.addEventListener("click", () => { range = b.dataset.r; try { localStorage.setItem("inrfv-range", range); } catch (e) {} render(); }));
 
 // ---------- tables
-const recent = S.slice(-24).reverse();
+const recent = TODAY.concat(S.slice(-24).reverse());
 $("tblMonths").innerHTML = `<thead><tr><th>Month</th><th class="n">Spot</th><th class="n">Fair</th><th class="n">Range</th><th class="n">Gap</th><th class="n">P(stress)</th></tr></thead><tbody>`
-  + recent.map(r => `<tr><td>${monthName(r[0])}</td><td class="n">${fmt(r[1])}</td><td class="n">${fmt(r[2])}</td><td class="n">${fmt(r[3])}–${fmt(r[4])}</td><td class="n">${sgn(r[7])}%</td><td class="n">${r[8] === null ? "n/a" : (r[8] * 100).toFixed(0) + "%"}</td></tr>`).join("") + "</tbody>";
+  + recent.map(r => `<tr><td>${rowName(r[0])}</td><td class="n">${fmt(r[1])}</td><td class="n">${fmt(r[2])}</td><td class="n">${fmt(r[3])}–${fmt(r[4])}</td><td class="n">${sgn(r[7])}%</td><td class="n">${r[8] === null ? "n/a" : (r[8] * 100).toFixed(0) + "%"}</td></tr>`).join("") + "</tbody>";
 const roleLbl = { headline: "Headline", composite: "In composite", reported: "Reported only", benchmark: "IMF check" };
 const statusLbl = { ok: '<span class="pill ok"><span class="dot"></span>Passes</span>', fail: '<span class="pill fail"><span class="dot"></span>Fails</span>', "n/a": '<span class="pill">Not applicable</span>' };
 $("tblModels").innerHTML = `<thead><tr><th>Model</th><th class="n">Misalignment</th><th class="n">Fair USD/INR</th><th>Use</th><th>Long-run test</th></tr></thead><tbody>`
